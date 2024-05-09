@@ -1,7 +1,7 @@
 # LabTronic Control Hub V2
 
 ## Description
-LabTronic Device Software MonoRepo
+LabTronic Devices Software MonoRepo
 
 ## Tech Stack
 The software was built using hybrid technology stack.  
