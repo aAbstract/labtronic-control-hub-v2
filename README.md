@@ -26,7 +26,12 @@ ElectronJS was used to access device native functionality.
 5. Cloud Device Control **TODO**
 6. Export Data, Graphs, Insights
 
-## Screenshots
+## Main Screen
 <p align="center">
-    <img src="screenshot.png" alt="Screenshot" />
+    <img src="screenshot_1.png" alt="Screenshot_1" />
+</p>
+
+## Data Panel
+<p align="center">
+    <img src="screenshot_2.png" alt="Screenshot_2" />
 </p>
