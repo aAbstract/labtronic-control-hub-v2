@@ -1,12 +1,14 @@
 <script setup lang="ts">
 
 import { onBeforeMount, provide } from 'vue';
+import Toast from 'primevue/toast';
 
 import TopBar from '@renderer/components/TopBar/TopBar.vue';
 import NavBar from '@renderer/components/NavBar/NavBar.vue';
 import TerminalPanel from '@renderer/components/DeviceTerminal/TerminalPanel.vue';
 import DeviceStatePanel from '@renderer/components/DeviceStatePanel/DeviceStatePanel.vue';
 import DeviceModelPanel from '@renderer/components/DeviceModelPanel/DeviceModelPanel.vue';
+import DataPanel from './components/DataPanel/DataPanel.vue';
 import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 
@@ -36,6 +38,7 @@ onBeforeMount(() => {
 <template>
   <div id="app_shell">
     <TopBar />
+    <Toast />
     <div id="main_panel">
       <NavBar />
       <div id="slider_panel_cont">
@@ -46,6 +49,7 @@ onBeforeMount(() => {
           <div style="flex-grow: 1;"></div>
         </div>
         <TerminalPanel />
+        <DataPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
       </div>
       <DeviceStatePanel />
     </div>

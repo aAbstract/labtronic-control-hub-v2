@@ -6,6 +6,7 @@ export class ChartParams {
     fill: boolean;
     tension: number;
     borderColor: string;
+    pointRadius: number;
 
     constructor(_label: string, _borderColor: string) {
         this.label = _label;
@@ -13,13 +14,36 @@ export class ChartParams {
         this.fill = false;
         this.tension = 0.4;
         this.borderColor = _borderColor;
+        this.pointRadius = 0;
     }
 };
 
 export class DeviceUIConfig {
+    static ROT_COLOR_LIST = [
+        '#9c27b0',
+        '#f44336',
+        '#2196f3',
+        '#3f51b5',
+        '#673ab7',
+        '#009688',
+        '#00bcd4',
+        '#03a9f4',
+        '#cddc39',
+        '#8bc34a',
+        '#4caf50',
+        '#ff9800',
+        '#ffc107',
+        '#ffeb3b',
+        '#9e9e9e',
+        '#795548',
+        '#ff5722',
+        '#607d8b',
+    ];
+
     private cards_pos_map: Record<number, InfoCardGfxData>;
     private parts_pos_map: Record<string, DevicePartGfxData>;
     private chart_params_map: Record<number, ChartParams>;
+    private rot_color_idx: number;
 
     constructor(
         _cards_pos_map: Record<number, InfoCardGfxData>,
@@ -29,6 +53,11 @@ export class DeviceUIConfig {
         this.cards_pos_map = _cards_pos_map;
         this.parts_pos_map = _parts_pos_map;
         this.chart_params_map = _chart_params_map;
+        this.rot_color_idx = 0;
+    }
+
+    get_rot_chart_params(series_name: string): ChartParams {
+        return new ChartParams(series_name, DeviceUIConfig.ROT_COLOR_LIST[this.rot_color_idx++]);
     }
 
     get_chart_params(msg_type: number): ChartParams | null {

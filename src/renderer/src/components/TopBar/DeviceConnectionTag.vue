@@ -7,15 +7,15 @@ import LinkSlashAltIcon from '@renderer/components/icons/LinkSlashAlt.vue';
 
 defineProps<{ tag_height: string, icon_size: string }>();
 
-const is_device_connected_ref = ref(false);
-const icon_color = computed(() => is_device_connected_ref.value ? '#64DD17' : '#DD2C00');
-const tag_txt = computed(() => is_device_connected_ref.value ? 'CONNECTED' : 'DISCONNECTED');
-const icon_comp = computed(() => is_device_connected_ref.value ? LinkIcon : LinkSlashAltIcon);
+const is_device_connected = ref(false);
+const icon_color = computed(() => is_device_connected.value ? '#64DD17' : '#DD2C00');
+const tag_txt = computed(() => is_device_connected.value ? 'CONNECTED' : 'DISCONNECTED');
+const icon_comp = computed(() => is_device_connected.value ? LinkIcon : LinkSlashAltIcon);
 const device_model = inject('device_model');
 
 onBeforeMount(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => is_device_connected_ref.value = true);
-    window.electron?.ipcRenderer.on(`${device_model}_device_disconnected`, _ => is_device_connected_ref.value = false);
+    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => is_device_connected.value = true);
+    window.electron?.ipcRenderer.on(`${device_model}_device_disconnected`, _ => is_device_connected.value = false);
 });
 
 </script>

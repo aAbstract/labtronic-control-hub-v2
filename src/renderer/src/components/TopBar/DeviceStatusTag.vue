@@ -7,12 +7,12 @@ import { subscribe } from '@common/mediator';
 
 defineProps<{ tag_height: string, icon_size: string }>();
 
-const is_device_ok_ref = ref(true);
-const tag_txt = computed(() => is_device_ok_ref.value ? 'OK' : 'ERROR');
-const tag_color = computed(() => is_device_ok_ref.value ? '#64DD17' : '#DD2C00');
+const is_device_ok = ref(true);
+const tag_txt = computed(() => is_device_ok.value ? 'OK' : 'ERROR');
+const tag_color = computed(() => is_device_ok.value ? '#64DD17' : '#DD2C00');
 
 onMounted(() => {
-    subscribe('set_device_status', 'set_device_status_func', args => is_device_ok_ref.value = args.device_ok);
+    subscribe('set_device_status', 'set_device_status', args => is_device_ok.value = args.device_ok);
 });
 
 </script>

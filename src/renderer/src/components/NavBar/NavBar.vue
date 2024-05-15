@@ -43,8 +43,8 @@ function trigger_icon_active_flag(index: number) {
 
 onMounted(() => {
     subscribe('toggle_control_panel', 'toggle_control_panel_icon', _ => trigger_icon_active_flag(0));
-    // subscribe('toggle_data_panel', 'toggle_data_panel_icon', _ => trigger_icon_active_flag(1));
-    subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag(2));
+    subscribe('toggle_data_panel', 'toggle_data_panel_icon', _ => trigger_icon_active_flag(1));
+    // subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag(2));
 });
 
 </script>

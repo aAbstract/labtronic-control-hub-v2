@@ -5,7 +5,7 @@ import App from './App.vue';
 
 import 'primeicons/primeicons.css';
 import 'primevue/resources/primevue.min.css';
-import 'primevue/resources/themes/lara-light-blue/theme.css';
+import 'primevue/resources/themes/lara-dark-blue/theme.css';
 
 createApp(App)
     .use(PrimeVue, { ripple: true })

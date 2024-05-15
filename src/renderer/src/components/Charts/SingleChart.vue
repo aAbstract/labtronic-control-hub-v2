@@ -4,9 +4,10 @@ import { shallowRef, onMounted, inject } from 'vue';
 import { ChartOptions, ChartData } from 'chart.js';
 import Chart from 'primevue/chart';
 
-import { PlotSeries, DeviceMsg, MsgTypeConfig, LogMsg } from '@common/models';
+import { PlotSeries, DeviceMsg, MsgTypeConfig } from '@common/models';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
-import { post_event, subscribe } from '@common/mediator';
+import { subscribe } from '@common/mediator';
+import { add_log } from '@renderer/lib/util';
 
 const CHART_POINTS_LIMIT = 100;
 const points_data: Record<number, PlotSeries> = {};
@@ -35,11 +36,7 @@ function create_chart_options(font_color: string, lines_color: string): ChartOpt
 function render_chart() {
     const chart_params = props.device_ui_config.get_chart_params(active_msg_type);
     if (!chart_params) {
-        post_event('add_sys_log', {
-            source: '',
-            level: 'ERROR',
-            msg: `Invalid Plot Channel, active_msg_type=${active_msg_type}`,
-        } as LogMsg);
+        add_log({ level: 'ERROR', msg: `Invalid Plot Channel, active_msg_type=${active_msg_type}` });
         return;
     }
     const new_chart_data: ChartData = {

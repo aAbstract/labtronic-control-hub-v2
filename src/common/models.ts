@@ -33,8 +33,8 @@ export interface ILtdDriver {
 export type LogLevel = 'INFO' | 'DEBUG' | 'WARN' | 'ERROR' | '';
 
 export interface LogMsg {
-    datetime: string;
-    source: string;
+    datetime?: string;
+    source?: string;
     level: LogLevel;
     msg: string;
 };
@@ -45,9 +45,9 @@ export interface NavMenuItem {
     menu_action: () => void;
 };
 
-export interface DropdownOption {
+export interface DropdownOption<T> {
     label: string;
-    value: string;
+    value: T;
 };
 
 export interface SerialPortMetaData {
@@ -80,4 +80,13 @@ export interface InfoCardGfxData {
 export interface PlotSeries {
     x: number[],
     y: number[],
+};
+
+export interface DmtbRow {
+    sn: number;
+    datetime: string;
+    msg_type: number;
+    msg_name: string;
+    msg_value: number;
+    b64_msg_value: string;
 };

@@ -2,8 +2,8 @@
 
 import { onBeforeMount, inject } from 'vue';
 
-import { post_event } from '@common/mediator';
-import { LogMsg, DeviceMsg } from '@common/models';
+import { add_log } from '@renderer/lib/util';
+import { DeviceMsg } from '@common/models';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import * as GfxApi from '@renderer/lib/gfx_api';
 
@@ -18,11 +18,7 @@ function canvas_setup() {
     if (canvas)
         GfxApi.init_gfx(canvas, device_img.width, device_img.height);
     else
-        post_event('add_sys_log', {
-            source: '',
-            level: 'ERROR',
-            msg: 'Faild to Initialize Device Canvas',
-        } as LogMsg);
+        add_log({ level: 'ERROR', msg: 'Faild to Initialize Device Canvas' });
     props.device_ui_config.get_all_info_card_pos().forEach(card => GfxApi.clear_digit_cells(card.pos, card.cell_count));
 }
 
@@ -33,11 +29,7 @@ onBeforeMount(() => {
         const msg_value = device_msg.msg_value;
         const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
         if (!card_pos_info) {
-            post_event('add_sys_log', {
-                source: '',
-                level: 'ERROR',
-                msg: `Unknown Msg Type: ${msg_type}`,
-            } as LogMsg);
+            add_log({ level: 'ERROR', msg: `Unknown Msg Type: ${msg_type}` });
             return;
         }
         const { pos, cell_count } = card_pos_info;

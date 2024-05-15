@@ -1,7 +1,6 @@
-import { ipcMain } from "electron";
+import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver_0x87 } from "./ltd_driver_0x87";
-import { post_event } from "../../common/mediator";
 import { DataType, MsgTypeConfig, LogMsg } from '../../common/models';
 
 const DEVICE_MODEL = 'LT-CH000';
@@ -74,12 +73,18 @@ const LT_CH000_DRIVER_CONFIG: MsgTypeConfig[] = [
     },
 ];
 
-export const lt_ch000_main_to_renderer_ipc_bridge = [
-    `${DEVICE_MODEL}_device_connected`,
-    `${DEVICE_MODEL}_device_disconnected`,
-    `${DEVICE_MODEL}_device_msg`,
-    `${DEVICE_MODEL}_device_error`,
-];
+// main -> renderer ipc signals
+//      [x] `${DEVICE_MODEL}_device_connected`
+//      [x] `${DEVICE_MODEL}_device_disconnected`
+//      [x] `${DEVICE_MODEL}_device_msg`
+//      [-] `${DEVICE_MODEL}_device_error`
+// renderer -> main ipc signals
+//      [x] `${DEVICE_MODEL}_get_device_config`
+//      [x] `${DEVICE_MODEL}_get_device_cmd_help`
+//      [x] `${DEVICE_MODEL}_serial_port_connect`
+//      [x] `${DEVICE_MODEL}_serial_port_disconnect`
+//      [x] `${DEVICE_MODEL}_exec_device_cmd`
+//      [x] `${DEVICE_MODEL}_serial_port_scan`
 
 const LT_CH000_DEVICE_CMD_HELP: string[] = [
     '=======================================================================================================',
@@ -95,6 +100,15 @@ ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => LT_CH000_DRIVER_CONFIG
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_CH000_DEVICE_CMD_HELP);
 
 let serial_adapter: SerialAdapter | null = null;
+let main_window: BrowserWindow | null = null;
+
+function mw_logger(log_msg: LogMsg) {
+    main_window?.webContents.send('add_sys_log', log_msg);
+}
+
+function mw_ipc_handler(channel: string, data: any) {
+    main_window?.webContents.send(channel, data);
+}
 
 function lt_ch000_cmd_exec(cmd: string) {
     const CMD_ALIAS_LIST: Record<string, string[]> = {
@@ -116,22 +130,14 @@ function lt_ch000_cmd_exec(cmd: string) {
     }
 
     if (cmd_parts.length !== 3) {
-        post_event('add_sys_log', {
-            source: '',
-            level: 'ERROR',
-            msg: 'Invalid Device Command, Type HELP to List Device Commands',
-        } as LogMsg);
+        mw_logger({ level: 'ERROR', msg: 'Invalid Device Command, Type HELP to List Device Commands' });
         return;
     }
 
     const new_set_val = Number(cmd_parts[2]);
     if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'PISTON_PUMP' && !isNaN(new_set_val)) {
         if (!(new_set_val >= 0 && new_set_val <= 200)) {
-            post_event('add_sys_log', {
-                source: '',
-                level: 'ERROR',
-                msg: 'Invalid PISTON_PUMP Value: 0 <= value <= 200',
-            } as LogMsg);
+            mw_logger({ level: 'ERROR', msg: 'Invalid PISTON_PUMP Value: 0 <= value <= 200' });
             return;
         }
         serial_adapter?.send_packet(WRITE_PISTON_PUMP_MSG_TYPE, new_set_val);
@@ -140,28 +146,21 @@ function lt_ch000_cmd_exec(cmd: string) {
 
     if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'PERISTALTIC_PUMP' && !isNaN(new_set_val)) {
         if (![0, 1, 2, 3].includes(new_set_val)) {
-            post_event('add_sys_log', {
-                source: '',
-                level: 'ERROR',
-                msg: 'Invalid PERISTALTIC_PUMP Value: value = [0, 1, 2, 3]',
-            } as LogMsg);
+            mw_logger({ level: 'ERROR', msg: 'Invalid PERISTALTIC_PUMP Value: value = [0, 1, 2, 3]' });
             return;
         }
         serial_adapter?.send_packet(WRITE_PERISTALTIC_PUMP_MSG_TYPE, new_set_val);
         return;
     }
 
-    post_event('add_sys_log', {
-        source: '',
-        level: 'ERROR',
-        msg: 'Invalid Device Command, Type HELP to List Device Commands',
-    } as LogMsg);
+    mw_logger({ level: 'ERROR', msg: 'Invalid Device Command, Type HELP to List Device Commands' });
 }
 
-export function init_lt_ch000_serial_adapter() {
+export function init_lt_ch000_serial_adapter(_main_window: BrowserWindow) {
+    main_window = _main_window;
     ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, (_, data) => {
         const { port_name } = data;
-        serial_adapter = new SerialAdapter(port_name, new LtdDriver_0x87(LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, DEVICE_MODEL);
+        serial_adapter = new SerialAdapter(port_name, new LtdDriver_0x87(LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         serial_adapter.connect();
     });
     ipcMain.on(`${DEVICE_MODEL}_serial_port_disconnect`, () => {
@@ -172,22 +171,14 @@ export function init_lt_ch000_serial_adapter() {
     });
     ipcMain.on(`${DEVICE_MODEL}_exec_device_cmd`, (_, data) => {
         if (!serial_adapter) {
-            post_event('add_sys_log', {
-                source: '',
-                level: 'ERROR',
-                msg: 'No Connected Device',
-            } as LogMsg);
+            mw_logger({ level: 'ERROR', msg: 'No Connected Device' });
             // return;
         }
 
         const { cmd } = data;
         lt_ch000_cmd_exec(cmd);
     });
-    ipcMain.on('serial_port_scan', () => SerialAdapter.scan_ports(true));
-    SerialAdapter.scan_ports(true);
-    post_event('add_sys_log', {
-        source: '',
-        level: 'INFO',
-        msg: `Loaded Device Drivers: ${DEVICE_MODEL}`,
-    } as LogMsg);
+    ipcMain.on(`${DEVICE_MODEL}_serial_port_scan`, () => SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
+    SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger);
+    mw_logger({ level: 'INFO', msg: `Loaded Device Drivers: ${DEVICE_MODEL}` });
 }

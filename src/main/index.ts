@@ -3,8 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { init_lt_ch000_serial_adapter, lt_ch000_main_to_renderer_ipc_bridge } from './device_drivers/lt_ch000';
-import { subscribe } from '../common/mediator';
+import { init_lt_ch000_serial_adapter } from './device_drivers/lt_ch000';
+import { init_fsio } from './fsio';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -34,9 +34,10 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
-  setup_main_to_renderer_ipc_bridge(mainWindow);
+  // init routine
+  init_fsio(mainWindow);
   setTimeout(() => {
-    init_lt_ch000_serial_adapter();
+    init_lt_ch000_serial_adapter(mainWindow);
   }, 1000);
 }
 
@@ -56,12 +57,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-function setup_main_to_renderer_ipc_bridge(main_window: BrowserWindow) {
-  // main -> renderer ipc bridge
-  [
-    ...lt_ch000_main_to_renderer_ipc_bridge,
-    'add_sys_log',
-    'detected_ports',
-  ].forEach(event_type => subscribe(event_type, `${event_type}_ipc_bridge`, args => main_window.webContents.send(event_type, args)));
-}

@@ -2,31 +2,25 @@
 
 import { onMounted, ref, inject } from 'vue';
 
-import { LogMsg } from '@common/models';
 import { subscribe, post_event } from '@common/mediator';
-import { electron_renderer_send } from '@renderer/lib/util';
+import { add_log, electron_renderer_send } from '@renderer/lib/util';
 import DeviceLogs from './DeviceLogs.vue';
 import DeviceConnector from './DeviceConnector.vue';
 
 const device_model = inject('device_model');
-const panel_pos_ref = ref('-50vw');
-const cmd_ref = ref('');
+const panel_pos = ref('-50vw');
+const cmd = ref('');
 
 function submit_cmd() {
-    const cmd = cmd_ref.value.toUpperCase();
-    if (cmd === 'HELP') {
-        window.electron?.ipcRenderer.invoke(`${device_model}_get_device_cmd_help`).then((cmd_help: string[]) => {
-            post_event('add_sys_log', {
-                source: '',
-                level: '',
-                msg: cmd_help.join('\n'),
-            } as LogMsg);
-        });
+    const _cmd = cmd.value.toUpperCase();
+    if (_cmd === 'HELP') {
+        // write help logs to logs panel without tracking it
+        window.electron?.ipcRenderer.invoke(`${device_model}_get_device_cmd_help`).then((cmd_help: string[]) => post_event('add_sys_log', { level: '', msg: cmd_help.join('\n') }));
         return;
     }
 
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd });
-    cmd_ref.value = '';
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: _cmd });
+    cmd.value = '';
 }
 
 onMounted(() => {
@@ -35,13 +29,9 @@ onMounted(() => {
             '8px': '-50vw',
             '-50vw': '8px',
         };
-        panel_pos_ref.value = values_map[panel_pos_ref.value];
+        panel_pos.value = values_map[panel_pos.value];
     });
-    post_event('add_sys_log', {
-        source: '',
-        level: 'INFO',
-        msg: 'Type HELP to List Available Commands',
-    } as LogMsg);
+    add_log({ level: 'INFO', msg: 'Type HELP to List Available Commands' });
 });
 
 </script>
@@ -55,7 +45,7 @@ onMounted(() => {
         <DeviceLogs />
         <div id="control_cmd_cont">
             <input type="text" style="width: 120px; margin-right: 4px;" readonly value="CHX (local)> " />
-            <input type="text" v-model="cmd_ref" style="flex-grow: 1;" @keyup.enter="submit_cmd()" />
+            <input type="text" v-model="cmd" style="flex-grow: 1;" @keyup.enter="submit_cmd()" />
         </div>
     </div>
 </template>
@@ -89,7 +79,7 @@ onMounted(() => {
 #control_panel_cont {
     position: absolute;
     width: 96%;
-    left: v-bind(panel_pos_ref);
+    left: v-bind(panel_pos);
     height: calc(100% - 32px);
     top: 12px;
     background-color: var(--light-bg-color);
@@ -111,16 +101,6 @@ onMounted(() => {
     align-items: center;
     border-bottom: 2px solid var(--empty-gauge-color);
     margin-bottom: 8px;
-}
-
-#control_panel_header svg {
-    cursor: pointer;
-    transition: 0.3s ease;
-    font-size: 24px;
-}
-
-#control_panel_header svg:hover {
-    color: var(--accent-color);
 }
 
 #control_panel_header h1 {
