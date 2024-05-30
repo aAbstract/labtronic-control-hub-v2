@@ -6,6 +6,7 @@ import NavBarIcon from './NavBarIcon.vue';
 import SquareTerminalIcon from '@renderer/components/icons/SquareTerminal.vue';
 import SettingsIcon from '@renderer/components/icons/Settings.vue';
 import DatabaseIcon from '@renderer/components/icons/Database.vue';
+import BookOpenCover from '@renderer/components/icons/BookOpenCover.vue';
 import CircleXmark from '@renderer/components/icons/CircleXmark.vue';
 import { NavMenuItem } from '@common/models';
 import { post_event, subscribe } from '@common/mediator';
@@ -22,6 +23,11 @@ const MENU_ITEMS: NavMenuItem[] = [
         menu_action() { post_event('toggle_data_panel', {}) },
     },
     {
+        label: 'MANUAL',
+        icon: BookOpenCover,
+        menu_action() { post_event('toggle_dmp', {}) },
+    },
+    {
         label: 'SETTINGS',
         icon: SettingsIcon,
         menu_action() { post_event('toggle_settings_panel', {}) },
@@ -33,10 +39,10 @@ const EXIT_MENU_ITEM: NavMenuItem = {
     menu_action() { },
     // menu_action() { exlectron_renderer_exec({ cmd: 'EXIT' }) },
 }
-const active_flags = ref([false, false, false]);
+const active_flags = ref(MENU_ITEMS.map(_ => false));
 
 function trigger_icon_active_flag(index: number) {
-    const new_active_flags = [false, false, false];
+    const new_active_flags = MENU_ITEMS.map(_ => false);
     new_active_flags[index] = !active_flags.value[index];
     active_flags.value = new_active_flags;
 }
@@ -44,7 +50,8 @@ function trigger_icon_active_flag(index: number) {
 onMounted(() => {
     subscribe('toggle_control_panel', 'toggle_control_panel_icon', _ => trigger_icon_active_flag(0));
     subscribe('toggle_data_panel', 'toggle_data_panel_icon', _ => trigger_icon_active_flag(1));
-    // subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag(2));
+    subscribe('toggle_dmp', 'toggle_dmp_icon', _ => trigger_icon_active_flag(2));
+    subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag(3));
 });
 
 </script>

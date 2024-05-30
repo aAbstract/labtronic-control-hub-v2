@@ -30,7 +30,7 @@ onMounted(() => device_model.value = inject('device_model') as string);
             <div class="tags_sec">
                 <!-- <FontAwesomeIcon class="right_sec_icon" :icon="['fa-solid', 'maximize']" />
                 <FontAwesomeIcon class="right_sec_icon" :icon="['fa-solid', 'fa-question-circle']" /> -->
-                <img id="lab_tronic_logo" src="/images/logo_dark_theme.png" alt="LabTronic">
+                <img style="user-select: none;" id="lab_tronic_logo" src="/images/logo_dark_theme.png" alt="LabTronic">
             </div>
         </div>
     </div>

@@ -117,7 +117,7 @@ onMounted(() => {
 
 #device_state_panel {
     height: 100%;
-    flex-grow: 1;
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;

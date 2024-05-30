@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 
 import { init_lt_ch000_serial_adapter } from './device_drivers/lt_ch000';
 import { init_fsio } from './fsio';
+import { init_chx_settings } from './chx_settings';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -36,6 +37,7 @@ function createWindow(): void {
 
   // init routine
   init_fsio(mainWindow);
+  init_chx_settings(mainWindow);
   setTimeout(() => {
     init_lt_ch000_serial_adapter(mainWindow);
   }, 1000);

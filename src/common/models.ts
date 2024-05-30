@@ -90,3 +90,7 @@ export interface DmtbRow {
     msg_value: number;
     b64_msg_value: string;
 };
+
+export interface CHXSettings {
+    labtronic_cdn_base_url: string;
+};

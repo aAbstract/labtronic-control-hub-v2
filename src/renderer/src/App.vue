@@ -9,8 +9,13 @@ import TerminalPanel from '@renderer/components/DeviceTerminal/TerminalPanel.vue
 import DeviceStatePanel from '@renderer/components/DeviceStatePanel/DeviceStatePanel.vue';
 import DeviceModelPanel from '@renderer/components/DeviceModelPanel/DeviceModelPanel.vue';
 import DataPanel from './components/DataPanel/DataPanel.vue';
+import SettingsPanel from './components/SettingsPanel.vue';
 import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
+import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
+import { CHXSettings } from '@common/models';
+import { set_base_url, inject_source_csp } from './lib/lt_cdn_api';
+import { post_event } from '@common/mediator';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -31,6 +36,12 @@ function load_theme(theme: Record<string, string>) {
 
 onBeforeMount(() => {
   load_theme(APP_THEME);
+  window.electron?.ipcRenderer.invoke('get_chx_settings').then((chx_settings: CHXSettings) => {
+    const { labtronic_cdn_base_url } = chx_settings;
+    inject_source_csp(labtronic_cdn_base_url);
+    set_base_url(labtronic_cdn_base_url);
+    post_event('chx_settings_loaded', {});
+  });
 });
 
 </script>
@@ -41,7 +52,7 @@ onBeforeMount(() => {
     <Toast />
     <div id="main_panel">
       <NavBar />
-      <div id="slider_panel_cont">
+      <div id="left_panel_cont">
         <div id="model_control_cont">
           <div style="flex-grow: 1;"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
@@ -50,8 +61,12 @@ onBeforeMount(() => {
         </div>
         <TerminalPanel />
         <DataPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
+        <SettingsPanel />
       </div>
-      <DeviceStatePanel />
+      <div id="right_panel_cont">
+        <DeviceStatePanel />
+        <DeviceManualPanel />
+      </div>
     </div>
   </div>
 </template>
@@ -62,14 +77,21 @@ onBeforeMount(() => {
   height: 100%;
 }
 
-#slider_panel_cont {
+#right_panel_cont {
+  position: relative;
+  flex-grow: 1;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+#left_panel_cont {
   position: relative;
   min-width: 40vw;
   width: 40vw;
   height: 100%;
 }
 
-#slider_panel_cont #model_control_cont {
+#left_panel_cont #model_control_cont {
   width: 100%;
   height: 100%;
   display: flex;

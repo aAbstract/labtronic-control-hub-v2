@@ -38,3 +38,28 @@
 //     labels: data_filtered.map(x => x.sn),
 //     datasets: chart_params_list,
 // };
+
+// session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+//   callback({
+//     responseHeaders: Object.assign({
+//       'Content-Security-Policy': [
+//         "default-src 'self' 'unsafe-inline' http://127.0.0.1:8090",
+//         "script-src 'self'",
+//         "style-src 'self' 'unsafe-inline'",
+//         "connect-src 'self' http://127.0.0.1:8090",
+//         "img-src 'self' http://127.0.0.1:8090",
+//       ]
+//     }, details.responseHeaders)
+//   });
+// });
+
+// <!-- content="default-src 'self'; connect-src 'self' http://127.0.0.1:8090" -->
+// <!-- <meta http-equiv="Content-Security-Policy" content="
+//   default-src 'self';
+//   script-src 'self';
+//   style-src 'self' 'unsafe-inline';
+//   connect-src 'self' http://127.0.0.1:8090;
+//   img-src 'self' http://127.0.0.1:8090;
+// " /> -->
+// <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" /> -->
+// <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';connect-src 'self' http://127.0.0.1:8090;img-src 'self' http://127.0.0.1:8090"> -->
