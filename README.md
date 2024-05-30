@@ -35,3 +35,8 @@ ElectronJS was used to access device native functionality.
 <p align="center">
     <img src="screenshot_2.png" alt="Screenshot_2" />
 </p>
+
+## Device Manual Panel
+<p align="center">
+    <img src="screenshot_3.png" alt="Screenshot_3" />
+</p>
