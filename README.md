@@ -19,12 +19,12 @@ ElectronJS was used to access device native functionality.
 </a>
 
 ## Features
-1. GUI Device Control
-2. Display Device Readings
-3. Connected to LabTronic Cloud CDN
-4. Device Readings Database
-5. Cloud Device Control **TODO**
-6. Export Data, Graphs, Insights
+1. [x] GUI Device Control
+2. [x] Display Device Readings
+3. [x] Connected to LabTronic Cloud CDN
+4. [x] Device Readings Database
+5. [ ] Cloud Device Control
+6. [x] Export Data, Graphs, Insights
 
 ## Main Screen
 <p align="center">
