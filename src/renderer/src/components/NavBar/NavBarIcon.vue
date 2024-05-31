@@ -10,11 +10,21 @@ const icon_class = computed(() => props.is_active ? 'nav_bar_icon_cont nav_bar_i
 const font_color = document.documentElement.style.getPropertyValue('--font-color');
 const accent_color = document.documentElement.style.getPropertyValue('--accent-color');
 const icon_fill_color = computed(() => props.is_active ? accent_color : font_color);
+const tooltip_pt = {
+    text: {
+        style: `color: var(--accent-color);
+        padding: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: var(--light-bg-shadow-color);`
+    },
+    arrow: { style: 'border-right-color: var(--light-bg-shadow-color);' },
+};
 
 </script>
 
 <template>
-    <div :class="icon_class" @click="menu_item.menu_action()">
+    <div :class="icon_class" @click="menu_item.menu_action()" v-tooltip="{ value: menu_item.label, pt: tooltip_pt }">
         <component class="menu_icon" :is="menu_item.icon" :fill_color="icon_fill_color" />
     </div>
 </template>

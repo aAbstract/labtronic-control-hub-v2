@@ -55,9 +55,9 @@ export async function get_fake_manual(_manual_id: string): Promise<_Result> {
     return { ok: json_res };
 }
 
-export async function get_manual(device_product_id: string): Promise<_Result> {
+export async function get_manual(device_model: string): Promise<_Result> {
     // TODO-LATER: optimize this function
-    const device_id_res = await make_fetch_request('/capi/manuals/get-device-id', { method: 'POST', body: JSON.stringify({ device_product_id }) });
+    const device_id_res = await make_fetch_request('/capi/manuals/get-device-id', { method: 'POST', body: JSON.stringify({ device_model }) });
     if (device_id_res.err)
         return device_id_res;
     const { device_id } = device_id_res.ok;

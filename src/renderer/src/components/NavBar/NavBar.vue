@@ -13,17 +13,17 @@ import { post_event, subscribe } from '@common/mediator';
 
 const MENU_ITEMS: NavMenuItem[] = [
     {
-        label: 'CONTROL',
+        label: 'DEVICE TERMINAL',
         icon: SquareTerminalIcon,
         menu_action() { post_event('toggle_control_panel', {}) },
     },
     {
-        label: 'DATA',
+        label: 'DATA PANEL',
         icon: DatabaseIcon,
         menu_action() { post_event('toggle_data_panel', {}) },
     },
     {
-        label: 'MANUAL',
+        label: 'DEVICE MANUAL',
         icon: BookOpenCover,
         menu_action() { post_event('toggle_dmp', {}) },
     },
