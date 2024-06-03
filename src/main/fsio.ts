@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, Rectangle } from "electron";
 import { dialog, BrowserWindow, SaveDialogOptions, OpenDialogOptions } from "electron";
 import { DmtbRow, Result } from "../common/models";
 import pcsv from 'papaparse';
@@ -16,7 +16,7 @@ function export_device_data(main_window: BrowserWindow, device_data: DmtbRow[]) 
     dialog.showSaveDialog(main_window, options).then(res => {
         if (res.canceled || !res.filePath)
             return;
-        fs.writeFile(res.filePath, pcsv.unparse(device_data), (err) => {
+        fs.writeFile(res.filePath + '.csv', pcsv.unparse(device_data), (err) => {
             const fsio_res: Result<string> = err ? { err: err.message } : { ok: `Device Data Saved to: ${res.filePath}` };
             main_window.webContents.send('export_device_data_res', fsio_res);
         });
@@ -50,10 +50,30 @@ function import_device_data(main_window: BrowserWindow) {
     });
 }
 
+function save_screenshot(main_window: BrowserWindow, comp_rect: Rectangle) {
+    const options: SaveDialogOptions = {
+        title: 'CHX Screenshot',
+        filters: [
+            { name: 'PNG Files', extensions: ['png'] },
+            { name: 'All Files', extensions: ['*'] },
+        ],
+    };
+
+    dialog.showSaveDialog(main_window, options).then(res => {
+        if (res.canceled || !res.filePath)
+            return;
+        const { filePath } = res;
+        main_window.webContents.capturePage(comp_rect).then(cap_img => {
+            fs.writeFile(filePath + '.png', cap_img.toPNG(), (err) => {
+                const fsio_res: Result<string> = err ? { err: err.message } : { ok: `Screenshot Saved to: ${res.filePath}` };
+                main_window.webContents.send('save_screenshot_res', fsio_res);
+            });
+        });
+    });
+}
+
 export function init_fsio(main_window: BrowserWindow) {
     ipcMain.on('import_device_data', () => import_device_data(main_window));
-    ipcMain.on('export_device_data', (_, data) => {
-        const { device_data } = data;
-        export_device_data(main_window, device_data);
-    });
+    ipcMain.on('export_device_data', (_, data) => export_device_data(main_window, data.device_data));
+    ipcMain.on('save_screenshot', (_, data) => save_screenshot(main_window, data.comp_rect));
 }

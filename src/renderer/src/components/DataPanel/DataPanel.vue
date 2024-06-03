@@ -9,10 +9,11 @@ import Chart from 'primevue/chart';
 import { ChartOptions, ChartData } from 'chart.js';
 import { useToast } from 'primevue/usetoast';
 
-import { subscribe } from '@common/mediator';
-import { DeviceMsg, DmtbRow, Result, DropdownOption, MsgTypeConfig } from '@common/models';
+import { subscribe, post_event } from '@common/mediator';
+import { DeviceMsg, DmtbRow, Result, DropdownOption, MsgTypeConfig, AlertConfig } from '@common/models';
 import { DeviceUIConfig, ChartParams } from '@renderer/lib/device_ui_config';
 import { electron_renderer_send } from '@renderer/lib/util';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 const DMTB_ROWS_MAX = 100;
 const _DP_CONTROLS_WIDTH = 12;
@@ -138,6 +139,23 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
+    subscribe('nav_bar_exit', 'nav_bar_exit_data_panel', () => {
+        if (data_cache.length === 0) {
+            electron_renderer_send('exit', {});
+            return;
+        }
+        const dialog_config: AlertConfig = {
+            title: 'Warning',
+            msg_severity: 'warn',
+            msg_body: 'Device Data Might be Lost, if not Saved',
+            btns_config: [
+                { btn_text: 'Cancel', btn_type: 'secondary', btn_action: () => post_event('hide_alert', {}) },
+                { btn_text: 'Exit', btn_type: 'info', btn_action: () => electron_renderer_send('exit', {}) },
+            ],
+        };
+        post_event('show_alert', { dialog_config });
+    });
+
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: DeviceMsg = data.device_msg;
         data_cache.push({
@@ -202,7 +220,7 @@ onMounted(() => {
         <div id="data_panel_header">
             <h1>DATA PANEL</h1>
         </div>
-        <div id="device_msgs_cont">
+        <div id="device_msgs_cont" v-on="screenshot_handlers">
             <div class="dmtb_row">
                 <span style="flex-grow: 1;">#SN</span>
                 <span style="width: 10vw;">DATETIME</span>
@@ -226,7 +244,7 @@ onMounted(() => {
             <Button class="data_panel_btn_warn" outlined label="CLEAR" icon="pi pi-trash" @click="clear_filtered_data_plot()" />
             <Button class="data_panel_btn" outlined label="PLOT" icon="pi pi-chart-bar" @click="plot_filtered_data()" />
         </div>
-        <Chart id="data_panel_chart" type="line" :data="chart_data" :options="chart_opts" />
+        <Chart id="data_panel_chart" type="line" v-on="screenshot_handlers" :data="chart_data" :options="chart_opts" />
     </div>
 </template>
 
@@ -235,6 +253,7 @@ onMounted(() => {
     width: 100%;
     min-height: 50%;
     height: 50%;
+    border-radius: 8px;
 }
 
 .data_panel_btn {

@@ -172,7 +172,7 @@ export function init_lt_ch000_serial_adapter(_main_window: BrowserWindow) {
     ipcMain.on(`${DEVICE_MODEL}_exec_device_cmd`, (_, data) => {
         if (!serial_adapter) {
             mw_logger({ level: 'ERROR', msg: 'No Connected Device' });
-            // return;
+            return;
         }
 
         const { cmd } = data;

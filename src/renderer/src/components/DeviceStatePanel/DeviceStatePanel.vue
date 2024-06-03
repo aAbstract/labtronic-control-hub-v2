@@ -8,6 +8,7 @@ import SingleChart from '@renderer/components/Charts/SingleChart.vue';
 import MultiChart from '@renderer/components/Charts/MultiChart.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { post_event } from '@common/mediator';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 const device_model = inject('device_model') as string;
 const device_config = shallowRef<MsgTypeConfig[]>([]);
@@ -54,7 +55,7 @@ onMounted(() => {
 <template>
     <div id="device_state_panel">
         <div style="height: 8px;"></div>
-        <div id="readings_grid">
+        <div id="readings_grid" v-on="screenshot_handlers">
             <h4 id="rg_title">Device Readings</h4>
             <div id="readings_cont">
                 <div class="reading_cont" v-for="config in read_device_config" :style="{ color: msg_type_color_map[config.msg_type] }">
@@ -64,9 +65,9 @@ onMounted(() => {
             </div>
         </div>
         <div style="height: 8px;"></div>
-        <SingleChart class="device_state_chart" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
+        <SingleChart class="device_state_chart" v-on="screenshot_handlers" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
         <div style="height: 12px;"></div>
-        <MultiChart class="device_state_chart" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
+        <MultiChart class="device_state_chart" v-on="screenshot_handlers" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
     </div>
 </template>
 

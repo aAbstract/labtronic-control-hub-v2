@@ -6,6 +6,7 @@ import { add_log } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import * as GfxApi from '@renderer/lib/gfx_api';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 const props = defineProps<{ device_ui_config: DeviceUIConfig }>();
 const device_model = inject('device_model') as string;
@@ -43,7 +44,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-    <div id="main_canvas_cont">
+    <div id="main_canvas_cont" v-on="screenshot_handlers">
         <img id="device_img" :src="device_model_labeled_img" alt="Device Solid Model" @load="canvas_setup()">
         <canvas id="device_canvas" @click="GfxApi.debug_canvas_click"></canvas>
     </div>
@@ -51,19 +52,19 @@ onBeforeMount(() => {
 
 <style scoped>
 #main_canvas_cont {
-    height: fit-content;
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
+    margin-bottom: 16px;
+    width: 96%;
+    border-radius: 8px;
 }
 
 #device_img,
 #device_canvas {
-    width: 96%;
-    margin: 16px 0px;
+    width: 100%;
     border-radius: 8px;
 }
 

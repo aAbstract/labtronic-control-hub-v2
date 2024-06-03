@@ -6,6 +6,7 @@ import moment from 'moment';
 import { LogMsg, DeviceMsg } from '@common/models';
 import { add_log } from '@renderer/lib/util';
 import { subscribe } from '@common/mediator';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 let logs_cache: LogMsg[] = [];
 const logs_to_render = ref<LogMsg[]>([]);
@@ -41,19 +42,19 @@ onBeforeMount(() => {
         const device_msg = data.device_msg as DeviceMsg;
         const error_msg = (device_msg as any).error_msg;
         add_log({ level: 'ERROR', msg: error_msg });
-        // postx_event('show_msg_modal', {
+        // post_event('show_msg_modal', {
         //     severity: 'error',
         //     title: 'DEVICE ERROR',
         //     content: DEVICE_ERRORS[err_code],
         // });
-        // postx_event('set_device_status', { device_ok: false });
+        // post_event('set_device_status', { device_ok: false });
     });
 });
 
 </script>
 
 <template>
-    <div id="device_logs_cont">
+    <div id="device_logs_cont" v-on="screenshot_handlers">
         <div v-for="log in logs_to_render" class="log_msg">
             <span v-if="log.level">[{{ log.datetime?.split('T')[1] ?? 'NONE' }}]</span>
             <span v-if="log.level" :style="`color: ${tag_color_map[log.level]}; margin: 0px 4px;`">[{{ log.level }}]</span>

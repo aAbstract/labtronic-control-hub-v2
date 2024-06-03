@@ -7,6 +7,7 @@ import Button from 'primevue/button';
 
 import { electron_renderer_send } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 const MAX_PISP_VAL = 200;
 const device_model = inject('device_model');
@@ -58,7 +59,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="lt_ch000_control_main_cont">
+    <div id="lt_ch000_control_main_cont" v-on="screenshot_handlers">
         <div id="lt_ch000_knobs_cont">
             <Knob :strokeWidth="2" range-color="var(--empty-gauge-color)" value-color="var(--accent-color)" text-color="var(--accent-color)" :size="160" :model-value="pisp_knob_val" :min="0" :max="MAX_PISP_VAL" readonly />
             <Knob :strokeWidth="2" range-color="var(--empty-gauge-color)" value-color="var(--accent-color)" text-color="var(--accent-color)" :size="160" :model-value="perp_knob_val" :min="0" :max="3" readonly />

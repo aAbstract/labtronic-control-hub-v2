@@ -12,6 +12,7 @@ import DataPanel from '@renderer/components/DataPanel/DataPanel.vue';
 import SettingsPanel from '@renderer/components/SettingsPanel.vue';
 import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
 import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
+import Alert from '@renderer/components/Alert.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { CHXSettings } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
@@ -50,6 +51,7 @@ onBeforeMount(() => {
   <div id="app_shell">
     <TopBar />
     <Toast />
+    <Alert />
     <div id="main_panel">
       <NavBar />
       <div id="left_panel_cont">

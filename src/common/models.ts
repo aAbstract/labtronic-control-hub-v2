@@ -94,3 +94,16 @@ export interface DmtbRow {
 export interface CHXSettings {
     labtronic_cdn_base_url: string;
 };
+
+export interface AlertButtonConfig {
+    btn_text: string;
+    btn_type: 'info' | 'warning' | 'danger' | 'secondary';
+    btn_action: () => void;
+};
+
+export interface AlertConfig {
+    title: string;
+    msg_severity: "warn" | "success" | "info" | "error" | "secondary" | "contrast";
+    msg_body: string;
+    btns_config: AlertButtonConfig[];
+};

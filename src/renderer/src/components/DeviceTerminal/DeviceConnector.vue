@@ -5,7 +5,7 @@ import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 
 import { SerialPortMetaData, DropdownOption } from '@common/models';
-import { add_log } from '@renderer/lib/util';
+import { add_log, electron_renderer_send } from '@renderer/lib/util';
 
 const selected_port = ref();
 const port_opts = shallowRef<DropdownOption<string>[]>([]);
@@ -29,24 +29,12 @@ function device_connect_btn_click() {
             add_log({ level: 'ERROR', msg: 'No Port Selected' });
             return;
         }
-
-        if (!window.electron) {
-            add_log({ level: 'ERROR', msg: 'Operation Denied Browser Sandbox' });
-            return;
-        }
-
-        window.electron?.ipcRenderer.send(`${device_model}_serial_port_connect`, { port_name: selected_port.value });
-    } else {
-        window.electron?.ipcRenderer.send(`${device_model}_serial_port_disconnect`, {});
-    }
+        electron_renderer_send(`${device_model}_serial_port_connect`, { port_name: selected_port.value });
+    } else { electron_renderer_send(`${device_model}_serial_port_disconnect`, {}) }
 }
 
 function scan_serial_ports_btn_click() {
-    if (!window.electron) {
-        add_log({ level: 'ERROR', msg: 'Operation Denied Browser Sandbox' });
-        return;
-    }
-    window.electron?.ipcRenderer.send(`${device_model}_serial_port_scan`, {});
+    electron_renderer_send(`${device_model}_serial_port_scan`, {});
 }
 
 onBeforeMount(() => {

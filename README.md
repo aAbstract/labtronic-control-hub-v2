@@ -25,6 +25,7 @@ ElectronJS was used to access device native functionality.
 - [x] Device Readings Database
 - [ ] Cloud Device Control
 - [x] Export Data, Graphs, Insights
+- [x] Easy Lab Report Generation
 
 ## Main Screen
 <p align="center">

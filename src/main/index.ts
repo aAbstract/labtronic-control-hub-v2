@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -41,6 +41,7 @@ function createWindow(): void {
   setTimeout(() => {
     init_lt_ch000_serial_adapter(mainWindow);
   }, 1000);
+  ipcMain.on('exit', () => process.exit(0));
 }
 
 app.whenReady().then(() => {
