@@ -7,7 +7,7 @@ import Chart from 'primevue/chart';
 import { PlotSeries, DeviceMsg, MsgTypeConfig } from '@common/models';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import { subscribe } from '@common/mediator';
-import { add_log } from '@renderer/lib/util';
+import { add_log, electron_renderer_invoke } from '@renderer/lib/util';
 
 const CHART_POINTS_LIMIT = 100;
 const points_data: Record<number, PlotSeries> = {};
@@ -54,7 +54,9 @@ onMounted(() => {
     chart_opts.value = create_chart_options(chart_font_color, chart_grid_color);
 
     // auto construct points data cache struct using device driver config
-    window.electron?.ipcRenderer.invoke(`${device_model}_get_device_config`).then((device_config: MsgTypeConfig[]) => {
+    electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
+        if (!device_config)
+            return;
         const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
         active_msg_type = read_config[0].msg_type;
         read_config.forEach(_read_config => points_data[_read_config.msg_type] = { x: [], y: [] });

@@ -3,7 +3,7 @@
 import { onMounted, ref, inject } from 'vue';
 
 import { subscribe, post_event } from '@common/mediator';
-import { add_log, electron_renderer_send } from '@renderer/lib/util';
+import { add_log, electron_renderer_send, electron_renderer_invoke } from '@renderer/lib/util';
 import DeviceLogs from './DeviceLogs.vue';
 import DeviceConnector from './DeviceConnector.vue';
 
@@ -13,14 +13,17 @@ const cmd = ref('');
 
 function submit_cmd() {
     const _cmd = cmd.value.toUpperCase();
+    cmd.value = '';
     if (_cmd === 'HELP') {
         // write help logs to logs panel without tracking it
-        window.electron?.ipcRenderer.invoke(`${device_model}_get_device_cmd_help`).then((cmd_help: string[]) => post_event('add_sys_log', { level: '', msg: cmd_help.join('\n') }));
+        electron_renderer_invoke<string[]>(`${device_model}_get_device_cmd_help`).then(cmd_help => {
+            if (!cmd_help)
+                return;
+            post_event('add_sys_log', { level: '', msg: cmd_help.join('\n') });
+        });
         return;
     }
-
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: _cmd });
-    cmd.value = '';
 }
 
 onMounted(() => {

@@ -9,6 +9,7 @@ import MultiChart from '@renderer/components/Charts/MultiChart.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
+import { electron_renderer_invoke } from '@renderer/lib/util';
 
 const device_model = inject('device_model') as string;
 const device_config = shallowRef<MsgTypeConfig[]>([]);
@@ -41,7 +42,11 @@ function switch_multi_channels_plot() {
 }
 
 onMounted(() => {
-    window.electron?.ipcRenderer.invoke(`${device_model}_get_device_config`).then(_device_config => device_config.value = _device_config);
+    electron_renderer_invoke<any>(`${device_model}_get_device_config`).then(_device_config => {
+        if (!_device_config)
+            return;
+        device_config.value = _device_config;
+    });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: DeviceMsg = data.device_msg;

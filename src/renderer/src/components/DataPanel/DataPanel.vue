@@ -12,7 +12,7 @@ import { useToast } from 'primevue/usetoast';
 import { subscribe, post_event } from '@common/mediator';
 import { DeviceMsg, DmtbRow, Result, DropdownOption, MsgTypeConfig, AlertConfig } from '@common/models';
 import { DeviceUIConfig, ChartParams } from '@renderer/lib/device_ui_config';
-import { electron_renderer_send } from '@renderer/lib/util';
+import { electron_renderer_send, electron_renderer_invoke } from '@renderer/lib/util';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 const DMTB_ROWS_MAX = 100;
@@ -193,7 +193,9 @@ onMounted(() => {
     });
 
     // get target variables using device driver config
-    window.electron?.ipcRenderer.invoke(`${device_model}_get_device_config`).then((device_config: MsgTypeConfig[]) => {
+    electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
+        if (!device_config)
+            return;
         const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
         target_vars_opts.value = [
             { label: 'ALL', value: -1 },

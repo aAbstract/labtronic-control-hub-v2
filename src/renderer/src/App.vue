@@ -17,6 +17,7 @@ import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { CHXSettings } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event } from '@common/mediator';
+import { electron_renderer_invoke } from '@renderer/lib/util';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -37,7 +38,9 @@ function load_theme(theme: Record<string, string>) {
 
 onBeforeMount(() => {
   load_theme(APP_THEME);
-  window.electron?.ipcRenderer.invoke('get_chx_settings').then((chx_settings: CHXSettings) => {
+  electron_renderer_invoke<CHXSettings>('get_chx_settings').then(chx_settings => {
+    if (!chx_settings)
+      return;
     const { labtronic_cdn_base_url } = chx_settings;
     inject_source_csp(labtronic_cdn_base_url);
     set_base_url(labtronic_cdn_base_url);

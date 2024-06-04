@@ -20,6 +20,7 @@ const dropdown_pt: any = {
     emptyMessage: { style: 'color: var(--font-color);' },
     item: { style: 'background-color: var(--light-bg-color); color: var(--font-color);' },
     trigger: { style: 'width: fit-content; padding-right: 8px;' },
+    list: { style: 'padding: 0px;' },
 };
 
 // evnet handlers
