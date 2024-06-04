@@ -27,6 +27,8 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
+    subscribe('hide_settings_panel', 'hide_settings_panel', _ => panel_pos.value = '-50vw');
+
     subscribe('chx_settings_loaded', 'chx_settings_loaded_settings_panel', _ => cdn_server.value = get_base_url());
 });
 

@@ -139,6 +139,8 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
+    subscribe('hide_data_panel', 'hide_data_panel', _ => panel_pos.value = '-50vw');
+
     subscribe('nav_bar_exit', 'nav_bar_exit_data_panel', () => {
         if (data_cache.length === 0) {
             electron_renderer_send('exit', {});

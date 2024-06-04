@@ -31,6 +31,7 @@ onMounted(() => {
         };
         panel_pos.value = values_map[panel_pos.value];
     });
+    subscribe('hide_control_panel', 'hide_control_panel', _ => panel_pos.value = '-50vw');
     add_log({ level: 'INFO', msg: 'Type HELP to List Available Commands' });
 });
 

@@ -19,12 +19,20 @@ const MENU_ITEMS: NavMenuItem[] = [
     {
         label: 'DEVICE TERMINAL',
         icon: SquareTerminalIcon,
-        menu_action() { post_event('toggle_control_panel', {}) },
+        menu_action() {
+            post_event('toggle_control_panel', {});
+            post_event('hide_data_panel', {});
+            post_event('hide_settings_panel', {});
+        },
     },
     {
         label: 'DATA PANEL',
         icon: DatabaseIcon,
-        menu_action() { post_event('toggle_data_panel', {}) },
+        menu_action() {
+            post_event('toggle_data_panel', {});
+            post_event('hide_control_panel', {});
+            post_event('hide_settings_panel', {});
+        },
     },
     {
         label: 'DEVICE MANUAL',
@@ -45,7 +53,11 @@ const MENU_ITEMS: NavMenuItem[] = [
     {
         label: 'SETTINGS',
         icon: SettingsIcon,
-        menu_action() { post_event('toggle_settings_panel', {}) },
+        menu_action() {
+            post_event('toggle_settings_panel', {});
+            post_event('hide_control_panel', {});
+            post_event('hide_data_panel', {});
+        },
     },
 ];
 const EXIT_MENU_ITEM: NavMenuItem = {
@@ -55,18 +67,25 @@ const EXIT_MENU_ITEM: NavMenuItem = {
 }
 const active_flags = ref(MENU_ITEMS.map(_ => false));
 
-function trigger_icon_active_flag(index: number) {
-    const new_active_flags = MENU_ITEMS.map(_ => false);
-    new_active_flags[index] = !active_flags.value[index];
-    active_flags.value = new_active_flags;
+function trigger_icon_active_flag_reset(index: number) {
+    const RESET_LIST = [0, 1, 4];
+    if (!RESET_LIST.includes(index))
+        return;
+
+    for (let flag_idx of RESET_LIST) {
+        if (flag_idx === index)
+            active_flags.value[flag_idx] = !active_flags.value[flag_idx];
+        else
+            active_flags.value[flag_idx] = false;
+    }
 }
 
 onMounted(() => {
     active_flags.value[3] = screenshot_mode();
-    subscribe('toggle_control_panel', 'toggle_control_panel_icon', _ => trigger_icon_active_flag(0));
-    subscribe('toggle_data_panel', 'toggle_data_panel_icon', _ => trigger_icon_active_flag(1));
-    subscribe('toggle_dmp', 'toggle_dmp_icon', _ => trigger_icon_active_flag(2));
-    subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag(4));
+    subscribe('toggle_control_panel', 'toggle_control_panel_icon', _ => trigger_icon_active_flag_reset(0));
+    subscribe('toggle_data_panel', 'toggle_data_panel_icon', _ => trigger_icon_active_flag_reset(1));
+    subscribe('toggle_dmp', 'toggle_dmp_icon', _ => active_flags.value[2] = !active_flags.value[2]);
+    subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag_reset(4));
 });
 
 </script>
