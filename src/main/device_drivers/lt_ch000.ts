@@ -77,7 +77,7 @@ const LT_CH000_DRIVER_CONFIG: MsgTypeConfig[] = [
 //      [x] `${DEVICE_MODEL}_device_connected`
 //      [x] `${DEVICE_MODEL}_device_disconnected`
 //      [x] `${DEVICE_MODEL}_device_msg`
-//      [-] `${DEVICE_MODEL}_device_error`
+//      [x] `${DEVICE_MODEL}_device_error`
 // renderer -> main ipc signals
 //      [x] `${DEVICE_MODEL}_get_device_config`
 //      [x] `${DEVICE_MODEL}_get_device_cmd_help`
@@ -115,10 +115,11 @@ function lt_ch000_cmd_exec(cmd: string) {
         'CAB': ['CALIBRATE'],
         'SI': ['SET', 'PISTON_PUMP'],
         'SE': ['SET', 'PERISTALTIC_PUMP'],
-        'RECOVER': ['RV'], // not implemented
-        'ALARM': ['AL'], // not implemented
+        'RV': ['RECOVER'],
+        'AL': ['ALARM'], // not implemented
     };
 
+    // substitute command alias
     let cmd_parts = cmd.split(' ');
     const cmd_part_1 = cmd_parts[0];
     if (cmd_part_1 in CMD_ALIAS_LIST)
@@ -126,6 +127,24 @@ function lt_ch000_cmd_exec(cmd: string) {
 
     if (cmd_parts[0] === 'CALIBRATE') {
         serial_adapter?.send_packet(WRITE_RESET_SCALE_MSG_TYPE, 0xFF);
+        return;
+    }
+
+    if (cmd_parts[0] === 'RECOVER') {
+        // disconnect
+        if (!serial_adapter) {
+            mw_logger({ level: 'ERROR', msg: 'Undefined Serial Adapter' });
+            return;
+        }
+        const port_name = serial_adapter.get_port_name();
+        serial_adapter.disconnect();
+        serial_adapter = null;
+
+        // connect
+        setTimeout(() => {
+            serial_adapter = new SerialAdapter(port_name, new LtdDriver_0x87(LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
+            serial_adapter.connect();
+        }, 1000);
         return;
     }
 

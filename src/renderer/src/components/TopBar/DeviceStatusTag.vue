@@ -1,26 +1,33 @@
 <script setup lang="ts">
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 
 import PulseIcon from '@renderer/components/icons/Pulse.vue';
 import { subscribe } from '@common/mediator';
+import { DeviceStatus } from '@common/models';
 
 defineProps<{ tag_height: string, icon_size: string }>();
 
-const is_device_ok = ref(true);
-const tag_txt = computed(() => is_device_ok.value ? 'OK' : 'ERROR');
-const tag_color = computed(() => is_device_ok.value ? '#64DD17' : '#DD2C00');
+const STATUS_COLOR_MAP: Record<DeviceStatus, string> = {
+    'OK': '#64DD17',
+    'ERROR': '#DD2C00',
+    'UNKNOWN': '#FFAB00',
+
+};
+const device_status = ref<DeviceStatus>('UNKNOWN');
+const device_model = inject('device_model');
 
 onMounted(() => {
-    subscribe('set_device_status', 'set_device_status', args => is_device_ok.value = args.device_ok);
+    subscribe('set_device_status', 'set_device_status', args => device_status.value = args.device_status);
+    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => device_status.value = 'OK');
 });
 
 </script>
 
 <template>
     <div id="dev_status_tag">
-        <PulseIcon id="pulse_icon" :fill_color="tag_color" />
-        <span>{{ tag_txt }}</span>
+        <PulseIcon id="pulse_icon" :fill_color="STATUS_COLOR_MAP[device_status]" />
+        <span>{{ device_status === 'UNKNOWN' ? '--' : device_status }}</span>
     </div>
 </template>
 
@@ -40,7 +47,7 @@ onMounted(() => {
     color: var(--font-color);
     border-radius: 8px;
     margin: 0px 16px;
-    color: v-bind(tag_color);
+    color: v-bind(STATUS_COLOR_MAP[device_status]);
     height: v-bind(tag_height);
 }
 

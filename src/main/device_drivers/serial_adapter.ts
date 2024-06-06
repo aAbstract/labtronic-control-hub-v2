@@ -143,4 +143,8 @@ export class SerialAdapter {
         this.serial_port.write(device_packet);
         this.seq_number = (this.seq_number + 1) % 0xFFFF;
     }
+
+    get_port_name(): string {
+        return this.serial_port.path;
+    }
 }

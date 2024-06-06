@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onMounted, ref, shallowRef } from 'vue';
+import { onMounted, ref, shallowRef, inject } from 'vue';
 import Dialog from 'primevue/dialog';
 import Message from 'primevue/message';
 import Button from 'primevue/button';
@@ -9,6 +9,7 @@ import { subscribe } from '@common/mediator';
 import { AlertConfig } from '@common/models';
 
 const dialog_visible = ref(false);
+const device_model = inject('device_model');
 const dialog_config = shallowRef<AlertConfig>({
     title: 'Info',
     msg_severity: 'info',
@@ -26,6 +27,7 @@ onMounted(() => {
         dialog_visible.value = true;
     });
     subscribe('hide_alert', 'hide_alert', () => dialog_visible.value = false);
+    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => dialog_visible.value = false);
 });
 
 </script>

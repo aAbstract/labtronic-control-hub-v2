@@ -107,3 +107,5 @@ export interface AlertConfig {
     msg_body: string;
     btns_config: AlertButtonConfig[];
 };
+
+export type DeviceStatus = 'OK' | 'ERROR' | 'UNKNOWN';

@@ -3,6 +3,7 @@ import socket
 import code
 import math
 import readline
+import inspect
 from rlcompleter import Completer
 from test_driver import *
 
@@ -44,9 +45,23 @@ def write_test_error_packet():
     vspi_socket.send(packet)
 
 
+def write_error_packet(error_code: int):
+    error_codes = {
+        0xF0: 'Low Liquid in the tank',
+        0xF1: 'Stepper Motor Failed',
+        0xF2: 'Pressure Sensor Failed',
+        0xF3: 'Weight Meter Failed',
+        0xF4: 'Invalid Packet',
+        0xF5: 'Peristaltic Pump Failed',
+    }
+    if error_code in error_codes:
+        print(f'Writing error msg "{error_codes[error_code]}"')
+    error_packet = ltd_driver_0x87.encode_packet(0, TEST_DRIVER_CONFIG[8].msg_type, error_code).ok
+    vspi_socket.send(error_packet)
+
+
 def stream_sine_waves():
     x = 0
-    y_1 = 0
     while True:
         _theta = 2 * math.pi * x / 100
         y_wght = math.sin(_theta) * 1000 - 1
@@ -86,6 +101,22 @@ def read_packet():
     print(device_msg)
 
 
+def print_cli_funcs():
+    gsyms = globals().copy().items()
+    print('=' * 100)
+    for sym_name, sym_obj in gsyms:
+        if callable(sym_obj):
+            print(sym_name, inspect.signature(sym_obj))
+    print('=' * 100)
+
+
+def print_func_src(func):
+    if not callable(func):
+        print('Error this symbol is not callable')
+        return
+    print(inspect.getsource(func))
+
+
 def start_control_loop():
     while True:
         read_packet()
@@ -93,6 +124,7 @@ def start_control_loop():
 
 if __name__ == '__main__':
     vspi_connect()
+    print_cli_funcs()
     readline.set_completer(Completer().complete)
     readline.parse_and_bind("tab: complete")
     code.interact(local=locals())

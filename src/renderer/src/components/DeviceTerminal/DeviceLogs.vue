@@ -3,9 +3,9 @@
 import { onBeforeMount, ref, inject } from 'vue';
 import moment from 'moment';
 
-import { LogMsg, DeviceMsg } from '@common/models';
-import { add_log } from '@renderer/lib/util';
-import { subscribe } from '@common/mediator';
+import { LogMsg, DeviceMsg, AlertConfig, DeviceStatus } from '@common/models';
+import { add_log, electron_renderer_send } from '@renderer/lib/util';
+import { subscribe, post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 let logs_cache: LogMsg[] = [];
@@ -18,6 +18,12 @@ const tag_color_map = {
     'WARN': '#FFAB00',
     'ERROR': '#DD2C00',
 };
+
+function recover_device() {
+    const device_status: DeviceStatus = 'UNKNOWN';
+    post_event('set_device_status', { device_status });
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: 'RECOVER' });
+}
 
 onBeforeMount(() => {
     subscribe('add_sys_log', 'add_sys_log', args => {
@@ -42,12 +48,18 @@ onBeforeMount(() => {
         const device_msg = data.device_msg as DeviceMsg;
         const error_msg = (device_msg as any).error_msg;
         add_log({ level: 'ERROR', msg: error_msg });
-        // post_event('show_msg_modal', {
-        //     severity: 'error',
-        //     title: 'DEVICE ERROR',
-        //     content: DEVICE_ERRORS[err_code],
-        // });
-        // post_event('set_device_status', { device_ok: false });
+        const dialog_config: AlertConfig = {
+            title: 'Device Error',
+            msg_severity: 'error',
+            msg_body: `Device Error: ${error_msg}`,
+            btns_config: [
+                { btn_text: 'Ignore', btn_type: 'secondary', btn_action: () => post_event('hide_alert', {}) },
+                { btn_text: 'Recover', btn_type: 'info', btn_action: () => recover_device() },
+            ],
+        };
+        post_event('show_alert', { dialog_config });
+        const device_status: DeviceStatus = 'ERROR';
+        post_event('set_device_status', { device_status });
     });
 });
 
