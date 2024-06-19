@@ -1,7 +1,7 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver_0x87 } from "./ltd_driver_0x87";
-import { DataType, MsgTypeConfig, LogMsg } from '../../common/models';
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType } from '../../common/models';
 
 const DEVICE_MODEL = 'LT-CH000';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -96,8 +96,67 @@ const LT_CH000_DEVICE_CMD_HELP: string[] = [
     '=======================================================================================================',
 ];
 
+const LT_CH000_VCE_CONFIG: VceParamConfig[] = [
+    {
+        msg_type_config: {
+            msg_type: 0,
+            msg_name: 'PISTON_PUMP',
+            data_type: DataType.UINT,
+            size_bytes: 4,
+        },
+        param_symbol: '$I',
+        param_type: VceParamType.VCE_CONST,
+        desc: 'Current Piston Pump Control Parameter',
+    },
+    {
+        msg_type_config: {
+            msg_type: 1,
+            msg_name: 'PERISTALTIC_PUMP',
+            data_type: DataType.UINT,
+            size_bytes: 1,
+        },
+        param_symbol: '$E',
+        param_type: VceParamType.VCE_CONST,
+        desc: 'Current Peristaltic Pump Control Parameter',
+    },
+    {
+        msg_type_config: {
+            msg_type: 2,
+            msg_name: 'READ_WEIGHT',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+        },
+        param_symbol: '$W',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Weight of the Liquid in the Tank',
+    },
+    {
+        msg_type_config: {
+            msg_type: 3,
+            msg_name: 'READ_TEMPERATURE',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+        },
+        param_symbol: '$T',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Temperature of the Liquid in the Tank',
+    },
+    {
+        msg_type_config: {
+            msg_type: 4,
+            msg_name: 'READ_PRESSURE',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+        },
+        param_symbol: '$P',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Pressure of the Liquid in the Tank',
+    },
+];
+
 ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => LT_CH000_DRIVER_CONFIG);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_CH000_DEVICE_CMD_HELP);
+ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_CH000_VCE_CONFIG);
 
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;

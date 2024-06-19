@@ -6,7 +6,7 @@ import Button from 'primevue/button';
 import { subscribe } from '@common/mediator';
 import { get_base_url } from '@renderer/lib/lt_cdn_api';
 import { CHXSettings } from '@common/models';
-import { electron_renderer_send } from '@renderer/lib/util';
+import { electron_renderer_send, compute_tooltip_pt } from '@renderer/lib/util';
 
 const panel_pos = ref('-50vw');
 const cdn_server = ref('Loading...');
@@ -39,7 +39,7 @@ onMounted(() => {
         <div class="sp_section">
             <h1>
                 <span>CLOUD SETTINGS</span>
-                <Button icon="pi pi-save" @click="save_chx_settings()" rounded text />
+                <Button icon="pi pi-save" @click="save_chx_settings()" rounded text v-tooltip.top="{ value: 'SAVE SETTINGS', pt: compute_tooltip_pt('top') }" />
             </h1>
             <div class="controls_row">
                 <span>LabTronic CDN Server</span>

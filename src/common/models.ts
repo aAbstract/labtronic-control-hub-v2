@@ -91,6 +91,11 @@ export interface DmtbRow {
     b64_msg_value: string;
 };
 
+export interface CHXComputedParam {
+    param_name: string;
+    expr: string;
+};
+
 export interface CHXSettings {
     labtronic_cdn_base_url: string;
 };
@@ -109,3 +114,15 @@ export interface AlertConfig {
 };
 
 export type DeviceStatus = 'OK' | 'ERROR' | 'UNKNOWN';
+
+export enum VceParamType {
+    VCE_CONST = 0,
+    VCE_VAR = 1,
+};
+
+export interface VceParamConfig {
+    msg_type_config: MsgTypeConfig;
+    param_symbol: string;
+    param_type: VceParamType;
+    desc: string;
+};

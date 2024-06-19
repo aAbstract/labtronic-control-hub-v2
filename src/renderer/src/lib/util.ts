@@ -21,3 +21,22 @@ export async function electron_renderer_invoke<T>(channel: string): Promise<T | 
     const result: T = await window.electron.ipcRenderer.invoke(channel);
     return result;
 }
+
+type ToolTipDir = 'top' | 'bottom' | 'left' | 'right';
+
+export function compute_tooltip_pt(dir: ToolTipDir) {
+    return {
+        text: {
+            style: `color: var(--accent-color);
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            background-color: var(--light-bg-shadow-color);`
+        },
+        arrow: { style: `border-${dir}-color: var(--light-bg-shadow-color);` },
+    };
+}
+
+export function clone_object(object: any): any {
+    return JSON.parse(JSON.stringify(object));
+}

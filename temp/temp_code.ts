@@ -63,3 +63,11 @@
 // " /> -->
 // <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" /> -->
 // <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';connect-src 'self' http://127.0.0.1:8090;img-src 'self' http://127.0.0.1:8090"> -->
+
+// type DeviceReadingDataType = 'u8' | 'u16' | 'u32' | 'u64' | 'i8' | 'i16' | 'i32' | 'i64' | 'f32' | 'f64';
+// export interface DeviceReadingHelp {
+//     reading_name: string;
+//     reading_var: string;
+//     data_type: DeviceReadingDataType;
+//     desc: string;
+// };

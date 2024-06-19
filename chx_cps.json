@@ -1,0 +1,10 @@
+[
+  {
+    "param_name": "TEST_CP1",
+    "expr": "$W + $T + Math.sqrt($P) - ($I / $E) * 0.01"
+  },
+  {
+    "param_name": "TEST_CP2",
+    "expr": "$E + (($W + $T + $P) / $I)"
+  }
+]

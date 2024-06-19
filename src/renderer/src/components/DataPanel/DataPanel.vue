@@ -314,21 +314,6 @@ onMounted(() => {
     overflow-y: scroll;
 }
 
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-    background-color: var(--empty-gauge-color);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--font-color);
-    border-radius: 8px;
-}
-
-::-webkit-scrollbar-corner {
-    background-color: var(--empty-gauge-color);
-}
-
 #data_panel_table {
     width: 100%;
 }

@@ -18,6 +18,7 @@ import { CHXSettings } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
+import CPsDialog from '@renderer/components/CPsDialog.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -55,6 +56,7 @@ onBeforeMount(() => {
     <TopBar />
     <Toast />
     <Alert />
+    <CPsDialog />
     <div id="main_panel">
       <NavBar />
       <div id="left_panel_cont">
@@ -139,5 +141,20 @@ html {
   color: #2c2c2c;
   width: 100%;
   height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: var(--empty-gauge-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--font-color);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: var(--empty-gauge-color);
 }
 </style>

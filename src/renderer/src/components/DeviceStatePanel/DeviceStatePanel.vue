@@ -2,6 +2,7 @@
 
 import { onMounted, shallowRef, computed, inject, ref } from 'vue';
 import Checkbox from 'primevue/checkbox';
+import Button from 'primevue/button';
 
 import { MsgTypeConfig, DeviceMsg } from '@common/models';
 import SingleChart from '@renderer/components/Charts/SingleChart.vue';
@@ -9,7 +10,7 @@ import MultiChart from '@renderer/components/Charts/MultiChart.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
-import { electron_renderer_invoke } from '@renderer/lib/util';
+import { electron_renderer_invoke, compute_tooltip_pt } from '@renderer/lib/util';
 
 const device_model = inject('device_model') as string;
 const device_config = shallowRef<MsgTypeConfig[]>([]);
@@ -61,7 +62,10 @@ onMounted(() => {
     <div id="device_state_panel">
         <div style="height: 8px;"></div>
         <div id="readings_grid" v-on="screenshot_handlers">
-            <h4 id="rg_title">Device Readings</h4>
+            <h4 id="rg_title">
+                <span>Device Readings</span>
+                <Button icon="pi pi-cog" @click="post_event('show_cps_dialog', {})" rounded text v-tooltip.left="{ value: 'PARAMS SETTINGS', pt: compute_tooltip_pt('left') }" />
+            </h4>
             <div id="readings_cont">
                 <div class="reading_cont" v-for="config in read_device_config" :style="{ color: msg_type_color_map[config.msg_type] }">
                     <Checkbox @change="switch_multi_channels_plot()" binary :value="config.msg_type" v-model="msg_type_state_map[config.msg_type]" :pt="checkbox_pt" />
@@ -112,6 +116,16 @@ onMounted(() => {
     margin: 0px;
     margin-bottom: 8px;
     border-bottom: 2px solid var(--empty-gauge-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#rg_title button {
+    color: var(--accent-color);
+    width: 32px;
+    height: 32px;
 }
 
 #readings_grid {

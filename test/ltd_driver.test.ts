@@ -58,7 +58,7 @@ const TEST_DRIVER_CONFIG: MsgTypeConfig[] = [
     },
 ];
 
-test('test ltd_driver_0x87.get_msg_type_by_name', () => {
+test('ltd_driver_0x87.get_msg_type_by_name', () => {
     const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
 
     // invalid case
@@ -71,7 +71,7 @@ test('test ltd_driver_0x87.get_msg_type_by_name', () => {
     expect(msg_type_2).toBe(test_config.msg_type);
 });
 
-test('test ltd_driver_0x87.decode_packet', () => {
+test('ltd_driver_0x87.decode_packet', () => {
     const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
 
     // too small packet case
@@ -140,7 +140,7 @@ test('test ltd_driver_0x87.decode_packet', () => {
     });
 });
 
-test('test ltd_driver_0x87.encode_packet', () => {
+test('ltd_driver_0x87.encode_packet', () => {
     const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
 
     // invalid msg type case
