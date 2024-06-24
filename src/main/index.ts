@@ -38,9 +38,7 @@ function createWindow(): void {
   // init routine
   init_fsio(mainWindow);
   init_system_settings(mainWindow);
-  setTimeout(() => {
-    init_lt_ch000_serial_adapter(mainWindow);
-  }, 1000);
+  ipcMain.on('load_device_driver', () => init_lt_ch000_serial_adapter(mainWindow));
   ipcMain.on('exit', () => process.exit(0));
 }
 

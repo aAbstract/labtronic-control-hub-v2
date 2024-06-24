@@ -60,8 +60,13 @@ def write_error_packet(error_code: int):
     vspi_socket.send(error_packet)
 
 
+def write_raw_packet(data: list[int]):
+    packet = bytes(data)
+    vspi_socket.send(packet)
+
+
 def stream_sine_waves():
-    x = 0
+    x = 39200
     while True:
         _theta = 2 * math.pi * x / 100
         y_wght = math.sin(_theta) * 1000 - 1

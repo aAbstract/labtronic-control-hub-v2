@@ -70,7 +70,7 @@ export class SerialAdapter {
         } else { this.ipc_handler(`${this.device_model}_device_msg`, { device_msg }) }
     }
 
-    private on_serial_port_open() {
+    on_serial_port_open() {
         this.logger({ level: 'INFO', msg: 'Connected to Device Serial Port' });
         this.ipc_handler(`${this.device_model}_device_connected`, {});
     }

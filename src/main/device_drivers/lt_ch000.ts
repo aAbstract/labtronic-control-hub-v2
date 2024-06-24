@@ -1,7 +1,13 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver_0x87 } from "./ltd_driver_0x87";
-import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType } from '../../common/models';
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam } from '../../common/models';
+import { VirtualComputeEngine } from '../vce';
+import { subscribe } from '../../common/mediator';
+//@ts-ignore
+import { DeviceMsg } from '../../common/models';
+//@ts-ignore
+import { get_chx_cps } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-CH000';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -106,6 +112,7 @@ const LT_CH000_VCE_CONFIG: VceParamConfig[] = [
         },
         param_symbol: '$I',
         param_type: VceParamType.VCE_CONST,
+        const_init_value: 1,
         desc: 'Current Piston Pump Control Parameter',
     },
     {
@@ -117,6 +124,7 @@ const LT_CH000_VCE_CONFIG: VceParamConfig[] = [
         },
         param_symbol: '$E',
         param_type: VceParamType.VCE_CONST,
+        const_init_value: 1,
         desc: 'Current Peristaltic Pump Control Parameter',
     },
     {
@@ -154,12 +162,13 @@ const LT_CH000_VCE_CONFIG: VceParamConfig[] = [
     },
 ];
 
-ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => LT_CH000_DRIVER_CONFIG);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_CH000_DRIVER_CONFIG, ...(lt_ch000_vce0?.get_cps_config() ?? [])]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_CH000_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_CH000_VCE_CONFIG);
 
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;
+let lt_ch000_vce0: VirtualComputeEngine | null = null;
 
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);
@@ -167,6 +176,11 @@ function mw_logger(log_msg: LogMsg) {
 
 function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
+    // inject primitive MsgTypes in the VCE: 16>0b1111 (msg_type bits)
+    // console.log(`${channel} -> ${JSON.stringify(data)}`);
+    const device_msg: DeviceMsg = data.device_msg;
+    if (channel === `${DEVICE_MODEL}_device_msg` && device_msg.config.msg_type < 16)
+        lt_ch000_vce0?.load_device_msg(data.device_msg);
 }
 
 function lt_ch000_cmd_exec(cmd: string) {
@@ -236,17 +250,20 @@ function lt_ch000_cmd_exec(cmd: string) {
 
 export function init_lt_ch000_serial_adapter(_main_window: BrowserWindow) {
     main_window = _main_window;
+
     ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, (_, data) => {
         const { port_name } = data;
         serial_adapter = new SerialAdapter(port_name, new LtdDriver_0x87(LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         serial_adapter.connect();
     });
+
     ipcMain.on(`${DEVICE_MODEL}_serial_port_disconnect`, () => {
         if (!serial_adapter)
             return;
         serial_adapter.disconnect();
         serial_adapter = null;
     });
+
     ipcMain.on(`${DEVICE_MODEL}_exec_device_cmd`, (_, data) => {
         if (!serial_adapter) {
             mw_logger({ level: 'ERROR', msg: 'No Connected Device' });
@@ -256,7 +273,18 @@ export function init_lt_ch000_serial_adapter(_main_window: BrowserWindow) {
         const { cmd } = data;
         lt_ch000_cmd_exec(cmd);
     });
+
     ipcMain.on(`${DEVICE_MODEL}_serial_port_scan`, () => SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
     SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger);
+
+    // load VCE module with auto HMR
+    lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, get_chx_cps(), mw_ipc_handler, DEVICE_MODEL);
+    subscribe('chx_cps_change', `${DEVICE_MODEL}_chx_cps_change`, args => {
+        const _chx_cps: CHXComputedParam[] = args._chx_cps;
+        lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, _chx_cps, mw_ipc_handler, DEVICE_MODEL);
+        main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
+    });
+
+    main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
     mw_logger({ level: 'INFO', msg: `Loaded Device Drivers: ${DEVICE_MODEL}` });
 }

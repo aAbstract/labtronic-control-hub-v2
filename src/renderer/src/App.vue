@@ -2,6 +2,7 @@
 
 import { onBeforeMount, provide } from 'vue';
 import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
 
 import TopBar from '@renderer/components/TopBar/TopBar.vue';
 import NavBar from '@renderer/components/NavBar/NavBar.vue';
@@ -14,10 +15,10 @@ import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
 import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
 import Alert from '@renderer/components/Alert.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
-import { CHXSettings } from '@common/models';
+import { CHXSettings, MsgTypeConfig, _ToastMessageOptions } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event } from '@common/mediator';
-import { electron_renderer_invoke } from '@renderer/lib/util';
+import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 import CPsDialog from '@renderer/components/CPsDialog.vue';
 
 const APP_THEME = {
@@ -29,6 +30,7 @@ const APP_THEME = {
   '--empty-gauge-color': '#2D3A4B',
 };
 const DEVICE_MODEL = 'LT-CH000';
+const toast_service = useToast();
 
 provide('device_model', DEVICE_MODEL);
 
@@ -39,6 +41,9 @@ function load_theme(theme: Record<string, string>) {
 
 onBeforeMount(() => {
   load_theme(APP_THEME);
+
+  electron_renderer_send('load_device_driver', {});
+
   electron_renderer_invoke<CHXSettings>('get_chx_settings').then(chx_settings => {
     if (!chx_settings)
       return;
@@ -47,6 +52,13 @@ onBeforeMount(() => {
     set_base_url(labtronic_cdn_base_url);
     post_event('chx_settings_loaded', {});
   });
+
+  // update ui params for dynamic msg_types like computed parameters
+  window.electron?.ipcRenderer.on(`${DEVICE_MODEL}_device_config_ready`, () => {
+    electron_renderer_invoke<MsgTypeConfig>(`${DEVICE_MODEL}_get_device_config`).then(device_config => post_event(`${DEVICE_MODEL}_update_ui_params`, { device_config }));
+  });
+
+  window.electron?.ipcRenderer.on('show_system_notif', (_, data) => toast_service.add(data.notif));
 });
 
 </script>

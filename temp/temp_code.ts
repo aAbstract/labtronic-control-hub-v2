@@ -71,3 +71,32 @@
 //     data_type: DeviceReadingDataType;
 //     desc: string;
 // };
+
+// // validate same msg sequence number
+// const sn_set = new Set(this.current_msg_patch.map(x => x.seq_number));
+// if (sn_set.size !== 1)
+//     return { err: 'Patch Sequence Number Mismatch' };
+// const [valid_sn] = sn_set.values();
+// if (this.current_msg_patch[0].seq_number !== valid_sn)
+//     return { err: 'Patch Sequence Number Mismatch' };
+
+// window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+//     const device_msg: DeviceMsg = data.device_msg;
+//     const msg_type = device_msg.config.msg_type;
+//     const msg_value = device_msg.msg_value;
+//     const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
+//     if (!card_pos_info) {
+//         add_log({ level: 'ERROR', msg: `Unknown Msg Type: ${msg_type}` });
+//         return;
+//     }
+//     const { pos, cell_count } = card_pos_info;
+//     GfxApi.clear_digit_cells(pos, cell_count);
+//     GfxApi.write_digit_cells(pos, String(msg_value).padStart(cell_count, ' ').slice(0, cell_count));
+// });
+
+
+// // avoid creating same SerialAdapter object
+// if (serial_adapter && port_name === serial_adapter.get_port_name()) {
+//     serial_adapter.on_serial_port_open();
+//     return;
+// }

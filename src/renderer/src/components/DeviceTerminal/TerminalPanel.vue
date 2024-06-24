@@ -1,11 +1,13 @@
 <script setup lang="ts">
 
 import { onMounted, ref, inject } from 'vue';
+import Button from 'primevue/button';
 
 import { subscribe, post_event } from '@common/mediator';
 import { add_log, electron_renderer_send, electron_renderer_invoke } from '@renderer/lib/util';
 import DeviceLogs from './DeviceLogs.vue';
 import DeviceConnector from './DeviceConnector.vue';
+import { compute_tooltip_pt } from '@renderer/lib/util';
 
 const device_model = inject('device_model');
 const panel_pos = ref('-50vw');
@@ -44,6 +46,7 @@ onMounted(() => {
     <div id="control_panel_cont">
         <div id="control_panel_header">
             <h1>DEVICE TERMINAL</h1>
+            <Button icon="pi pi-cog" @click="post_event('show_cps_dialog', {})" rounded text v-tooltip.left="{ value: 'PARAMS SETTINGS', pt: compute_tooltip_pt('left') }" />
         </div>
         <DeviceConnector />
         <DeviceLogs />
@@ -110,5 +113,11 @@ onMounted(() => {
 #control_panel_header h1 {
     font-size: 18px;
     margin: 0px;
+}
+
+#control_panel_header button {
+    color: var(--accent-color);
+    width: 32px;
+    height: 32px;
 }
 </style>

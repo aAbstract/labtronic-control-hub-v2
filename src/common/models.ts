@@ -124,5 +124,13 @@ export interface VceParamConfig {
     msg_type_config: MsgTypeConfig;
     param_symbol: string;
     param_type: VceParamType;
+    const_init_value?: number;
     desc: string;
 };
+
+export interface _ToastMessageOptions {
+    severity: 'success' | 'info' | 'warn' | 'error' | 'secondary';
+    summary: string;
+    detail: string;
+    life: number;
+}

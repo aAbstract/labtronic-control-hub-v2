@@ -1,6 +1,7 @@
 import { ipcMain, BrowserWindow } from "electron";
 import fs from 'fs';
-import { CHXSettings, LogMsg, CHXComputedParam } from "../common/models";
+import { CHXSettings, LogMsg, CHXComputedParam, _ToastMessageOptions } from "../common/models";
+import { post_event } from "../common/mediator";
 
 let main_window: BrowserWindow | null = null;
 const CHX_SETTINGS_FILENAME = 'chx_settings.json';
@@ -30,7 +31,13 @@ ipcMain.on('save_chx_settings', (_, data) => {
     if (compare_json_schema(_chx_settings, chx_settings)) {
         chx_settings = _chx_settings;
         fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings, null, 2));
-        main_window?.reload();
+        const notif: _ToastMessageOptions = {
+            severity: 'warn',
+            summary: 'App Restart',
+            detail: 'Changes in System Settings Will Take Effect Next Time You Open the App',
+            life: 0,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
     }
     else { main_window?.webContents.send('add_sys_log', { level: 'ERROR', msg: 'Invalid CHX Settings Object' } as LogMsg) }
 });
@@ -40,7 +47,14 @@ ipcMain.on('save_chx_cps', (_, data) => {
     if (compare_json_schema_arr(_chx_cps, chx_cps)) {
         chx_cps = _chx_cps;
         fs.writeFileSync(CHX_CPS_FILENAME, JSON.stringify(chx_cps, null, 2));
-        main_window?.reload();
+        post_event('chx_cps_change', { _chx_cps });
+        const notif: _ToastMessageOptions = {
+            severity: 'info',
+            summary: 'Info',
+            detail: 'Device Computed Parameters Updated',
+            life: 3000,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
     }
     else { main_window?.webContents.send('add_sys_log', { level: 'ERROR', msg: 'Invalid CHX Computed Parameters Object' } as LogMsg) }
 });
@@ -55,6 +69,10 @@ function load_settings(settings_filename: string, target_schema: any, valid_json
         else
             throw new Error(`Invalid Schema, settings_filename=${settings_filename}`);
     } catch (_) { fs.writeFileSync(settings_filename, JSON.stringify(target_schema, null, 2)) }
+}
+
+export function get_chx_cps(): CHXComputedParam[] {
+    return chx_cps;
 }
 
 export function init_system_settings(_main_window: BrowserWindow) {

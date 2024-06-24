@@ -43,10 +43,13 @@ function new_cp_btn_click() {
 
 function delete_cp_btn_click(cp_idx: number) {
     vce_chx_cps.value?.splice(cp_idx, 1);
+    electron_renderer_send('save_chx_cps', { _chx_cps: clone_object(vce_chx_cps.value) });
+    dialog_visible.value = false;
 }
 
 function save_cps_btn_click() {
     electron_renderer_send('save_chx_cps', { _chx_cps: clone_object(vce_chx_cps.value) });
+    dialog_visible.value = false;
 }
 
 onMounted(() => {

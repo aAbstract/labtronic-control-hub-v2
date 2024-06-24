@@ -10,10 +10,12 @@ import { ChartOptions, ChartData } from 'chart.js';
 import { useToast } from 'primevue/usetoast';
 
 import { subscribe, post_event } from '@common/mediator';
-import { DeviceMsg, DmtbRow, Result, DropdownOption, MsgTypeConfig, AlertConfig } from '@common/models';
+import { DmtbRow, Result, DropdownOption, MsgTypeConfig, AlertConfig } from '@common/models';
 import { DeviceUIConfig, ChartParams } from '@renderer/lib/device_ui_config';
 import { electron_renderer_send, electron_renderer_invoke } from '@renderer/lib/util';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
+// @ts-ignore
+import { DeviceMsg } from '@common/models';
 
 const DMTB_ROWS_MAX = 100;
 const _DP_CONTROLS_WIDTH = 12;
@@ -23,6 +25,7 @@ const CPT_FONT_SIZE = { style: 'font-size: 12px;' };
 const device_model = inject('device_model');
 let data_cache: DmtbRow[] = [];
 const data_to_show = shallowRef<DmtbRow[]>([]);
+// @ts-ignore
 let data_changed: boolean = false;
 const panel_pos = ref('-50vw');
 const chart_opts = shallowRef({});
@@ -53,6 +56,7 @@ const dropdown_pt: any = {
     trigger: { style: 'width: fit-content; padding-right: 8px;' },
 };
 
+// @ts-ignore
 function dmtb_scroll_down() {
     const dmtb_elem = document.querySelector('#device_msgs_cont') as HTMLElement;
     dmtb_elem.scrollTop = dmtb_elem.scrollHeight;
@@ -158,18 +162,18 @@ onMounted(() => {
         post_event('show_alert', { dialog_config });
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
-        const device_msg: DeviceMsg = data.device_msg;
-        data_cache.push({
-            sn: device_msg.seq_number,
-            datetime: moment().format().split('+')[0],
-            msg_type: device_msg.config.msg_type,
-            msg_name: device_msg.config.msg_name.replace('READ_', ''),
-            msg_value: device_msg.msg_value,
-            b64_msg_value: device_msg.b64_msg_value,
-        });
-        data_changed = true;
-    });
+    // window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    //     const device_msg: DeviceMsg = data.device_msg;
+    //     data_cache.push({
+    //         sn: device_msg.seq_number,
+    //         datetime: moment().format().split('+')[0],
+    //         msg_type: device_msg.config.msg_type,
+    //         msg_name: device_msg.config.msg_name.replace('READ_', ''),
+    //         msg_value: device_msg.msg_value,
+    //         b64_msg_value: device_msg.b64_msg_value,
+    //     });
+    //     data_changed = true;
+    // });
 
     window.electron?.ipcRenderer.on('export_device_data_res', (_, data) => {
         const fsio_res: Result<string> = data;
@@ -208,13 +212,13 @@ onMounted(() => {
         ];
     });
 
-    setInterval(() => {
-        if (!data_changed)
-            return;
-        data_to_show.value = data_cache.slice(-DMTB_ROWS_MAX); // saves memory when dealing with huge array
-        data_changed = false;
-        dmtb_scroll_down();
-    }, 100);
+    // setInterval(() => {
+    //     if (!data_changed)
+    //         return;
+    //     data_to_show.value = data_cache.slice(-DMTB_ROWS_MAX); // saves memory when dealing with huge array
+    //     data_changed = false;
+    //     dmtb_scroll_down();
+    // }, 100);
 });
 
 </script>

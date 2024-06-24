@@ -140,6 +140,26 @@ test('ltd_driver_0x87.decode_packet', () => {
     });
 });
 
+test('ltd_driver_0x87.decode_packet_rc_39218_READ_PRESSURE', () => {
+    const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
+    const packet = new Uint8Array([135, 135, 15, 50, 153, 164, 0, 242, 195, 178, 66, 13, 10, 13, 10]);
+    let result = ltd_driver_0x87.decode_packet(packet);
+    expect(result.ok).toBeDefined();
+    let device_msg = result.ok as DeviceMsg;
+    device_msg.msg_value = Number(device_msg.msg_value.toFixed(3));
+    expect(device_msg).toEqual({
+        msg_value: 89.383,
+        b64_msg_value: '8sOyQg==',
+        seq_number: 39218,
+        config: {
+            data_type: DataType.FLOAT,
+            msg_name: 'READ_PRESSURE',
+            msg_type: ltd_driver_0x87.get_msg_type_by_name('READ_PRESSURE'),
+            size_bytes: 4,
+        },
+    });
+});
+
 test('ltd_driver_0x87.encode_packet', () => {
     const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
 

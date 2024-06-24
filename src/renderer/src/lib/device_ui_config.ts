@@ -1,4 +1,5 @@
-import { InfoCardGfxData, DevicePartGfxData } from '@common/models';
+import { InfoCardGfxData, DevicePartGfxData, MsgTypeConfig } from '@common/models';
+import { subscribe } from '@common/mediator';
 
 export class ChartParams {
     label: string;
@@ -49,11 +50,27 @@ export class DeviceUIConfig {
         _cards_pos_map: Record<number, InfoCardGfxData>,
         _parts_pos_map: Record<string, DevicePartGfxData>,
         _chart_params_map: Record<number, ChartParams>,
+        device_model: string,
     ) {
         this.cards_pos_map = _cards_pos_map;
         this.parts_pos_map = _parts_pos_map;
         this.chart_params_map = _chart_params_map;
         this.rot_color_idx = 0;
+
+        // update ui params for dynamic msg_types like computed parameters
+        subscribe(`${device_model}_update_ui_params`, `${device_model}_update_ui_params`, (args) => {
+            const device_config: MsgTypeConfig[] = args.device_config;
+            device_config.forEach(_config => {
+                if (!_config.msg_name.startsWith('READ_'))
+                    return;
+                const fixed_msg_names = Object.values(_chart_params_map).map(x => x.label);
+                const msg_name = _config.msg_name.replace('READ_', '');
+                if (fixed_msg_names.includes(msg_name))
+                    return;
+                const _color = DeviceUIConfig.ROT_COLOR_LIST[_config.msg_type % DeviceUIConfig.ROT_COLOR_LIST.length];
+                this.chart_params_map[_config.msg_type] = new ChartParams(msg_name, _color);
+            });
+        });
     }
 
     get_rot_chart_params(series_name: string): ChartParams {
@@ -122,6 +139,7 @@ const LT_CH000_DUIC = new DeviceUIConfig(
         2: new ChartParams('WEIGHT', '#64DD17'), // READ_WEIGHT
         4: new ChartParams('PRESSURE', '#6200EA'), // READ_PRESSURE
     },
+    'LT-CH000',
 );
 
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {

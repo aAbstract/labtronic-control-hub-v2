@@ -5,12 +5,15 @@ import { ChartOptions, ChartData } from 'chart.js';
 import Chart from 'primevue/chart';
 
 import { ChartParams, DeviceUIConfig } from '@renderer/lib/device_ui_config';
-import { PlotSeries, MsgTypeConfig, DeviceMsg } from '@common/models';
+import { PlotSeries, MsgTypeConfig } from '@common/models';
 import { subscribe } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
+// @ts-ignore
+import { DeviceMsg } from '@common/models';
 
+// @ts-ignore
 const CHART_POINTS_LIMIT = 100;
-const points_data: Record<number, PlotSeries> = {};
+let points_data: Record<number, PlotSeries> = {};
 let points_changed: boolean = false;
 const device_model = inject('device_model');
 const props = defineProps<{ device_ui_config: DeviceUIConfig, fps: number }>();
@@ -61,20 +64,24 @@ onMounted(() => {
     chart_opts.value = create_chart_options(chart_font_color, chart_grid_color);
 
     // auto construct points data cache struct using device driver config
-    electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
-        if (!device_config)
-            return;
-        const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
-        read_config.forEach(_read_config => {
-            msg_type_state_map.value[_read_config.msg_type] = true;
-            points_data[_read_config.msg_type] = { x: [], y: [] };
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
+            if (!device_config)
+                return;
+            const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
+            points_data = {};
+            msg_type_state_map.value = {};
+            read_config.forEach(_read_config => {
+                msg_type_state_map.value[_read_config.msg_type] = true;
+                points_data[_read_config.msg_type] = { x: [], y: [] };
+            });
+            const chart_params = read_config.map(x => props.device_ui_config.get_chart_params(x.msg_type)) as ChartParams[];
+            const new_chart_data: ChartData = {
+                labels: [],
+                datasets: chart_params,
+            };
+            chart_data.value = new_chart_data;
         });
-        const chart_params = read_config.map(x => props.device_ui_config.get_chart_params(x.msg_type)) as ChartParams[];
-        const new_chart_data: ChartData = {
-            labels: [],
-            datasets: chart_params,
-        };
-        chart_data.value = new_chart_data;
     });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {

@@ -4,13 +4,16 @@ import { shallowRef, onMounted, inject } from 'vue';
 import { ChartOptions, ChartData } from 'chart.js';
 import Chart from 'primevue/chart';
 
-import { PlotSeries, DeviceMsg, MsgTypeConfig } from '@common/models';
+import { PlotSeries, MsgTypeConfig } from '@common/models';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import { subscribe } from '@common/mediator';
 import { add_log, electron_renderer_invoke } from '@renderer/lib/util';
+// @ts-ignore
+import { DeviceMsg } from '@common/models';
 
+// @ts-ignore
 const CHART_POINTS_LIMIT = 100;
-const points_data: Record<number, PlotSeries> = {};
+let points_data: Record<number, PlotSeries> = {};
 let points_changed: boolean = false;
 const device_model = inject('device_model');
 let active_msg_type = -1;
@@ -54,13 +57,16 @@ onMounted(() => {
     chart_opts.value = create_chart_options(chart_font_color, chart_grid_color);
 
     // auto construct points data cache struct using device driver config
-    electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
-        if (!device_config)
-            return;
-        const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
-        active_msg_type = read_config[0].msg_type;
-        read_config.forEach(_read_config => points_data[_read_config.msg_type] = { x: [], y: [] });
-        render_chart();
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
+            if (!device_config)
+                return;
+            const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
+            active_msg_type = read_config[0].msg_type;
+            points_data = {};
+            read_config.forEach(_read_config => points_data[_read_config.msg_type] = { x: [], y: [] });
+            render_chart();
+        });
     });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
