@@ -24,9 +24,8 @@ const props = defineProps<{
 }>();
 const chart_params = new ChartParams(props.chart_title, props.line_color);
 chart_params.tension = 0;
-chart_params.data = [0, 6, 7, 3, 8, 9];
 const chart_data = shallowRef<ChartData>({
-    labels: [0, 1, 2, 3, 4, 5],
+    labels: [],
     datasets: [chart_params],
 });
 
