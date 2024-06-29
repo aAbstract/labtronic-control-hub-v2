@@ -8,6 +8,7 @@ import { add_log, electron_renderer_send, electron_renderer_invoke } from '@rend
 import DeviceLogs from './DeviceLogs.vue';
 import DeviceConnector from './DeviceConnector.vue';
 import { compute_tooltip_pt } from '@renderer/lib/util';
+import CPsDialog from '@renderer/components/CPsDialog.vue';
 
 const device_model = inject('device_model');
 const panel_pos = ref('-50vw');
@@ -44,6 +45,7 @@ onMounted(() => {
 
 <template>
     <div id="control_panel_cont">
+        <CPsDialog />
         <div id="control_panel_header">
             <h1>DEVICE TERMINAL</h1>
             <Button icon="pi pi-cog" @click="post_event('show_cps_dialog', {})" rounded text v-tooltip.left="{ value: 'PARAMS SETTINGS', pt: compute_tooltip_pt('left') }" />

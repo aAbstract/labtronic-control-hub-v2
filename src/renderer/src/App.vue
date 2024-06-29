@@ -9,7 +9,7 @@ import NavBar from '@renderer/components/NavBar/NavBar.vue';
 import TerminalPanel from '@renderer/components/DeviceTerminal/TerminalPanel.vue';
 import DeviceStatePanel from '@renderer/components/DeviceStatePanel/DeviceStatePanel.vue';
 import DeviceModelPanel from '@renderer/components/DeviceModelPanel/DeviceModelPanel.vue';
-import DataPanel from '@renderer/components/DataPanel/DataPanel.vue';
+import DataTool from '@renderer/components/DataTool/DataTool.vue';
 import SettingsPanel from '@renderer/components/SettingsPanel.vue';
 import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
 import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
@@ -19,7 +19,6 @@ import { CHXSettings, MsgTypeConfig, _ToastMessageOptions } from '@common/models
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
-import CPsDialog from '@renderer/components/CPsDialog.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -68,7 +67,6 @@ onBeforeMount(() => {
     <TopBar />
     <Toast />
     <Alert />
-    <CPsDialog />
     <div id="main_panel">
       <NavBar />
       <div id="left_panel_cont">
@@ -79,7 +77,7 @@ onBeforeMount(() => {
           <div style="flex-grow: 1;"></div>
         </div>
         <TerminalPanel />
-        <DataPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
+        <DataTool />
         <SettingsPanel />
       </div>
       <div id="right_panel_cont">

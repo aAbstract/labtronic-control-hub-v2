@@ -1,0 +1,12 @@
+[
+  {
+    "series_name": "TEMP - CP1",
+    "x_param": 3,
+    "y_param": 16
+  },
+  {
+    "series_name": "PRES - CP2",
+    "x_param": 4,
+    "y_param": 17
+  }
+]

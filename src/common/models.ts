@@ -133,4 +133,10 @@ export interface _ToastMessageOptions {
     summary: string;
     detail: string;
     life: number;
-}
+};
+
+export interface CHXSeries {
+    series_name: string;
+    x_param: number;
+    y_param: number;
+};

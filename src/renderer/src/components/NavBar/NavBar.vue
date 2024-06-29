@@ -6,7 +6,7 @@ import { useToast } from 'primevue/usetoast';
 import NavBarIcon from './NavBarIcon.vue';
 import SquareTerminalIcon from '@renderer/components/icons/SquareTerminal.vue';
 import SettingsIcon from '@renderer/components/icons/Settings.vue';
-import DatabaseIcon from '@renderer/components/icons/Database.vue';
+import CalculatorMoney from '@renderer/components/icons/CalculatorMoney.vue';
 import BookOpenCover from '@renderer/components/icons/BookOpenCover.vue';
 import PhotoCapture from '@renderer/components/icons/PhotoCapture.vue';
 import CircleXmark from '@renderer/components/icons/CircleXmark.vue';
@@ -21,15 +21,15 @@ const MENU_ITEMS: NavMenuItem[] = [
         icon: SquareTerminalIcon,
         menu_action() {
             post_event('toggle_control_panel', {});
-            post_event('hide_data_panel', {});
+            post_event('hide_data_tool', {});
             post_event('hide_settings_panel', {});
         },
     },
     {
-        label: 'DATA PANEL',
-        icon: DatabaseIcon,
+        label: 'DATA TOOL',
+        icon: CalculatorMoney,
         menu_action() {
-            post_event('toggle_data_panel', {});
+            post_event('toggle_data_tool', {});
             post_event('hide_control_panel', {});
             post_event('hide_settings_panel', {});
         },
@@ -56,7 +56,7 @@ const MENU_ITEMS: NavMenuItem[] = [
         menu_action() {
             post_event('toggle_settings_panel', {});
             post_event('hide_control_panel', {});
-            post_event('hide_data_panel', {});
+            post_event('hide_data_tool', {});
         },
     },
 ];
@@ -83,7 +83,7 @@ function trigger_icon_active_flag_reset(index: number) {
 onMounted(() => {
     active_flags.value[3] = screenshot_mode();
     subscribe('toggle_control_panel', 'toggle_control_panel_icon', _ => trigger_icon_active_flag_reset(0));
-    subscribe('toggle_data_panel', 'toggle_data_panel_icon', _ => trigger_icon_active_flag_reset(1));
+    subscribe('toggle_data_tool', 'toggle_data_tool_icon', _ => trigger_icon_active_flag_reset(1));
     subscribe('toggle_dmp', 'toggle_dmp_icon', _ => active_flags.value[2] = !active_flags.value[2]);
     subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag_reset(4));
 });

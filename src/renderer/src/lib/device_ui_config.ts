@@ -73,6 +73,10 @@ export class DeviceUIConfig {
         });
     }
 
+    static get_rot_color(idx: number): string {
+        return DeviceUIConfig.ROT_COLOR_LIST[idx];
+    }
+
     get_rot_chart_params(series_name: string): ChartParams {
         return new ChartParams(series_name, DeviceUIConfig.ROT_COLOR_LIST[this.rot_color_idx++]);
     }

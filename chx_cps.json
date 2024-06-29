@@ -6,13 +6,5 @@
   {
     "param_name": "CP2",
     "expr": "$E + (($W + $T + $P) / $I)"
-  },
-  {
-    "param_name": "CP3",
-    "expr": "$T + $P"
-  },
-  {
-    "param_name": "CP4",
-    "expr": "-0.1 * $W"
   }
 ]

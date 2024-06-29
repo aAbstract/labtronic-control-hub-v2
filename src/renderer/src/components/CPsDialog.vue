@@ -73,7 +73,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Dialog v-model:visible="dialog_visible" modal header="Device Computed Parameters" :style="{ width: '60%' }" :pt="dialog_pt">
+    <Dialog style="font-family: Cairo, sans-serif;" v-model:visible="dialog_visible" modal header="Device Computed Parameters" :style="{ width: '60%' }" :pt="dialog_pt">
         <div id="vce_help">
             <div class="vce_help_row">
                 <span style="width: 4vw;">VAR</span>
@@ -91,9 +91,9 @@ onMounted(() => {
         </div>
         <div style="height: 8px;"></div>
         <div id="vce_cps">
-            <div class="cp_row" v-for="(row, idx) in vce_chx_cps">
-                <input class="cp_param_name" type="text" v-model="row.param_name">
-                <input class="cp_expr" type="text" v-model="row.expr">
+            <div class="cp_row" v-for="(cp, idx) in vce_chx_cps">
+                <input class="cp_param_name" type="text" v-model="cp.param_name">
+                <input class="cp_expr" type="text" v-model="cp.expr">
                 <Button icon="pi pi-trash" severity="danger" text rounded @click="delete_cp_btn_click(idx)" />
             </div>
         </div>

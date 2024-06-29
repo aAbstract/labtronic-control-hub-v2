@@ -1,18 +1,23 @@
 import { ipcMain, BrowserWindow } from "electron";
 import fs from 'fs';
-import { CHXSettings, LogMsg, CHXComputedParam, _ToastMessageOptions } from "../common/models";
+import { CHXSettings, CHXComputedParam, _ToastMessageOptions, CHXSeries } from "../common/models";
 import { post_event } from "../common/mediator";
 
 let main_window: BrowserWindow | null = null;
 const CHX_SETTINGS_FILENAME = 'chx_settings.json';
 const CHX_CPS_FILENAME = 'chx_cps.json';
+const CHX_SERIES_FILENAME = 'chx_series.json';
 
 let chx_settings: CHXSettings = { labtronic_cdn_base_url: '' };
 ipcMain.handle('get_chx_settings', () => chx_settings);
 let chx_cps: CHXComputedParam[] = [{ param_name: '', expr: '' }];
 ipcMain.handle('get_chx_cps', () => chx_cps);
+let chx_series: CHXSeries[] = [{ series_name: '', x_param: -1, y_param: -1 }];
+ipcMain.handle('get_chx_series', () => chx_series);
 
 function compare_json_schema(obj_1: Object, obj_2: Object): boolean {
+    if (!obj_1 || !obj_2)
+        return false;
     const json_schema_1 = new Set(Object.keys(obj_1));
     const json_schema_2 = new Set(Object.keys(obj_2));
     return [...json_schema_1].every(x => json_schema_2.has(x));
@@ -39,7 +44,15 @@ ipcMain.on('save_chx_settings', (_, data) => {
         };
         main_window?.webContents.send('show_system_notif', { notif });
     }
-    else { main_window?.webContents.send('add_sys_log', { level: 'ERROR', msg: 'Invalid CHX Settings Object' } as LogMsg) }
+    else {
+        const notif: _ToastMessageOptions = {
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Invalid CHX Settings Object',
+            life: 0,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
+    }
 });
 
 ipcMain.on('save_chx_cps', (_, data) => {
@@ -56,7 +69,40 @@ ipcMain.on('save_chx_cps', (_, data) => {
         };
         main_window?.webContents.send('show_system_notif', { notif });
     }
-    else { main_window?.webContents.send('add_sys_log', { level: 'ERROR', msg: 'Invalid CHX Computed Parameters Object' } as LogMsg) }
+    else {
+        const notif: _ToastMessageOptions = {
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Invalid CHX Computed Parameters Object',
+            life: 0,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
+    }
+});
+
+ipcMain.on('save_chx_series', (_, data) => {
+    const { _chx_series } = data;
+    if (compare_json_schema_arr(_chx_series, chx_series)) {
+        chx_series = _chx_series;
+        fs.writeFileSync(CHX_SERIES_FILENAME, JSON.stringify(chx_series, null, 2));
+        post_event('chx_series_change', { _chx_series });
+        const notif: _ToastMessageOptions = {
+            severity: 'info',
+            summary: 'Info',
+            detail: 'Device Custom Series Updated',
+            life: 3000,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
+    }
+    else {
+        const notif: _ToastMessageOptions = {
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Invalid CHX Series Object',
+            life: 0,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
+    }
 });
 
 function load_settings(settings_filename: string, target_schema: any, valid_json_callback: (valid_json: any) => void) {
@@ -75,8 +121,13 @@ export function get_chx_cps(): CHXComputedParam[] {
     return chx_cps;
 }
 
+export function get_chx_series(): CHXSeries[] {
+    return chx_series;
+}
+
 export function init_system_settings(_main_window: BrowserWindow) {
     main_window = _main_window;
     load_settings(CHX_SETTINGS_FILENAME, chx_settings, (valid_chx_settings) => chx_settings = valid_chx_settings);
     load_settings(CHX_CPS_FILENAME, chx_cps, (valid_chx_cps) => chx_cps = valid_chx_cps);
+    load_settings(CHX_SERIES_FILENAME, chx_series, (valid_chx_series) => chx_series = valid_chx_series);
 }

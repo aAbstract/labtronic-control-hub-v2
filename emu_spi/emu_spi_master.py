@@ -2,6 +2,7 @@ import time
 import socket
 import code
 import math
+import random
 import readline
 import inspect
 from rlcompleter import Completer
@@ -66,12 +67,12 @@ def write_raw_packet(data: list[int]):
 
 
 def stream_sine_waves():
-    x = 39200
+    x = 0
     while True:
-        _theta = 2 * math.pi * x / 100
-        y_wght = math.sin(_theta) * 1000 - 1
+        _theta = 6 * math.pi * x / 100  # 3 Hz wave @ dt = 0.01
+        y_wght = math.sin(_theta) * 100
         y_temp = 25 if y_wght >= 0 else 0
-        y_pres = (y_wght / 10 - 1) if y_wght >= 0 else 0
+        y_pres = y_wght / 10 if y_wght >= 0 else 0
         packet_wght = ltd_driver_0x87.encode_packet(x, TEST_DRIVER_CONFIG[2].msg_type, y_wght).ok
         packet_temp = ltd_driver_0x87.encode_packet(x, TEST_DRIVER_CONFIG[3].msg_type, y_temp).ok
         packet_pres = ltd_driver_0x87.encode_packet(x, TEST_DRIVER_CONFIG[4].msg_type, y_pres).ok
@@ -79,6 +80,22 @@ def stream_sine_waves():
         vspi_socket.send(packet_temp)
         vspi_socket.send(packet_pres)
         x += 1
+        time.sleep(0.01)
+
+
+def stream_rand_waves():
+    sn = 0
+    while True:
+        y_wght = random.uniform(1, 15)
+        y_temp = random.uniform(1, 10)
+        y_pres = random.uniform(1, 5)
+        packet_wght = ltd_driver_0x87.encode_packet(sn, TEST_DRIVER_CONFIG[2].msg_type, y_wght).ok
+        packet_temp = ltd_driver_0x87.encode_packet(sn, TEST_DRIVER_CONFIG[3].msg_type, y_temp).ok
+        packet_pres = ltd_driver_0x87.encode_packet(sn, TEST_DRIVER_CONFIG[4].msg_type, y_pres).ok
+        vspi_socket.send(packet_wght)
+        vspi_socket.send(packet_temp)
+        vspi_socket.send(packet_pres)
+        sn += 1
         time.sleep(0.01)
 
 
