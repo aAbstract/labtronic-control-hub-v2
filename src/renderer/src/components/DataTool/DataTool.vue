@@ -6,11 +6,13 @@ import Fieldset from 'primevue/fieldset';
 
 import { post_event, subscribe } from '@common/mediator';
 import SmallChart from './SmallChart.vue';
+import DeviceEquation from './DeviceEquation.vue';
 import SeriesConfigDialog from './SeriesConfigDialog.vue';
+import DataPreview from './DataPreview.vue';
 import { CHXSeries } from '@common/models';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
-import { DeviceMsg, MsgTypeConfig } from '@common/models';
+import { DeviceMsg, MsgTypeConfig, CHXEquation } from '@common/models';
 
 enum RecordingState {
     RUNNING = 0,
@@ -35,6 +37,7 @@ const sampling_dt = ref(1000);
 const sampling_resolution = 100;
 const sampling_sn_base = computed(() => Math.floor(sampling_dt.value / sampling_resolution));
 const chx_series = ref<CHXSeries[]>();
+const chx_eqs = ref<CHXEquation[]>();
 const recording_state = ref<RecordingState>(RecordingState.STOPPED);
 const play_btn_color = computed(() => recording_state.value === RecordingState.RUNNING ? '#64DD17' : 'var(--accent-color)');
 const pause_btn_color = computed(() => recording_state.value === RecordingState.PAUSED ? '#FFAB00' : 'var(--accent-color)');
@@ -46,6 +49,10 @@ const field_set_pt = {
 
 function show_series_config_dialog() {
     post_event('show_series_config_dialog', {});
+}
+
+function show_data_preview() {
+    post_event('show_data_preview', {});
 }
 
 function fmt_time(ms: number): string {
@@ -68,7 +75,7 @@ function reset_recording_state() {
     time_fmt.value = fmt_time(0);
     iid = null;
     data_points_count.value = 0;
-    post_event('small_chart_clear', {});
+    post_event('clear_recorded_data', {});
 }
 
 function set_recording_state(_recording_state: RecordingState) {
@@ -111,7 +118,7 @@ function start_data_recording() {
             const _dp_keys: Set<string> = new Set(Object.keys(_data_point));
             if (complete_data_point_keys.every(cdp_key => _dp_keys.has(cdp_key))) {
                 _data_point.time_ms = time_ms;
-                post_event('small_chart_update', { _data_point });
+                post_event('record_data_point', { _data_point });
                 recorded_data_points.push(_data_point);
                 data_points_count.value = recorded_data_points.length;
                 // clear sampling cache
@@ -138,6 +145,18 @@ onMounted(() => {
     electron_renderer_invoke<CHXSeries[]>('get_chx_series').then(_chx_series => {
         if (!_chx_series)
             return;
+        chx_series.value = _chx_series;
+    });
+
+    electron_renderer_invoke<CHXEquation[]>('get_chx_eqs').then(_chx_eqs => {
+        if (!_chx_eqs)
+            return;
+        chx_eqs.value = _chx_eqs;
+    });
+
+    // chx_series auto hmr
+    window.electron?.ipcRenderer.on('chx_series_change', (_, data) => {
+        const { _chx_series } = data;
         chx_series.value = _chx_series;
     });
 
@@ -174,6 +193,7 @@ onMounted(() => {
 <template>
     <div id="data_tool_cont">
         <SeriesConfigDialog />
+        <DataPreview />
         <div id="data_tool_header">
             <h1>DATA TOOL</h1>
             <div style="display: flex; align-items: center;">
@@ -198,7 +218,7 @@ onMounted(() => {
                 <span>{{ time_fmt }}</span>
             </div>
             <div>
-                <Button icon="pi pi-eye" class="data_tool_icon_btn" title="Preview Data" rounded text />
+                <Button icon="pi pi-eye" class="data_tool_icon_btn" title="Preview Data" rounded text @click="show_data_preview()" />
                 <Button icon="pi pi-code" class="data_tool_icon_btn" title="Run Data Script" rounded text />
             </div>
         </div>
@@ -216,16 +236,14 @@ onMounted(() => {
             </div>
         </Fieldset>
 
-        <Fieldset :pt="field_set_pt" style="flex-grow: 1;">
+        <Fieldset id="deqs_field_set" :pt="field_set_pt">
             <template #legend>
                 <div class="field_set_header">
                     <span>Device Equations</span>
                     <Button icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text />
                 </div>
             </template>
-            <div>item 1</div>
-            <div>item 1</div>
-            <div>item 1</div>
+            <DeviceEquation v-for="chx_eq in chx_eqs" :chx_eq="chx_eq" />
         </Fieldset>
 
         <div style="height: 8px;"></div>
@@ -236,6 +254,12 @@ onMounted(() => {
 #series_field_set {
     height: 60%;
     max-height: 60%;
+    overflow-y: scroll;
+}
+
+#deqs_field_set {
+    height: 30%;
+    max-height: 30%;
     overflow-y: scroll;
 }
 

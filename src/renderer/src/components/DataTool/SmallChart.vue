@@ -50,6 +50,8 @@ const chart_opts = shallowRef<ChartOptions>({
         const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
         const _x_val = chart_data.value.labels[x_idx] as number;
         const _y_val = chart_data.value.datasets[0].data[x_idx] as number;
+        if (!_x_val || !_y_val)
+            return;
         chart_marker = {
             x_val: _x_val.toFixed(2),
             y_val: _y_val.toFixed(2),
@@ -86,7 +88,7 @@ function render_chart() {
 }
 
 onMounted(() => {
-    subscribe('small_chart_update', `small_chart_update_${props.chart_idx}`, args => {
+    subscribe('record_data_point', `record_data_point_${props.chart_idx}`, args => {
         const _data_point: Record<string, number> = args._data_point;
         const _x = _data_point[props.x_param];
         const _y = _data_point[props.y_param];
@@ -95,7 +97,7 @@ onMounted(() => {
         render_chart();
     });
 
-    subscribe('small_chart_clear', `small_chart_clear_${props.chart_idx}`, () => {
+    subscribe('clear_recorded_data', `clear_recorded_data_${props.chart_idx}`, () => {
         chart_data.value.labels = [];
         chart_data.value.datasets[0].data = [];
         render_chart();

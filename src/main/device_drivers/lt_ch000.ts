@@ -1,7 +1,7 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver_0x87 } from "./ltd_driver_0x87";
-import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam } from '../../common/models';
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation } from '../../common/models';
 import { VirtualComputeEngine } from '../vce';
 import { subscribe } from '../../common/mediator';
 //@ts-ignore
@@ -169,6 +169,8 @@ ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_CH000_VCE_CONFIG);
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;
 let lt_ch000_vce0: VirtualComputeEngine | null = null;
+
+ipcMain.handle('compute_chx_equation', (_, chx_equation: CHXEquation, args_vals: number[]) => VirtualComputeEngine.compute_chx_equation(chx_equation, args_vals));
 
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);

@@ -1,5 +1,5 @@
 import * as nvm from 'node:vm';
-import { DeviceMsg, Result, VceParamConfig, VceParamType, CHXComputedParam, MsgTypeConfig, DataType } from '../common/models';
+import { DeviceMsg, Result, VceParamConfig, VceParamType, CHXComputedParam, MsgTypeConfig, DataType, CHXEquation } from '../common/models';
 
 export class VirtualComputeEngine {
     private device_model: string;
@@ -107,6 +107,22 @@ export class VirtualComputeEngine {
         return out_record;
     }
 
+    static compute_chx_equation(chx_equation: CHXEquation, args_vals: number[]): Result<number> {
+        if (args_vals.length !== chx_equation.args_list.length)
+            return { err: 'Insufficient Arguments' };
+
+        const vm_context: Record<string, number> = {};
+        chx_equation.args_list.forEach((_arg, idx) => vm_context[_arg] = args_vals[idx]);
+        nvm.createContext(vm_context);
+
+        nvm.runInContext(`result=${chx_equation.expr};`, vm_context);
+        const result: number | null = vm_context.result ?? null;
+        if (!result)
+            return { err: 'Error Computing CHX Equation' };
+        else
+            return { ok: result };
+    }
+
     load_device_msg(device_msg: DeviceMsg): Result<Record<string, number>> {
         const { msg_type } = device_msg.config;
         if (!this.vce_var_msg_types.has(msg_type)) {
@@ -120,7 +136,7 @@ export class VirtualComputeEngine {
             return { err: 'Started New VCE Cycle' };
         }
         this.current_msg_patch.push(device_msg);
-        
+
         // reached full patch
         if (this.vce_var_msg_types.size === this.current_msg_patch.length) {
             // validate msg types

@@ -1,5 +1,5 @@
 import { VirtualComputeEngine } from '../src/main/vce';
-import { DataType, VceParamConfig, VceParamType, DeviceMsg, CHXComputedParam } from '../src/common/models';
+import { DataType, VceParamConfig, VceParamType, DeviceMsg, CHXComputedParam, CHXEquation } from '../src/common/models';
 
 const TEST_VCE_CONFIG: VceParamConfig[] = [
     {
@@ -457,4 +457,26 @@ test('VirtualComputeEngine_rc_39218', () => {
             size_bytes: 4,
         },
     });
+});
+
+test('VirtualComputeEngine_compute_chx_equation', () => {
+    const chx_eq: CHXEquation = {
+        func_name: '',
+        args_list: ['arg_1', 'arg_2'],
+        expr: 'arg_1 + arg_2',
+        result_unit: '',
+    };
+
+    let result = VirtualComputeEngine.compute_chx_equation(chx_eq, [5]);
+    expect(result.err).toBeDefined();
+    expect(result.err).toBe('Insufficient Arguments');
+
+    result = VirtualComputeEngine.compute_chx_equation(chx_eq, [5, 4]);
+    expect(result.ok).toBeDefined();
+    expect(result.ok).toBe(9);
+
+    chx_eq.expr = 'arg_1 - arg_2';
+    result = VirtualComputeEngine.compute_chx_equation(chx_eq, [5, 4]);
+    expect(result.ok).toBeDefined();
+    expect(result.ok).toBe(1);
 });

@@ -140,3 +140,10 @@ export interface CHXSeries {
     x_param: number;
     y_param: number;
 };
+
+export interface CHXEquation {
+    func_name: string;
+    args_list: string[];
+    expr: string;
+    result_unit: string;
+};

@@ -1,0 +1,20 @@
+[
+  {
+    "func_name": "lt_ch000_func_1",
+    "args_list": [
+      "arg_1",
+      "arg_2"
+    ],
+    "expr": "arg_1 + arg_2",
+    "result_unit": "m"
+  },
+  {
+    "func_name": "lt_ch000_func_2",
+    "args_list": [
+      "arg_1",
+      "arg_2"
+    ],
+    "expr": "arg_1 - arg_2",
+    "result_unit": "s"
+  }
+]

@@ -167,4 +167,8 @@ html {
 ::-webkit-scrollbar-corner {
   background-color: var(--empty-gauge-color);
 }
+
+::placeholder {
+  color: var(--empty-gauge-color);
+}
 </style>
