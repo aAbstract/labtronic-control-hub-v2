@@ -4,10 +4,12 @@ import { ref, shallowRef, inject, onMounted } from 'vue';
 import Knob from 'primevue/knob';
 import Slider from 'primevue/slider';
 import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
 
 import { electron_renderer_send } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
+import { subscribe } from '@common/mediator';
 
 const MAX_PISP_VAL = 200;
 const device_model = inject('device_model');
@@ -16,6 +18,7 @@ const pisp_knob_val = ref(0);
 const pisp_slider_val = ref(0);
 const pisp_indc_val = ref(0);
 const active_perp_btns = shallowRef([true, false, false, false]);
+const toast_service = useToast();
 const slider_pt: any = {
     root: { style: 'background-color: var(--empty-gauge-color);' },
     handle: { style: 'background-color: var(--accent-color);' },
@@ -53,6 +56,14 @@ onMounted(() => {
             pisp_knob_val.value = device_msg.msg_value;
         else if (msg_type === 1)
             perp_knob_val.value = device_msg.msg_value;
+    });
+
+    // handle chx script injected parameters
+    subscribe('chx_script_ip_lt_ch000_test_control_value', '', args => {
+        const pv = Math.round(args.pv);
+        pisp_indc_val.value = pv;
+        electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET PISTON_PUMP ${pv}` });
+        toast_service.add({ severity: 'success', summary: 'CHX Script', detail: 'chx_script_ip_lt_ch000_test_control_value', life: 3000 });
     });
 });
 

@@ -25,7 +25,7 @@ export interface DeviceMsg {
 };
 
 export interface ILtdDriver {
-    readonly PROTOCOL_VERSION: number;
+    protocol_version: [number, number];
     encode_packet(msg_seq_number: number, msg_type: number, msg_value: number): Result<Uint8Array>;
     decode_packet(packet: Uint8Array): Result<DeviceMsg>;
 };
@@ -91,15 +91,6 @@ export interface DmtbRow {
     b64_msg_value: string;
 };
 
-export interface CHXComputedParam {
-    param_name: string;
-    expr: string;
-};
-
-export interface CHXSettings {
-    labtronic_cdn_base_url: string;
-};
-
 export interface AlertButtonConfig {
     btn_text: string;
     btn_type: 'info' | 'warning' | 'danger' | 'secondary';
@@ -135,10 +126,14 @@ export interface _ToastMessageOptions {
     life: number;
 };
 
-export interface CHXSeries {
-    series_name: string;
-    x_param: number;
-    y_param: number;
+// CHX Settings
+export interface CHXCloudSettings {
+    labtronic_cdn_base_url: string;
+};
+
+export interface CHXComputedParam {
+    param_name: string;
+    expr: string;
 };
 
 export interface CHXEquation {
@@ -147,3 +142,42 @@ export interface CHXEquation {
     expr: string;
     result_unit: string;
 };
+
+export interface CHXScript {
+    script_name: string;
+    script_path: string;
+};
+export interface CHXScriptInjectedParam {
+    param_name: string;
+    param_val: string | number;
+};
+
+export interface CHXSeries {
+    series_name: string;
+    x_param: number;
+    y_param: number;
+};
+
+export interface CHXSettings {
+    device_model: string;
+    cloud_settings: CHXCloudSettings;
+    computed_params: CHXComputedParam[];
+    equations: CHXEquation[];
+    scripts: CHXScript[];
+    series: CHXSeries[];
+    device_config: Record<string, any>;
+};
+// CHX Settings
+
+// device models - LT_HT103
+export enum LT_HT103_DeviceOperationMode {
+    CALIBRATION = 0,
+    EXPERIMENT = 1,
+};
+
+export interface LT_HT103_DeviceConfig {
+    C_f: number;
+    Q_L_F1: number;
+    Q_L_F2: number;
+};
+// device models - LT_HT103

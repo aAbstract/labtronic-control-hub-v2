@@ -1,5 +1,6 @@
 import { VirtualComputeEngine } from '../src/main/vce';
-import { DataType, VceParamConfig, VceParamType, DeviceMsg, CHXComputedParam, CHXEquation } from '../src/common/models';
+import { DataType, VceParamConfig, VceParamType, DeviceMsg, CHXComputedParam, CHXEquation, CHXScript, Result } from '../src/common/models';
+import { test_data_points } from './tests_data';
 
 const TEST_VCE_CONFIG: VceParamConfig[] = [
     {
@@ -479,4 +480,21 @@ test('VirtualComputeEngine_compute_chx_equation', () => {
     result = VirtualComputeEngine.compute_chx_equation(chx_eq, [5, 4]);
     expect(result.ok).toBeDefined();
     expect(result.ok).toBe(1);
+});
+
+test('VirtualComputeEngine_exec_chx_script_success', () => {
+    const chx_script: CHXScript = {
+        script_name: '_test_chx_script',
+        script_path: '/home/abstract/work/labtronic_software/control_hub_v2/temp/_test_chx_script.js',
+    };
+
+    VirtualComputeEngine.exec_chx_script(test_data_points, chx_script).then(res => {
+        expect(res.ok).toBeDefined();
+        if (!res.ok)
+            return;
+        const ip_pn = res.ok[0].param_name as string;
+        const ip_pv = res.ok[0].param_val as number;
+        expect(ip_pn).toBe('lt_ch000_test_control_value');
+        expect(ip_pv.toFixed(3)).toBe('104.589');
+    });
 });

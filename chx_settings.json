@@ -1,3 +1,26 @@
 {
-  "labtronic_cdn_base_url": "http://127.0.0.1:8090"
+  "device_model": "LT-HT103",
+  "cloud_settings": {
+    "labtronic_cdn_base_url": "http://127.0.0.1:8090"
+  },
+  "computed_params": [],
+  "equations": [],
+  "scripts": [
+    {
+      "script_name": "lt_ht103_calibrate",
+      "script_path": "/home/abstract/work/labtronic_software/control_hub_v2/temp/lt_ht103_calibrate.js"
+    }
+  ],
+  "series": [
+    {
+      "series_name": "T_h - Q_L",
+      "x_param": 4,
+      "y_param": 17
+    }
+  ],
+  "device_config": {
+    "C_f": 1,
+    "Q_L_F1": 0.5,
+    "Q_L_F2": 2
+  }
 }

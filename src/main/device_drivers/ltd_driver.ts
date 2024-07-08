@@ -1,12 +1,11 @@
 import { Result, DataType, MsgTypeConfig, DeviceMsg, ILtdDriver } from '../../common/models';
 
-export class LtdDriver_0x87 implements ILtdDriver {
-    readonly PROTOCOL_VERSION = 0x87;
-
+export class LtdDriver implements ILtdDriver {
     // 4(start, end) + length + 2(seq_number) + 2(cfg) + 2(crc)
     private static readonly PACKET_MIN_SIZE = 11;
     private static readonly DATA_START = 7;
 
+    protocol_version: [number, number];
     private driver_msg_type_config_map: any = {};
 
     // for search optimization
@@ -14,7 +13,8 @@ export class LtdDriver_0x87 implements ILtdDriver {
     private msg_name_set: Set<string>;
     private data_type_set: Set<number>;
 
-    constructor(_driver_msg_types: MsgTypeConfig[]) {
+    constructor(_protocol_version: [number, number], _driver_msg_types: MsgTypeConfig[]) {
+        this.protocol_version = _protocol_version;
         this.msg_type_set = new Set(_driver_msg_types.map(x => x.msg_type));
         this.msg_name_set = new Set(_driver_msg_types.map(x => x.msg_name));
         _driver_msg_types.forEach(config => this.driver_msg_type_config_map[config.msg_type] = config);
@@ -105,7 +105,7 @@ export class LtdDriver_0x87 implements ILtdDriver {
         if (data_type === DataType.FLOAT && (buffer.length === 1 || buffer.length === 2))
             return { err: `Can not Parse Buffer of Size [${buffer.length}] to FLOAT` };
 
-        const bin_parser_res = LtdDriver_0x87.get_binary_parser(buffer.length, data_type);
+        const bin_parser_res = LtdDriver.get_binary_parser(buffer.length, data_type);
         if (bin_parser_res.err)
             return bin_parser_res;
         const bin_parser = bin_parser_res.ok;
@@ -128,7 +128,7 @@ export class LtdDriver_0x87 implements ILtdDriver {
         const data_type_bits = data_type.toString(2).padStart(2, '0');
 
         // data length bits
-        if (LtdDriver_0x87.get_binary_parser(size_bytes, DataType.INT).err)
+        if (LtdDriver.get_binary_parser(size_bytes, DataType.INT).err)
             return { err: 'Invalid Data Length Bits' };
         const data_length_bits = Math.log2(size_bytes).toString(2).padStart(2, '0');
 
@@ -157,7 +157,7 @@ export class LtdDriver_0x87 implements ILtdDriver {
 
     static gen_data_payload(data_type: DataType, size_bytes: number, msg_value: number): Result<Uint8Array> {
         // data length bits
-        const bin_parser_res = LtdDriver_0x87.get_binary_parser(size_bytes, data_type);
+        const bin_parser_res = LtdDriver.get_binary_parser(size_bytes, data_type);
         if (bin_parser_res.err)
             return bin_parser_res;
 
@@ -195,9 +195,9 @@ export class LtdDriver_0x87 implements ILtdDriver {
 
         const cfg2 = '00000000';
         const { size_bytes, data_type } = this.driver_msg_type_config_map[msg_type] as MsgTypeConfig;
-        const start_seg = new Uint8Array([this.PROTOCOL_VERSION, this.PROTOCOL_VERSION, (LtdDriver_0x87.PACKET_MIN_SIZE + size_bytes)]);
+        const start_seg = new Uint8Array([this.protocol_version[0], this.protocol_version[1], (LtdDriver.PACKET_MIN_SIZE + size_bytes)]);
 
-        const sn_res = LtdDriver_0x87.u16_to_2u8(msg_seq_number);
+        const sn_res = LtdDriver.u16_to_2u8(msg_seq_number);
         if (sn_res.err)
             return { err: sn_res.err };
         const seq_number_seg = sn_res.ok as Uint8Array;
@@ -207,32 +207,32 @@ export class LtdDriver_0x87 implements ILtdDriver {
             return { err: cfg1_res.err };
         const cfg_seg = new Uint8Array([cfg1_res.ok as number, parseInt(cfg2, 2)]);
 
-        const data_payload_res = LtdDriver_0x87.gen_data_payload(data_type, size_bytes, msg_value);
+        const data_payload_res = LtdDriver.gen_data_payload(data_type, size_bytes, msg_value);
         if (data_payload_res.err)
             return { err: data_payload_res.err };
         const data_payload = data_payload_res.ok as Uint8Array;
 
-        const seg_1 = LtdDriver_0x87.concat_uint8_arrays([start_seg, seq_number_seg, cfg_seg, data_payload]);
+        const seg_1 = LtdDriver.concat_uint8_arrays([start_seg, seq_number_seg, cfg_seg, data_payload]);
         // compute crc16
-        const crc16 = LtdDriver_0x87.compute_crc16(seg_1);
-        const crc16_res = LtdDriver_0x87.u16_to_2u8(crc16);
+        const crc16 = LtdDriver.compute_crc16(seg_1);
+        const crc16_res = LtdDriver.u16_to_2u8(crc16);
         if (crc16_res.err)
             return { err: crc16_res.err };
         const crc16_bytes = crc16_res.ok as Uint8Array;
         // construct final packet
         const end_seg = new Uint8Array([0x0D, 0x0A]);
-        const packet = LtdDriver_0x87.concat_uint8_arrays([seg_1, crc16_bytes, end_seg]);
+        const packet = LtdDriver.concat_uint8_arrays([seg_1, crc16_bytes, end_seg]);
         return { ok: packet }
     }
 
     decode_packet(packet: Uint8Array): Result<DeviceMsg> {
-        if (packet.length <= LtdDriver_0x87.PACKET_MIN_SIZE)
+        if (packet.length <= LtdDriver.PACKET_MIN_SIZE)
             return { err: 'Packet Too Small' };
 
         // crc16 check
         const packet_crc16_bytes = packet.slice(packet.length - 4, packet.length - 2);
         const packet_crc16 = new Uint16Array(packet_crc16_bytes.buffer)[0];
-        const computed_crc16 = LtdDriver_0x87.compute_crc16(packet.slice(0, packet.length - 4));
+        const computed_crc16 = LtdDriver.compute_crc16(packet.slice(0, packet.length - 4));
         if (packet_crc16 !== computed_crc16)
             return {
                 err: {
@@ -260,13 +260,13 @@ export class LtdDriver_0x87 implements ILtdDriver {
 
         // packet sequence number
         const seq_number_bytes = packet.slice(3, 5);
-        const sn_bin_parse_res = LtdDriver_0x87.bin_parse(seq_number_bytes, DataType.UINT);
+        const sn_bin_parse_res = LtdDriver.bin_parse(seq_number_bytes, DataType.UINT);
         if (sn_bin_parse_res.err)
             return { err: sn_bin_parse_res.err };
         device_msg.seq_number = sn_bin_parse_res.ok as number;
 
         // decode config byte 1
-        const cfg1_bits = LtdDriver_0x87.bin_byte(packet[5]);
+        const cfg1_bits = LtdDriver.bin_byte(packet[5]);
         // data_type
         const data_type_bits = cfg1_bits.slice(0, 2);
         const data_type = parseInt(data_type_bits, 2);
@@ -281,11 +281,11 @@ export class LtdDriver_0x87 implements ILtdDriver {
         // data_length
         const size_bytes_bits = cfg1_bits.slice(2, 4);
         const size_bytes = 2 ** parseInt(size_bytes_bits, 2);
-        if (size_bytes !== (packet.length - LtdDriver_0x87.PACKET_MIN_SIZE))
+        if (size_bytes !== (packet.length - LtdDriver.PACKET_MIN_SIZE))
             return {
                 err: {
                     msg: 'Invalid Data Length Bits',
-                    detail: `data_length_bits=${size_bytes}, Packet Data Size: ${packet.length - LtdDriver_0x87.PACKET_MIN_SIZE}`,
+                    detail: `data_length_bits=${size_bytes}, Packet Data Size: ${packet.length - LtdDriver.PACKET_MIN_SIZE}`,
                 }
             };
         device_msg.config.size_bytes = size_bytes;
@@ -303,10 +303,10 @@ export class LtdDriver_0x87 implements ILtdDriver {
         device_msg.config.msg_name = this.driver_msg_type_config_map[msg_type].msg_name;
 
         // parse data payload
-        const data_payload = packet.slice(LtdDriver_0x87.DATA_START, LtdDriver_0x87.DATA_START + size_bytes);
+        const data_payload = packet.slice(LtdDriver.DATA_START, LtdDriver.DATA_START + size_bytes);
         // base64 encode data payload
         device_msg.b64_msg_value = btoa(String.fromCharCode.apply(null, Array.from(data_payload)));
-        const data_payload_bin_parse_res = LtdDriver_0x87.bin_parse(data_payload, data_type);
+        const data_payload_bin_parse_res = LtdDriver.bin_parse(data_payload, data_type);
         if (data_payload_bin_parse_res.err)
             return { err: data_payload_bin_parse_res.err };
         device_msg.msg_value = data_payload_bin_parse_res.ok as number;

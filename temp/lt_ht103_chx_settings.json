@@ -1,0 +1,20 @@
+{
+  "device_model": "LT-HT103",
+  "cloud_settings": {
+    "labtronic_cdn_base_url": "http://127.0.0.1:8090"
+  },
+  "computed_params": [
+    {
+      "param_name": "Q_L_CAB",
+      "expr": "$C_f * ($T_h - $T_amp)"
+    },
+    {
+      "param_name": "Q_L_EXP",
+      "expr": "$Q_L_F1 + $Q_L_F2 * $T_h"
+    }
+  ],
+  "equations": [],
+  "scripts": [],
+  "series": [],
+  "device_config": {}
+}

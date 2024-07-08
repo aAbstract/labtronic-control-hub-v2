@@ -1,4 +1,4 @@
-import { LtdDriver_0x87 } from "../src/main/device_drivers/ltd_driver_0x87";
+import { LtdDriver } from "../src/main/device_drivers/ltd_driver";
 import { MsgTypeConfig, DataType, DeviceMsg } from '../src/common/models';
 
 const TEST_DRIVER_CONFIG: MsgTypeConfig[] = [
@@ -59,7 +59,7 @@ const TEST_DRIVER_CONFIG: MsgTypeConfig[] = [
 ];
 
 test('ltd_driver_0x87.get_msg_type_by_name', () => {
-    const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
+    const ltd_driver_0x87 = new LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG);
 
     // invalid case
     const msg_type_1 = ltd_driver_0x87.get_msg_type_by_name('DUMMY_MSG');
@@ -72,7 +72,7 @@ test('ltd_driver_0x87.get_msg_type_by_name', () => {
 });
 
 test('ltd_driver_0x87.decode_packet', () => {
-    const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
+    const ltd_driver_0x87 = new LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG);
 
     // too small packet case
     let packet = new Uint8Array([0x00]);
@@ -141,7 +141,7 @@ test('ltd_driver_0x87.decode_packet', () => {
 });
 
 test('ltd_driver_0x87.decode_packet_rc_39218_READ_PRESSURE', () => {
-    const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
+    const ltd_driver_0x87 = new LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG);
     const packet = new Uint8Array([135, 135, 15, 50, 153, 164, 0, 242, 195, 178, 66, 13, 10, 13, 10]);
     let result = ltd_driver_0x87.decode_packet(packet);
     expect(result.ok).toBeDefined();
@@ -161,7 +161,7 @@ test('ltd_driver_0x87.decode_packet_rc_39218_READ_PRESSURE', () => {
 });
 
 test('ltd_driver_0x87.encode_packet', () => {
-    const ltd_driver_0x87 = new LtdDriver_0x87(TEST_DRIVER_CONFIG);
+    const ltd_driver_0x87 = new LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG);
 
     // invalid msg type case
     const result_1 = ltd_driver_0x87.encode_packet(0, 10, 2.254);
@@ -171,11 +171,11 @@ test('ltd_driver_0x87.encode_packet', () => {
     const target_packet_2 = new Uint8Array([0x87, 0x87, 0x0F, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0xA4, 0x1A, 0x0D, 0x0A]);
     const result_2 = ltd_driver_0x87.encode_packet(0, ltd_driver_0x87.get_msg_type_by_name('READ_WEIGHT'), 2.254);
     expect(result_2.ok).toBeDefined();
-    expect(LtdDriver_0x87.cmp_buffers(target_packet_2, result_2.ok as Uint8Array)).toBe(true);
+    expect(LtdDriver.cmp_buffers(target_packet_2, result_2.ok as Uint8Array)).toBe(true);
 
     // encode command packet case
     const target_packet_3 = new Uint8Array([0x87, 0x87, 0x0C, 0x00, 0x00, 0xCF, 0x00, 0xFF, 0x4B, 0xEB, 0x0D, 0x0A]);
     const result_3 = ltd_driver_0x87.encode_packet(0, ltd_driver_0x87.get_msg_type_by_name('WRITE_RESET_SCALE'), 0xFF);
     expect(result_3.ok).toBeDefined();
-    expect(LtdDriver_0x87.cmp_buffers(target_packet_3, result_3.ok as Uint8Array)).toBe(true);
+    expect(LtdDriver.cmp_buffers(target_packet_3, result_3.ok as Uint8Array)).toBe(true);
 });

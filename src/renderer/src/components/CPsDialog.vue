@@ -76,14 +76,14 @@ onMounted(() => {
     <Dialog style="font-family: Cairo, sans-serif;" v-model:visible="dialog_visible" modal header="Device Computed Parameters" :style="{ width: '60%' }" :pt="dialog_pt">
         <div id="vce_help">
             <div class="vce_help_row">
-                <span style="width: 4vw;">VAR</span>
+                <span style="width: 5vw;">VAR</span>
                 <span style="width: 10vw;">MSG_TYPE</span>
                 <span style="width: 10vw;">DATA_TYPE</span>
                 <span style="flex-grow: 1;">DESCRIPTION</span>
             </div>
             <hr style="border-color: var(--font-color);">
             <div style="margin-bottom: 12px;" v-for="row in vce_param_config" class="vce_help_row">
-                <span style="width: 4vw; min-width: 4vw;">{{ row.param_symbol }}</span>
+                <span style="width: 5vw; min-width: 5vw;">{{ row.param_symbol }}</span>
                 <span style="width: 10vw; min-width: 10vw;">{{ row.msg_type_config.msg_name }}</span>
                 <span style="width: 10vw; min-width: 10vw;">{{ get_data_type_symbol(row.msg_type_config) }}</span>
                 <span style="flex-grow: 1;">{{ row.desc }}</span>

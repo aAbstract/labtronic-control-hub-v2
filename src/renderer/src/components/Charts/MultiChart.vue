@@ -33,6 +33,7 @@ function create_chart_options(font_color: string, lines_color: string): ChartOpt
             y: { ticks: { color: font_color }, grid: { color: lines_color } },
         },
         animation: false,
+        plugins: { legend: { display: false } },
     };
 }
 

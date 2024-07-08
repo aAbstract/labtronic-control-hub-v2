@@ -4,7 +4,8 @@ import { DmtbRow, Result } from "../common/models";
 import pcsv from 'papaparse';
 import fs from 'fs';
 
-function export_device_data(main_window: BrowserWindow, device_data: DmtbRow[]) {
+// @ts-ignore
+function _export_device_data(main_window: BrowserWindow, device_data: DmtbRow[]) {
     const options: SaveDialogOptions = {
         title: 'Export Device Data',
         filters: [
@@ -23,10 +24,23 @@ function export_device_data(main_window: BrowserWindow, device_data: DmtbRow[]) 
     });
 }
 
-function import_device_data_transformer(value: string, header: string) {
-    if (['sn', 'msg_type', 'msg_value'].includes(header))
-        return Number(value);
-    return value;
+function export_device_data(main_window: BrowserWindow, device_data: Record<string, number>[]) {
+    const options: SaveDialogOptions = {
+        title: 'Export Device Data',
+        filters: [
+            { name: 'CSV Files', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] },
+        ],
+    };
+
+    dialog.showSaveDialog(main_window, options).then(res => {
+        if (res.canceled || !res.filePath)
+            return;
+        fs.writeFile(res.filePath + '.csv', pcsv.unparse(device_data), (err) => {
+            const fsio_res: Result<string> = err ? { err: err.message } : { ok: `Device Data Saved to: ${res.filePath}` };
+            main_window.webContents.send('export_device_data_res', fsio_res);
+        });
+    });
 }
 
 function import_device_data(main_window: BrowserWindow) {
@@ -45,7 +59,12 @@ function import_device_data(main_window: BrowserWindow) {
             if (err)
                 main_window.webContents.send('import_device_data_res', { err: err.message });
             else
-                main_window.webContents.send('import_device_data_res', { ok: pcsv.parse(data, { header: true, transform: import_device_data_transformer }).data });
+                main_window.webContents.send('import_device_data_res', {
+                    ok: pcsv.parse(data, {
+                        header: true,
+                        transform: (value: string, _: string) => Number(value),
+                    }).data
+                });
         });
     });
 }

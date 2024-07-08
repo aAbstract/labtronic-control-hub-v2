@@ -15,7 +15,7 @@ const device_model_labeled_img = new URL(`../../device_assets/device_models_labe
 function render_msg_value(msg_type: number, msg_value: string) {
     const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
     if (!card_pos_info) {
-        add_log({ level: 'ERROR', msg: `Unknown Msg Type: ${msg_type}` });
+        // add_log({ level: 'ERROR', msg: `Device Model Panel | Unknown Msg Type: ${msg_type}` });
         return;
     }
     const { pos, cell_count } = card_pos_info;
@@ -43,9 +43,6 @@ onMounted(() => {
                 render_msg_value(msg_type, _msg_value);
         });
     });
-
-    // window.electron.ipcRenderer.on('device_error', () => GfxApi.start_error_animation(device_parts_pos_map['TANK']));
-    // window.electron.ipcRenderer.on('device_disconnected', () => GfxApi.stop_animation(device_parts_pos_map['TANK']));
 });
 
 </script>

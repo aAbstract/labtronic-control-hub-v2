@@ -114,7 +114,7 @@ onMounted(() => {
 .small_chart {
     width: calc(100% - 16px);
     margin: auto;
-    height: 100px;
+    height: 25vh;
     background-color: var(--dark-bg-color);
     border: 1px solid var(--empty-gauge-color);
     border-radius: 4px;

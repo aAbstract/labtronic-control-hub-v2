@@ -23,37 +23,31 @@ const dialog_pt = {
     content: { style: 'padding: 0px 16px;' },
 };
 
-function render_data_preview_table() {
-    data_points.value = [...data_points_cache];
-    const data_preview_cont = document.querySelector('#data_preview_cont') as HTMLElement;
-    if (data_preview_cont)
-        data_preview_cont.scrollTop = data_preview_cont.scrollHeight;
-}
-
 onMounted(() => {
     subscribe('show_data_preview', 'show_data_preview', _ => {
         dialog_visible.value = true;
     });
 
-    electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
-        if (!device_config)
-            return;
-        const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
-        table_headers.value = [
-            { header_key: 'time_ms', header_name: 'time_s' },
-            ...read_config.map(x => {
-                return {
-                    header_key: String(x.msg_type),
-                    header_name: x.msg_name.replace('READ_', ''),
-                } as TableHeader;
-            }),
-        ];
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
+            if (!device_config)
+                return;
+            const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
+            table_headers.value = [
+                { header_key: 'time_ms', header_name: 'time_s' },
+                ...read_config.map(x => {
+                    return {
+                        header_key: String(x.msg_type),
+                        header_name: x.msg_name.replace('READ_', ''),
+                    } as TableHeader;
+                }),
+            ];
+        });
     });
 
     subscribe('record_data_point', 'record_data_point_data_preview', args => {
         data_points_cache.push(args._data_point);
-        if (dialog_visible.value)
-            render_data_preview_table();
+        data_points.value = [...data_points_cache];
     });
 
     subscribe('clear_recorded_data', 'clear_recorded_data_data_preview', () => {

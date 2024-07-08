@@ -48,7 +48,7 @@ export class SerialAdapter {
     }
 
     private on_data(data: number[]) {
-        if (data[0] !== this.device_driver.PROTOCOL_VERSION || data[1] !== this.device_driver.PROTOCOL_VERSION)
+        if (data[0] !== this.device_driver.protocol_version[0] || data[1] !== this.device_driver.protocol_version[1])
             return;
 
         const packet = new Uint8Array(data);

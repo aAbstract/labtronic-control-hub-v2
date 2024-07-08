@@ -1,0 +1,54 @@
+{
+  "device_model": "LT-CH000",
+  "cloud_settings": {
+    "labtronic_cdn_base_url": "http://127.0.0.1:8090"
+  },
+  "computed_params": [
+    {
+      "param_name": "CP1",
+      "expr": "$W + $T + Math.sqrt($P) - ($I / $E) * 0.01"
+    },
+    {
+      "param_name": "CP2",
+      "expr": "$E + (($W + $T + $P) / $I)"
+    }
+  ],
+  "equations": [
+    {
+      "func_name": "lt_ch000_func_1",
+      "args_list": [
+        "arg_1",
+        "arg_2"
+      ],
+      "expr": "arg_1 + arg_2",
+      "result_unit": "m"
+    },
+    {
+      "func_name": "lt_ch000_func_2",
+      "args_list": [
+        "arg_1",
+        "arg_2"
+      ],
+      "expr": "arg_1 - arg_2",
+      "result_unit": "s"
+    }
+  ],
+  "scripts": [
+    {
+      "script_name": "_test_chx_script",
+      "script_path": "/home/abstract/work/labtronic_software/control_hub_v2/temp/_test_chx_script.js"
+    }
+  ],
+  "series": [
+    {
+      "series_name": "TEMP - CP1",
+      "x_param": 3,
+      "y_param": 16
+    },
+    {
+      "series_name": "PRES - CP2",
+      "x_param": 4,
+      "y_param": 17
+    }
+  ]
+}

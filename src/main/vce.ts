@@ -1,5 +1,6 @@
 import * as nvm from 'node:vm';
-import { DeviceMsg, Result, VceParamConfig, VceParamType, CHXComputedParam, MsgTypeConfig, DataType, CHXEquation } from '../common/models';
+import { promises as fsp } from 'node:fs';
+import { DeviceMsg, Result, VceParamConfig, VceParamType, CHXComputedParam, MsgTypeConfig, DataType, CHXEquation, CHXScript, CHXScriptInjectedParam } from '../common/models';
 
 export class VirtualComputeEngine {
     private device_model: string;
@@ -15,6 +16,7 @@ export class VirtualComputeEngine {
     private cps_config_map: Record<string, MsgTypeConfig> = {};
     private cps_script = '';
     private cps_config: CHXComputedParam[] = [];
+    private cps_expr_map: Record<number, string> = {};
 
     private current_msg_patch: DeviceMsg[] = [];
 
@@ -30,8 +32,13 @@ export class VirtualComputeEngine {
         this.vce_instance_id = _vce_instance_id;
 
         vce_prams_config.forEach(p => {
-            const msg_type = p.msg_type_config.msg_type;
             this.vce_context[p.param_symbol] = p.const_init_value ?? 0;
+
+            // ignore non-echo const device msgs
+            if (p.msg_type_config.msg_type === -1)
+                return;
+
+            const msg_type = p.msg_type_config.msg_type;
             this.vce_param_config_map[msg_type] = p;
             if (p.param_type === VceParamType.VCE_VAR)
                 this.vce_var_msg_types.add(msg_type);
@@ -40,17 +47,25 @@ export class VirtualComputeEngine {
 
         this.cps_config = _cps_config;
         this.cps_script = _cps_config.map(_config => `${_config.param_name}=${_config.expr}`).join(';');
-        _cps_config.forEach((_config, index) => this.cps_config_map[_config.param_name] = {
-            msg_type: 16 + this.vce_instance_id * 10 + index, // create out of hardware addressing bounds
-            msg_name: 'READ_' + _config.param_name,
-            data_type: DataType.FLOAT,
-            size_bytes: 4,
+        _cps_config.forEach((_config, index) => {
+            const msg_type = 16 + this.vce_instance_id * 10 + index; // create out of hardware addressing bounds
+            this.cps_expr_map[msg_type] = _config.expr;
+            this.cps_config_map[_config.param_name] = {
+                msg_type,
+                msg_name: 'READ_' + _config.param_name,
+                data_type: DataType.FLOAT,
+                size_bytes: 4,
+            }
         });
+    }
+
+    load_symbol(symbol: string, val: number) {
+        this.vce_context[symbol] = val;
     }
 
     private load_msg_into_context(device_msg: DeviceMsg) {
         const { param_symbol } = this.vce_param_config_map[device_msg.config.msg_type];
-        this.vce_context[param_symbol] = device_msg.msg_value;
+        this.load_symbol(param_symbol, device_msg.msg_value);
     }
 
     // @ts-ignore
@@ -123,6 +138,23 @@ export class VirtualComputeEngine {
             return { ok: result };
     }
 
+    static async exec_chx_script(data_points: Record<string, number>[], _script: CHXScript): Promise<Result<CHXScriptInjectedParam[]>> {
+        try {
+            // load script
+            let _script_content = await fsp.readFile(_script.script_path, { encoding: 'utf-8' });
+            _script_content += `\n\n${_script.script_name}(data_points, injected_params);`
+
+            // create script context
+            const vm_context = { data_points, injected_params: [] };
+            nvm.createContext(vm_context);
+
+            // run script
+            nvm.runInContext(_script_content, vm_context);
+
+            return { ok: vm_context.injected_params };
+        } catch (err) { return { err } }
+    }
+
     load_device_msg(device_msg: DeviceMsg): Result<Record<string, number>> {
         const { msg_type } = device_msg.config;
         if (!this.vce_var_msg_types.has(msg_type)) {
@@ -156,6 +188,6 @@ export class VirtualComputeEngine {
     }
 
     get_cps_config(): MsgTypeConfig[] {
-        return Object.values(this.cps_config_map);
+        return Object.values(this.cps_config_map).map(x => { return { ...x, cp_expr: this.cps_expr_map[x.msg_type] } });
     }
 }

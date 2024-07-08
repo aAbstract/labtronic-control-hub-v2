@@ -1,8 +1,10 @@
 <script setup lang="ts">
 
-import { ref, onMounted, inject, computed } from 'vue';
+import { ref, onMounted, inject, computed, shallowRef } from 'vue';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
+import OverlayPanel from 'primevue/overlaypanel';
+import { useToast } from 'primevue/usetoast';
 
 import { post_event, subscribe } from '@common/mediator';
 import SmallChart from './SmallChart.vue';
@@ -10,9 +12,9 @@ import DeviceEquation from './DeviceEquation.vue';
 import SeriesConfigDialog from './SeriesConfigDialog.vue';
 import DataPreview from './DataPreview.vue';
 import { CHXSeries } from '@common/models';
-import { electron_renderer_invoke } from '@renderer/lib/util';
+import { electron_renderer_invoke, electron_renderer_send, transform_keys, add_log } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
-import { DeviceMsg, MsgTypeConfig, CHXEquation } from '@common/models';
+import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInjectedParam } from '@common/models';
 
 enum RecordingState {
     RUNNING = 0,
@@ -31,20 +33,27 @@ const data_points_count = ref(0);
 
 let is_recording = false;
 const complete_data_point_keys: string[] = [];
+const msg_type_name_map: Record<string, string> = { 'time_ms': 'time_ms', 'seq_number': 'seq_number' };
 const device_model = inject('device_model');
 const panel_pos = ref('-50vw');
 const sampling_dt = ref(1000);
 const sampling_resolution = 100;
 const sampling_sn_base = computed(() => Math.floor(sampling_dt.value / sampling_resolution));
-const chx_series = ref<CHXSeries[]>();
-const chx_eqs = ref<CHXEquation[]>();
+const chx_series = shallowRef<CHXSeries[]>();
+const chx_eqs = shallowRef<CHXEquation[]>();
+const chx_scripts = shallowRef<CHXScript[]>();
+const ds_op = ref();
 const recording_state = ref<RecordingState>(RecordingState.STOPPED);
 const play_btn_color = computed(() => recording_state.value === RecordingState.RUNNING ? '#64DD17' : 'var(--accent-color)');
 const pause_btn_color = computed(() => recording_state.value === RecordingState.PAUSED ? '#FFAB00' : 'var(--accent-color)');
+const toast_service = useToast();
 const field_set_pt = {
     root: { style: 'padding: 0px; width: 100%; background-color: transparent; border-radius: 4px; border-color: var(--empty-gauge-color);' },
     legend: { style: 'padding: 0px 0px 0px 8px; font-size: 14px; background-color: transparent; border: none; color: var(--font-color); font-family: Cairo, sans-serif; font-size: 14px; font-weight: bold;' },
     content: { style: 'padding: 0px; color: var(--font-color); font-family: Cairo, sans-serif; font-size: 14px; font-weight: bold;' },
+};
+const overlay_panel_pt = {
+    content: { style: 'padding: 8px;' },
 };
 
 function show_series_config_dialog() {
@@ -55,8 +64,17 @@ function show_data_preview() {
     post_event('show_data_preview', {});
 }
 
+function export_device_data() {
+    const device_data = transform_keys(recorded_data_points, msg_type_name_map);
+    electron_renderer_send('export_device_data', { device_data });
+}
+
+function import_device_data() {
+    electron_renderer_send('import_device_data', {});
+}
+
 function fmt_time(ms: number): string {
-    const seconds = ms / 1000;
+    const seconds = Math.floor(ms / 1000);
     const hours = Math.floor(seconds / 3600);
     const seconds_h_rem = seconds % 3600;
     const minutes = Math.floor(seconds_h_rem / 60);
@@ -131,6 +149,24 @@ function start_data_recording() {
     }, sampling_dt.value);
 }
 
+function show_data_script_overlay_panel(_event: MouseEvent) {
+    ds_op.value.toggle(_event);
+}
+
+function exec_chx_script(_script: CHXScript) {
+    if (!window.electron) {
+        add_log({ level: 'ERROR', msg: 'Operation Denied Browser Sandbox' });
+        return;
+    }
+
+    window.electron.ipcRenderer.invoke('exec_chx_script', recorded_data_points, _script).then((res: Result<CHXScriptInjectedParam[]>) => {
+        if (res.err)
+            toast_service.add({ severity: 'error', summary: 'CHX Script Faild', detail: res.err, life: 0 });
+        else
+            res.ok?.forEach(chx_script_ip => post_event(`chx_script_ip_${chx_script_ip.param_name}`, { pv: chx_script_ip.param_val }));
+    });
+}
+
 onMounted(() => {
     subscribe('toggle_data_tool', 'toggle_data_tool_visi', _ => {
         const values_map = {
@@ -183,8 +219,40 @@ onMounted(() => {
             if (!device_config)
                 return;
             const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
-            read_config.forEach(_read_config => complete_data_point_keys.push(String(_read_config.msg_type)));
+            read_config.forEach(_read_config => {
+                complete_data_point_keys.push(String(_read_config.msg_type));
+                const { msg_type } = _read_config;
+                const msg_name = _read_config.msg_name.replaceAll('READ_', '');
+                msg_type_name_map[msg_type] = msg_name;
+                msg_type_name_map[msg_name] = String(msg_type);
+            });
         });
+    });
+
+    electron_renderer_invoke<CHXScript[]>('get_chx_scripts').then(_chx_scripts => {
+        if (!_chx_scripts)
+            return;
+        chx_scripts.value = _chx_scripts;
+    });
+
+    window.electron?.ipcRenderer.on('export_device_data_res', (_, data) => {
+        const fsio_res: Result<string> = data;
+        const severity = fsio_res.err ? 'error' : 'success';
+        const summary = fsio_res.err ? 'Faild to Save Device Data' : 'Device Data Saved';
+        const detail = fsio_res.err ? fsio_res.err : fsio_res.ok;
+        toast_service.add({ severity, summary, detail });
+    });
+
+    window.electron?.ipcRenderer.on('import_device_data_res', (_, data) => {
+        const fsio_res: Result<Record<string, string>[]> = data;
+        if (fsio_res.err) {
+            toast_service.add({ severity: 'error', summary: 'Faild to Import Device Data', detail: fsio_res.err });
+            return;
+        }
+        const imported_device_data = fsio_res.ok ?? [];
+        recorded_data_points = transform_keys(imported_device_data, msg_type_name_map) as DataPointType[];
+        show_data_preview();
+        recorded_data_points.forEach(_data_point => post_event('record_data_point', { _data_point }));
     });
 });
 
@@ -197,14 +265,14 @@ onMounted(() => {
         <div id="data_tool_header">
             <h1>DATA TOOL</h1>
             <div style="display: flex; align-items: center;">
-                <input id="sampling_dt" title="Sampling dt [ms]" type="text" v-model="sampling_dt">
+                <input id="sampling_dt" title="Sampling dt [ms]" type="number" v-model="sampling_dt">
                 <Button icon="pi pi-play" title="Start Recording" rounded text @click="start_data_recording()" :style="`color: ${play_btn_color};`" />
                 <Button icon="pi pi-pause" title="Pause Recording" rounded text @click="pause_data_recording()" :style="`color: ${pause_btn_color};`" />
                 <Button icon="pi pi-stop" title="Stop Recording" rounded text @click="stop_data_recording()" style="color: #DD2C00;" />
             </div>
             <div>
-                <Button icon="pi pi-file-import" title="Import Data" rounded text />
-                <Button icon="pi pi-file-export" title="Export Data" rounded text />
+                <Button icon="pi pi-file-import" title="Import Data" rounded text @click="import_device_data()" />
+                <Button icon="pi pi-file-export" title="Export Data" rounded text @click="export_device_data()" />
             </div>
         </div>
 
@@ -219,7 +287,15 @@ onMounted(() => {
             </div>
             <div>
                 <Button icon="pi pi-eye" class="data_tool_icon_btn" title="Preview Data" rounded text @click="show_data_preview()" />
-                <Button icon="pi pi-code" class="data_tool_icon_btn" title="Run Data Script" rounded text />
+                <Button icon="pi pi-code" class="data_tool_icon_btn" title="Run Data Script" rounded text @click="show_data_script_overlay_panel" />
+                <OverlayPanel ref="ds_op" :pt="overlay_panel_pt">
+                    <div id="ds_op_items_cont">
+                        <div class="ds_op_item" v-for="_script in chx_scripts" @click="exec_chx_script(_script)">
+                            <i class="pi pi-file"></i>
+                            <span>{{ _script.script_name }}</span>
+                        </div>
+                    </div>
+                </OverlayPanel>
             </div>
         </div>
 
@@ -251,15 +327,51 @@ onMounted(() => {
 </template>
 
 <style scoped>
+#ds_op_items_cont {
+    font-family: "Lucida Console", "Courier New", monospace;
+    min-width: 200px;
+    height: fit-content;
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: var(--dark-bg-color);
+    padding: 8px;
+    border-radius: 4px;
+    color: var(--font-color);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.ds_op_item {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    border-radius: 4px;
+}
+
+.ds_op_item:hover {
+    background-color: var(--light-bg-color);
+}
+
+.ds_op_item i {
+    margin-right: 16px;
+}
+
 #series_field_set {
-    height: 60%;
-    max-height: 60%;
+    height: fit-content;
+    min-height: 35vh;
     overflow-y: scroll;
 }
 
 #deqs_field_set {
-    height: 30%;
-    max-height: 30%;
+    flex-grow: 1;
     overflow-y: scroll;
 }
 

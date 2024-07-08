@@ -1,7 +1,7 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
-import { LtdDriver_0x87 } from "./ltd_driver_0x87";
-import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation } from '../../common/models';
+import { LtdDriver } from "./ltd_driver";
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation, CHXScript } from '../../common/models';
 import { VirtualComputeEngine } from '../vce';
 import { subscribe } from '../../common/mediator';
 //@ts-ignore
@@ -92,16 +92,6 @@ const LT_CH000_DRIVER_CONFIG: MsgTypeConfig[] = [
 //      [x] `${DEVICE_MODEL}_exec_device_cmd`
 //      [x] `${DEVICE_MODEL}_serial_port_scan`
 
-const LT_CH000_DEVICE_CMD_HELP: string[] = [
-    '=======================================================================================================',
-    'CALIBRATE, Alias: CAB                           | Calibrates Device Scale',
-    'SET PISTON_PUMP <value>, Alias: SI <value>      | Control Device PISTON_PUMP, 0 <= value <= 200',
-    'SET PERISTALTIC_PUMP <value>, Alias: SE <value> | Control Device PERISTALTIC_PUMP, value = [0, 1, 2, 3]',
-    'RECOVER, Alias: RV                              | Reover from Device Error',
-    'ALARM, Alias: AL                                | Turn off Device Alarm',
-    '=======================================================================================================',
-];
-
 const LT_CH000_VCE_CONFIG: VceParamConfig[] = [
     {
         msg_type_config: {
@@ -162,15 +152,15 @@ const LT_CH000_VCE_CONFIG: VceParamConfig[] = [
     },
 ];
 
-ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_CH000_DRIVER_CONFIG, ...(lt_ch000_vce0?.get_cps_config() ?? [])]);
-ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_CH000_DEVICE_CMD_HELP);
-ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_CH000_VCE_CONFIG);
-
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;
 let lt_ch000_vce0: VirtualComputeEngine | null = null;
 
+ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_CH000_DRIVER_CONFIG, ...(lt_ch000_vce0?.get_cps_config() ?? [])]);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_CH000_DEVICE_CMD_HELP);
+ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_CH000_VCE_CONFIG);
 ipcMain.handle('compute_chx_equation', (_, chx_equation: CHXEquation, args_vals: number[]) => VirtualComputeEngine.compute_chx_equation(chx_equation, args_vals));
+ipcMain.handle('exec_chx_script', async (_, data_points: Record<string, number>[], _script: CHXScript) => await VirtualComputeEngine.exec_chx_script(data_points, _script));
 
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);
@@ -184,6 +174,16 @@ function mw_ipc_handler(channel: string, data: any) {
     if (channel === `${DEVICE_MODEL}_device_msg` && device_msg.config.msg_type < 16)
         lt_ch000_vce0?.load_device_msg(data.device_msg);
 }
+
+const LT_CH000_DEVICE_CMD_HELP: string[] = [
+    '=======================================================================================================',
+    'CALIBRATE, Alias: CAB                           | Calibrates Device Scale',
+    'SET PISTON_PUMP <value>, Alias: SI <value>      | Control Device PISTON_PUMP, 0 <= value <= 200',
+    'SET PERISTALTIC_PUMP <value>, Alias: SE <value> | Control Device PERISTALTIC_PUMP, value = [0, 1, 2, 3]',
+    'RECOVER, Alias: RV                              | Reover from Device Error',
+    'ALARM, Alias: AL                                | Turn off Device Alarm',
+    '=======================================================================================================',
+];
 
 function lt_ch000_cmd_exec(cmd: string) {
     const CMD_ALIAS_LIST: Record<string, string[]> = {
@@ -217,7 +217,7 @@ function lt_ch000_cmd_exec(cmd: string) {
 
         // connect
         setTimeout(() => {
-            serial_adapter = new SerialAdapter(port_name, new LtdDriver_0x87(LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
+            serial_adapter = new SerialAdapter(port_name, new LtdDriver([0x87, 0x87], LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
             serial_adapter.connect();
         }, 1000);
         return;
@@ -255,7 +255,7 @@ export function init_lt_ch000_serial_adapter(_main_window: BrowserWindow) {
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, (_, data) => {
         const { port_name } = data;
-        serial_adapter = new SerialAdapter(port_name, new LtdDriver_0x87(LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
+        serial_adapter = new SerialAdapter(port_name, new LtdDriver([0x87, 0x87], LT_CH000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         serial_adapter.connect();
     });
 

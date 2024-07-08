@@ -100,3 +100,6 @@
 //     serial_adapter.on_serial_port_open();
 //     return;
 // }
+
+// window.electron.ipcRenderer.on('device_error', () => GfxApi.start_error_animation(device_parts_pos_map['TANK']));
+// window.electron.ipcRenderer.on('device_disconnected', () => GfxApi.stop_animation(device_parts_pos_map['TANK']));

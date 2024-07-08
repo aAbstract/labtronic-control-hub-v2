@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onMounted, shallowRef, computed, inject, ref } from 'vue';
+import { onBeforeMount, shallowRef, computed, inject, ref } from 'vue';
 import Checkbox from 'primevue/checkbox';
 
 import { MsgTypeConfig } from '@common/models';
@@ -13,6 +13,7 @@ import { electron_renderer_invoke, clone_object } from '@renderer/lib/util';
 // @ts-ignore
 import { DeviceMsg } from '@common/models';
 
+const chart_height = ref('35vh');
 const device_model = inject('device_model') as string;
 const device_config = shallowRef<MsgTypeConfig[]>([]);
 let cache_changed = false;
@@ -23,8 +24,11 @@ const msg_type_state_map = ref<Record<number, boolean>>({});
 const active_msg_type = ref(-1);
 const read_device_config = computed(() => {
     const read_config = device_config.value.filter(x => x.msg_name.startsWith('READ_'));
+    const _chart_height = map_chart_height(Math.ceil(read_config.length / 4));
+    chart_height.value = `${_chart_height}vh`;
+
     return read_config.map(x => {
-        msg_values_cache[x.msg_type] = '0.00';
+        msg_values_cache[x.msg_type] = '000.00';
         cache_changed = true;
         msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '0xFFFFFF';
         msg_type_state_map.value[x.msg_type] = true;
@@ -37,6 +41,18 @@ const checkbox_pt: any = {
     icon: { style: 'color: var(--font-color);' },
 };
 
+function map_chart_height(_key: number): number {
+    const _map: Record<number, number> = {
+        1: 40,
+        2: 38,
+        3: 37,
+    };
+    if (_key in _map)
+        return _map[_key];
+    else
+        return 35;
+}
+
 function switch_single_channel_plot(new_msg_type: number) {
     active_msg_type.value = new_msg_type;
     post_event('change_plot_channel', { new_msg_type });
@@ -46,7 +62,7 @@ function switch_multi_channels_plot() {
     post_event('change_plot_channels', { new_msg_type_state_map: msg_type_state_map.value });
 }
 
-onMounted(() => {
+onBeforeMount(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
         electron_renderer_invoke<any>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
@@ -79,13 +95,14 @@ onMounted(() => {
     <div id="device_state_panel">
         <div style="height: 8px;"></div>
         <div id="readings_grid" v-on="screenshot_handlers">
-            <h4 id="rg_title">
+            <!-- <h4 id="rg_title">
                 <span>Device Readings</span>
-            </h4>
+            </h4> -->
             <div id="readings_cont">
-                <div class="reading_cont" v-for="config in read_device_config" :style="{ color: msg_type_color_map[config.msg_type] }">
+                <div class="reading_cont" v-for="config in [...read_device_config]" :style="{ color: msg_type_color_map[config.msg_type] }">
                     <Checkbox @change="switch_multi_channels_plot()" binary :value="config.msg_type" v-model="msg_type_state_map[config.msg_type]" :pt="checkbox_pt" />
-                    <span @click="switch_single_channel_plot(config.msg_type)" :style="{ borderBottom: active_msg_type === config.msg_type ? `2px solid ${msg_type_color_map[config.msg_type]}` : 'none' }">{{ `${config.msg_name}: ${msg_type_value_map[config.msg_type]}` }}</span>
+                    <!-- @vue-ignore -->
+                    <span :title="config.cp_expr ?? config.msg_name" @click="switch_single_channel_plot(config.msg_type)" :style="{ borderBottom: active_msg_type === config.msg_type ? `2px solid ${msg_type_color_map[config.msg_type]}` : 'none' }">{{ `${config.msg_name}: ${msg_type_value_map[config.msg_type] ?? 'XXX.XX'}` }}</span>
                 </div>
             </div>
         </div>
@@ -99,11 +116,11 @@ onMounted(() => {
 
 <style scoped>
 .device_state_chart {
-    height: 40vh;
+    height: v-bind(chart_height);
     width: calc(100% - 8px);
     max-width: 60vw;
     border: 1px solid var(--empty-gauge-color);
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 #readings_cont {
@@ -118,7 +135,7 @@ onMounted(() => {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    width: 200px;
+    width: 13.2vw;
 }
 
 .reading_cont span {

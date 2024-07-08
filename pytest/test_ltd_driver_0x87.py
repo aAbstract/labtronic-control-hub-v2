@@ -1,5 +1,5 @@
-from emu_spi.ltd_driver_0x87 import (
-    LtdDriver_0x87,
+from emu_spi.ltd_driver import (
+    LtdDriver,
     MsgTypeConfig,
     DeviceMsg,
     DATA_TYPE_INT,
@@ -22,7 +22,7 @@ TEST_DRIVER_CONFIG: list[MsgTypeConfig] = [
 
 
 def test_ltd_driver_0x87_get_msg_type_by_name():
-    ltd_driver_0x87 = LtdDriver_0x87(TEST_DRIVER_CONFIG)
+    ltd_driver_0x87 = LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG)
 
     # invalid case
     msg_type_1 = ltd_driver_0x87.get_msg_type_by_name('DUMMY_MSG')
@@ -35,7 +35,7 @@ def test_ltd_driver_0x87_get_msg_type_by_name():
 
 
 def test_ltd_driver_0x87_encode_packet():
-    ltd_driver_0x87 = LtdDriver_0x87(TEST_DRIVER_CONFIG)
+    ltd_driver_0x87 = LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG)
 
     # invalid msg type case
     result_1 = ltd_driver_0x87.encode_packet(0, 10, 2.254)
@@ -55,7 +55,7 @@ def test_ltd_driver_0x87_encode_packet():
 
 
 def test_ltd_driver_0x87_decode_packet():
-    ltd_driver_0x87 = LtdDriver_0x87(TEST_DRIVER_CONFIG)
+    ltd_driver_0x87 = LtdDriver([0x87, 0x87], TEST_DRIVER_CONFIG)
 
     # too small packet
     packet = bytes([0x00])

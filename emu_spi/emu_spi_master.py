@@ -46,7 +46,8 @@ def write_test_error_packet():
     vspi_socket.send(packet)
 
 
-def write_error_packet(error_code: int):
+def write_error_packet_0x87(error_code: int):
+    ltd_driver: LtdDriver = ltd_driver_0x87
     error_codes = {
         0xF0: 'Low Liquid in the tank',
         0xF1: 'Stepper Motor Failed',
@@ -57,7 +58,7 @@ def write_error_packet(error_code: int):
     }
     if error_code in error_codes:
         print(f'Writing error msg "{error_codes[error_code]}"')
-    error_packet = ltd_driver_0x87.encode_packet(0, TEST_DRIVER_CONFIG[8].msg_type, error_code).ok
+    error_packet = ltd_driver.encode_packet(0, DRIVER_CONFIG_0x87[8].msg_type, error_code).ok
     vspi_socket.send(error_packet)
 
 
@@ -66,16 +67,22 @@ def write_raw_packet(data: list[int]):
     vspi_socket.send(packet)
 
 
-def stream_sine_waves():
+def write_msg(_driver: LtdDriver, msg_type: int, msg_value: int):
+    packet = _driver.encode_packet(0, msg_type, msg_value).ok
+    vspi_socket.send(packet)
+
+
+def stream_sine_waves_0x87():
+    ltd_driver: LtdDriver = ltd_driver_0x87
     x = 0
     while True:
         _theta = 6 * math.pi * x / 100  # 3 Hz wave @ dt = 0.01
         y_wght = math.sin(_theta) * 100
         y_temp = 25 if y_wght >= 0 else 0
         y_pres = y_wght / 10 if y_wght >= 0 else 0
-        packet_wght = ltd_driver_0x87.encode_packet(x, TEST_DRIVER_CONFIG[2].msg_type, y_wght).ok
-        packet_temp = ltd_driver_0x87.encode_packet(x, TEST_DRIVER_CONFIG[3].msg_type, y_temp).ok
-        packet_pres = ltd_driver_0x87.encode_packet(x, TEST_DRIVER_CONFIG[4].msg_type, y_pres).ok
+        packet_wght = ltd_driver.encode_packet(x, DRIVER_CONFIG_0x87[2].msg_type, y_wght).ok
+        packet_temp = ltd_driver.encode_packet(x, DRIVER_CONFIG_0x87[3].msg_type, y_temp).ok
+        packet_pres = ltd_driver.encode_packet(x, DRIVER_CONFIG_0x87[4].msg_type, y_pres).ok
         vspi_socket.send(packet_wght)
         vspi_socket.send(packet_temp)
         vspi_socket.send(packet_pres)
@@ -83,15 +90,16 @@ def stream_sine_waves():
         time.sleep(0.01)
 
 
-def stream_rand_waves():
+def stream_rand_waves_0x87():
+    ltd_driver: LtdDriver = ltd_driver_0x87
     sn = 0
     while True:
         y_wght = random.uniform(1, 15)
         y_temp = random.uniform(1, 10)
         y_pres = random.uniform(1, 5)
-        packet_wght = ltd_driver_0x87.encode_packet(sn, TEST_DRIVER_CONFIG[2].msg_type, y_wght).ok
-        packet_temp = ltd_driver_0x87.encode_packet(sn, TEST_DRIVER_CONFIG[3].msg_type, y_temp).ok
-        packet_pres = ltd_driver_0x87.encode_packet(sn, TEST_DRIVER_CONFIG[4].msg_type, y_pres).ok
+        packet_wght = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x87[2].msg_type, y_wght).ok
+        packet_temp = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x87[3].msg_type, y_temp).ok
+        packet_pres = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x87[4].msg_type, y_pres).ok
         vspi_socket.send(packet_wght)
         vspi_socket.send(packet_temp)
         vspi_socket.send(packet_pres)
@@ -99,8 +107,31 @@ def stream_rand_waves():
         time.sleep(0.01)
 
 
-def read_packet():
-    print('Listening for LtdDriver_0x87 packet...')
+def stream_detr_waves_0x13():
+    ltd_driver: LtdDriver = ltd_driver_0x13
+    sn = 0
+    while True:
+        t1 = 1
+        t2 = 2
+        t_amb = 25
+        t_c = 4
+        t_h = t_amb + sn
+        packet_t1 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[0].msg_type, t1).ok
+        packet_t2 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[1].msg_type, t2).ok
+        packet_t_amb = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[2].msg_type, t_amb).ok
+        packet_t_c = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[3].msg_type, t_c).ok
+        packet_t_h = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[4].msg_type, t_h).ok
+        vspi_socket.send(packet_t1)
+        vspi_socket.send(packet_t2)
+        vspi_socket.send(packet_t_amb)
+        vspi_socket.send(packet_t_c)
+        vspi_socket.send(packet_t_h)
+        sn += 1
+        time.sleep(0.2)
+
+
+def read_packet(_driver: LtdDriver):
+    print(f"Listening for LtdDriver-{_driver.protocol_version} packet...")
     packet = b''
     while True:
         try:
@@ -110,16 +141,20 @@ def read_packet():
 
         packet += byte
         if packet[-2:] == b'\r\n':
-            break
+            if packet[0] == _driver.protocol_version[0] and packet[1] == _driver.protocol_version[1]:
+                break
+            else:
+                print(f"Invalid LtdDriver-{_driver.protocol_version} packet")
+                packet = b''
 
-    device_msg_res = ltd_driver_0x87.decode_packet(packet)
+    device_msg_res = _driver.decode_packet(packet)
     if device_msg_res.err:
-        print('Invalid LtdDriver_0x87 packet')
+        print('Invalid LtdDriver packet')
         return
     device_msg: DeviceMsg = device_msg_res.ok
     if device_msg.config.msg_type in [12, 13]:
-        control_state_map = {12: 0, 13: 1}
-        vspi_socket.send(ltd_driver_0x87.encode_packet(0, control_state_map[device_msg.config.msg_type], device_msg.msg_value).ok)
+        control_state_map = {12: 5, 13: 6}
+        vspi_socket.send(_driver.encode_packet(0, control_state_map[device_msg.config.msg_type], device_msg.msg_value).ok)
     print(device_msg)
 
 
@@ -139,9 +174,14 @@ def print_func_src(func):
     print(inspect.getsource(func))
 
 
-def start_control_loop():
+def start_control_loop_0x87():
     while True:
-        read_packet()
+        read_packet(ltd_driver_0x87)
+
+
+def start_control_loop_0x13():
+    while True:
+        read_packet(ltd_driver_0x13)
 
 
 if __name__ == '__main__':

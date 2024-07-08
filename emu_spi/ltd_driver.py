@@ -37,11 +37,11 @@ class DeviceMsg:
         return f"DeviceMsg(seq_number={self.seq_number}, msg_value={self.msg_value}, b64_msg_value='{self.b64_msg_value}', msg_name={self.config.msg_name})"
 
 
-class LtdDriver_0x87:
+class LtdDriver:
     PACKET_MIN_SIZE = 11
     DATA_START = 7
-    PROTOCOL_VERSION = 0x87
 
+    protocol_version = (0, 0)
     driver_msg_type_config_map: dict[int, MsgTypeConfig] = {}
     msg_seq_number: int = 0
 
@@ -50,7 +50,8 @@ class LtdDriver_0x87:
     msg_name_set = set()
     data_type_set = {0, 1, 2, 3}
 
-    def __init__(self, _driver_msg_types: list[MsgTypeConfig]) -> None:
+    def __init__(self, _protocol_version: tuple[int, int], _driver_msg_types: list[MsgTypeConfig]) -> None:
+        self.protocol_version = _protocol_version
         self.msg_type_set = set(config.msg_type for config in _driver_msg_types)
         self.msg_name_set = set(config.msg_name for config in _driver_msg_types)
         self.driver_msg_type_config_map = {config.msg_type: config for config in _driver_msg_types}
@@ -89,7 +90,7 @@ class LtdDriver_0x87:
         }
 
         if size_bytes not in PARSERS_MAP:
-            return Result(err=f"Protocol Version: {LtdDriver_0x87.PROTOCOL_VERSION} Do not Support Data Size: {size_bytes} Bytes")
+            return Result(err=f"Data Size: ${size_bytes} Bytes is not Supported")
         map_lvl_2 = PARSERS_MAP[size_bytes]
         if data_type not in map_lvl_2:
             return Result(err=f"No Binary Parser was Found for: data_type={data_type}, size_bytes={size_bytes}")
@@ -148,7 +149,7 @@ class LtdDriver_0x87:
         if data_type == DATA_TYPE_FLOAT and len(buffer) in [1, 2]:
             return {"err": f"Can not Parse Buffer of Size [{len(buffer)}] to FLOAT"}
 
-        bin_parser_res = LtdDriver_0x87._get_binary_parser(len(buffer), data_type)
+        bin_parser_res = LtdDriver._get_binary_parser(len(buffer), data_type)
         if bin_parser_res.err:
             return bin_parser_res
 
@@ -171,7 +172,7 @@ class LtdDriver_0x87:
         data_type_bits = '0' * (2 - len(bin(data_type)[2:])) + bin(data_type)[2:]
 
         # data length bits
-        binary_parser_res = LtdDriver_0x87._get_binary_parser(size_bytes, DATA_TYPE_INT)
+        binary_parser_res = LtdDriver._get_binary_parser(size_bytes, DATA_TYPE_INT)
         if binary_parser_res.err:
             return Result(err='Invalid Data Length Bits')
         data_length_bits = bin(int(math.log2(size_bytes)))[2:]
@@ -202,9 +203,9 @@ class LtdDriver_0x87:
         cfg2 = '00000000'
         size_bytes = self.driver_msg_type_config_map[msg_type].size_bytes
         data_type = self.driver_msg_type_config_map[msg_type].data_type
-        start_seg = bytes([LtdDriver_0x87.PROTOCOL_VERSION, LtdDriver_0x87.PROTOCOL_VERSION, (LtdDriver_0x87.PACKET_MIN_SIZE + size_bytes)])
+        start_seg = bytes([self.protocol_version[0], self.protocol_version[1], (LtdDriver.PACKET_MIN_SIZE + size_bytes)])
 
-        result = LtdDriver_0x87._u16_to_2u8(msg_seq_number)
+        result = LtdDriver._u16_to_2u8(msg_seq_number)
         if result.err:
             return result
         seq_number_seg: bytes = result.ok
@@ -214,15 +215,15 @@ class LtdDriver_0x87:
             return result
         cfg_seg = bytes([result.ok, int(cfg2, 2)])
 
-        bin_parser_res = LtdDriver_0x87._get_binary_parser(size_bytes, data_type)
+        bin_parser_res = LtdDriver._get_binary_parser(size_bytes, data_type)
         if bin_parser_res.err:
             return bin_parser_res
         data_payload = struct.pack(bin_parser_res.ok, msg_value)
 
         seg_1 = start_seg + seq_number_seg + cfg_seg + data_payload
         # compute crc16
-        crc16 = LtdDriver_0x87._compute_crc16(seg_1)
-        result = LtdDriver_0x87._u16_to_2u8(crc16)
+        crc16 = LtdDriver._compute_crc16(seg_1)
+        result = LtdDriver._u16_to_2u8(crc16)
         if result.err:
             return result
         crc16_bytes: bytes = result.ok
@@ -232,13 +233,13 @@ class LtdDriver_0x87:
         return Result(ok=packet)
 
     def decode_packet(self, packet: bytearray) -> Result:
-        if len(packet) <= LtdDriver_0x87.PACKET_MIN_SIZE:
+        if len(packet) <= LtdDriver.PACKET_MIN_SIZE:
             return Result(err='Packet Too Small')
 
         # CRC-16 check
         packet_crc16_bytes = packet[-4:-2]
         packet_crc16 = int.from_bytes(packet_crc16_bytes, byteorder='little')
-        computed_crc16 = LtdDriver_0x87._compute_crc16(packet[:-4])
+        computed_crc16 = LtdDriver._compute_crc16(packet[:-4])
         if packet_crc16 != computed_crc16:
             return Result(err={
                 'msg': 'Invalid CRC-16',
@@ -263,13 +264,13 @@ class LtdDriver_0x87:
 
         # packet sequence number
         seq_number_bytes = packet[3:5]
-        result = LtdDriver_0x87._bin_parse(seq_number_bytes, DATA_TYPE_UINT)
+        result = LtdDriver._bin_parse(seq_number_bytes, DATA_TYPE_UINT)
         if result.err:
             return result
         device_msg.seq_number = result.ok
 
         # decode config byte 1
-        cfg1_bits = LtdDriver_0x87._bin_byte(packet[5])
+        cfg1_bits = LtdDriver._bin_byte(packet[5])
 
         # data type
         data_type_bits = cfg1_bits[:2]
@@ -284,10 +285,10 @@ class LtdDriver_0x87:
         # data length
         size_bytes_bits = cfg1_bits[2:4]
         size_bytes = 2 ** int(size_bytes_bits, 2)
-        if size_bytes != len(packet) - LtdDriver_0x87.PACKET_MIN_SIZE:
+        if size_bytes != len(packet) - LtdDriver.PACKET_MIN_SIZE:
             return Result(err={
                 'msg': 'Invalid Data Length Bits',
-                'detail': f'data_length_bits={size_bytes}, Packet Data Size: {len(packet) - LtdDriver_0x87.PACKET_MIN_SIZE}',
+                'detail': f'data_length_bits={size_bytes}, Packet Data Size: {len(packet) - LtdDriver.PACKET_MIN_SIZE}',
             })
         device_msg.config.size_bytes = size_bytes
 
@@ -303,12 +304,12 @@ class LtdDriver_0x87:
         device_msg.config.msg_name = self.driver_msg_type_config_map[msg_type].msg_name
 
         # parse data payload
-        data_payload = packet[LtdDriver_0x87.DATA_START:LtdDriver_0x87.DATA_START + size_bytes]
+        data_payload = packet[LtdDriver.DATA_START:LtdDriver.DATA_START + size_bytes]
 
         # base64 encode data payload
-        device_msg.b64_msg_value = LtdDriver_0x87._cx_b64encode(data_payload).decode('utf-8')
+        device_msg.b64_msg_value = LtdDriver._cx_b64encode(data_payload).decode('utf-8')
 
-        result = LtdDriver_0x87._bin_parse(data_payload, data_type)
+        result = LtdDriver._bin_parse(data_payload, data_type)
         if result.err:
             return result
         device_msg.msg_value = result.ok
