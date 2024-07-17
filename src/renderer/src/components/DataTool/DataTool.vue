@@ -14,7 +14,7 @@ import DataPreview from './DataPreview.vue';
 import { CHXSeries } from '@common/models';
 import { electron_renderer_invoke, electron_renderer_send, transform_keys, add_log } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
-import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInjectedParam } from '@common/models';
+import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInjectedParam, AlertConfig } from '@common/models';
 
 enum RecordingState {
     RUNNING = 0,
@@ -254,6 +254,23 @@ onMounted(() => {
         show_data_preview();
         recorded_data_points.forEach(_data_point => post_event('record_data_point', { _data_point }));
     });
+
+    subscribe('nav_bar_exit', 'nav_bar_exit_data_panel', () => {
+        if (recorded_data_points.length === 0) {
+            electron_renderer_send('exit', {});
+            return;
+        }
+        const dialog_config: AlertConfig = {
+            title: 'Warning',
+            msg_severity: 'warn',
+            msg_body: 'Device Data Might be Lost, if not Saved',
+            btns_config: [
+                { btn_text: 'Cancel', btn_type: 'secondary', btn_action: () => post_event('hide_alert', {}) },
+                { btn_text: 'Exit', btn_type: 'info', btn_action: () => electron_renderer_send('exit', {}) },
+            ],
+        };
+        post_event('show_alert', { dialog_config });
+    });
 });
 
 </script>
@@ -268,7 +285,7 @@ onMounted(() => {
                 <input id="sampling_dt" title="Sampling dt [ms]" type="number" v-model="sampling_dt">
                 <Button icon="pi pi-play" title="Start Recording" rounded text @click="start_data_recording()" :style="`color: ${play_btn_color};`" />
                 <Button icon="pi pi-pause" title="Pause Recording" rounded text @click="pause_data_recording()" :style="`color: ${pause_btn_color};`" />
-                <Button icon="pi pi-stop" title="Stop Recording" rounded text @click="stop_data_recording()" style="color: #DD2C00;" />
+                <Button icon="pi pi-stop" title="Reset Recording" rounded text @click="stop_data_recording()" style="color: #DD2C00;" />
             </div>
             <div>
                 <Button icon="pi pi-file-import" title="Import Data" rounded text @click="import_device_data()" />
@@ -446,7 +463,7 @@ onMounted(() => {
     height: calc(100% - 32px);
     top: 12px;
     background-color: var(--light-bg-color);
-    border-radius: 8px;
+    border-radius: 4px;
     color: var(--font-color);
     padding: 4px 8px;
     transition: 0.3s ease;

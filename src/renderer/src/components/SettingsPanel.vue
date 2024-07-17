@@ -5,7 +5,7 @@ import Button from 'primevue/button';
 
 import { subscribe } from '@common/mediator';
 import { get_base_url } from '@renderer/lib/lt_cdn_api';
-import { CHXSettings } from '@common/models';
+import { CHXCloudSettings } from '@common/models';
 import { electron_renderer_send, compute_tooltip_pt } from '@renderer/lib/util';
 
 const panel_pos = ref('-50vw');
@@ -14,7 +14,7 @@ const device_model = inject('device_model') as string;
 const device_model_img = new URL(`../device_assets/device_models/${device_model.toLowerCase().replace('-', '_')}.png`, import.meta.url).href;
 
 function save_chx_settings() {
-    const _chx_settings: CHXSettings = { labtronic_cdn_base_url: cdn_server.value };
+    const _chx_settings: CHXCloudSettings = { labtronic_cdn_base_url: cdn_server.value };
     electron_renderer_send('save_chx_settings', { _chx_settings });
 }
 
@@ -107,6 +107,7 @@ onMounted(() => {
                     <span>LabTronic</span>
                 </div>
             </div>
+            <div style="height: 12px;"></div>
         </div>
     </div>
 </template>
@@ -221,7 +222,7 @@ onMounted(() => {
     height: calc(100% - 32px);
     top: 12px;
     background-color: var(--light-bg-color);
-    border-radius: 8px;
+    border-radius: 4px;
     color: var(--font-color);
     padding: 4px 8px;
     transition: 0.3s ease;
@@ -229,5 +230,6 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    overflow-y: scroll;
 }
 </style>

@@ -31,12 +31,18 @@ const DEVICE_OP_MODE_CPS_MAP: Record<LT_HT103_DeviceOperationMode, CHXComputedPa
         { param_name: 'Q_L', expr: '$C_f * ($T_h - $T_amb)' },
         { param_name: 'Q_Cond', expr: '$P_H - ($C_f * ($T_h - $T_amb))' }, // $P_H - $Q_L
         { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($C_f * ($T_h - $T_amb)))' }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
+        // plot control parameters
+        { param_name: 'P_Heater', expr: '$P_H' },
+        { param_name: 'P_Peltier', expr: '$P_P' },
     ],
     [LT_HT103_DeviceOperationMode.EXPERIMENT]: [
         { param_name: 'Delta_T', expr: '$T1 - $T2' },
         { param_name: 'Q_L', expr: '$Q_L_F1 + $Q_L_F2 * $T_h' },
         { param_name: 'Q_Cond', expr: '$P_H - ($Q_L_F1 + $Q_L_F2 * $T_h)' },
         { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($Q_L_F1 + $Q_L_F2 * $T_h))' }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
+        // plot control parameters
+        { param_name: 'P_Heater', expr: '$P_H' },
+        { param_name: 'P_Peltier', expr: '$P_P' },
     ],
 };
 const DEVICE_OP_MODE_LBL_MAP: Record<LT_HT103_DeviceOperationMode, string> = {
@@ -49,60 +55,70 @@ const LT_HT103_DRIVER_CONFIG: MsgTypeConfig[] = [
         msg_name: 'READ_T1',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 1,
         msg_name: 'READ_T2',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 2,
         msg_name: 'READ_T_amb',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 3,
         msg_name: 'READ_T_c',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 4,
         msg_name: 'READ_T_h',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 5,
         msg_name: 'P_HEATER',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 6,
         msg_name: 'P_PELTIER',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 12,
         msg_name: 'WRITE_P_HEATER',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 13,
         msg_name: 'WRITE_P_PELTIER',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: DEVICE_ERROR_MSG_TYPE,
         msg_name: 'DEVICE_ERROR',
         data_type: DataType.UINT,
         size_bytes: 1,
+        cfg2: 0,
     },
 ];
 const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
@@ -113,6 +129,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_T1',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$T1',
         param_type: VceParamType.VCE_VAR,
@@ -124,6 +141,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_T2',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$T2',
         param_type: VceParamType.VCE_VAR,
@@ -135,6 +153,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_T_amb',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$T_amb',
         param_type: VceParamType.VCE_VAR,
@@ -146,6 +165,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_T_c',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$T_c',
         param_type: VceParamType.VCE_VAR,
@@ -157,6 +177,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_T_h',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$T_h',
         param_type: VceParamType.VCE_VAR,
@@ -169,6 +190,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'P_HEATER',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$P_H',
         param_type: VceParamType.VCE_CONST,
@@ -181,6 +203,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'P_PELTIER',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$P_P',
         param_type: VceParamType.VCE_CONST,
@@ -194,6 +217,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'L',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$L',
         param_type: VceParamType.VCE_CONST,
@@ -206,6 +230,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'C_f',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$C_f',
         param_type: VceParamType.VCE_CONST,
@@ -217,6 +242,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'Q_L_F1',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$Q_L_F1',
         param_type: VceParamType.VCE_CONST,
@@ -228,6 +254,7 @@ const LT_HT103_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'Q_L_F2',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$Q_L_F2',
         param_type: VceParamType.VCE_CONST,
@@ -263,13 +290,28 @@ function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);
 }
 
+let t_h: number = 0;
+let t_amb: number = 0;
+let t_h_corr_delta = 0;
 function mw_ipc_handler(channel: string, data: any) {
-    main_window?.webContents.send(channel, data);
     // inject primitive MsgTypes in the VCE: 16>0b1111 (msg_type bits)
     // console.log(`${channel} -> ${JSON.stringify(data)}`);
-    const device_msg: DeviceMsg = data.device_msg;
-    if (channel === `${DEVICE_MODEL}_device_msg` && device_msg.config.msg_type < 16)
-        lt_ht103_vce0?.load_device_msg(data.device_msg);
+    if (channel === `${DEVICE_MODEL}_device_msg`) {
+        const device_msg: DeviceMsg = data.device_msg;
+        if (device_msg.config.msg_type < 16)
+            lt_ht103_vce0?.load_device_msg(data.device_msg);
+
+        // save T_amb in device driver memory
+        if (device_msg.config.msg_type === 2)
+            t_amb = device_msg.msg_value;
+
+        // apply tare mode if enabled
+        if (device_msg.config.msg_type === 4) {
+            t_h = device_msg.msg_value;
+            device_msg.msg_value += t_h_corr_delta;
+        }
+    }
+    main_window?.webContents.send(channel, data);
 }
 
 const LT_HT103_DEVICE_CMD_HELP: string[] = [
@@ -278,7 +320,6 @@ const LT_HT103_DEVICE_CMD_HELP: string[] = [
     'SET P_PELTIER <value>, Alias: SP <value> | Control Device P_PELTIER, 0 <= value <= 120',
     '=======================================================================================================',
 ];
-
 function lt_ht103_cmd_exec(cmd: string) {
     const CMD_ALIAS_LIST: Record<string, string[]> = {
         'SH': ['SET', 'P_HEATER'],
@@ -362,6 +403,8 @@ export function init_lt_ht103_serial_adapter(_main_window: BrowserWindow) {
         };
         main_window?.webContents.send('show_system_notif', { notif });
     });
+
+    ipcMain.on(`${DEVICE_MODEL}_tare_t_h`, () => t_h_corr_delta = t_amb - t_h);
 
     ipcMain.on(`${DEVICE_MODEL}_set_device_config`, (_, data) => {
         if (!device_config)

@@ -14,6 +14,7 @@ interface ChartMarker {
 };
 
 const font_color = document.documentElement.style.getPropertyValue('--font-color');
+const chart_grid_color = document.documentElement.style.getPropertyValue('--empty-gauge-color');
 const accent_color = document.documentElement.style.getPropertyValue('--accent-color');
 const props = defineProps<{
     chart_title: string,
@@ -39,8 +40,8 @@ const chart_opts = shallowRef<ChartOptions>({
         legend: { display: false },
     },
     scales: {
-        x: { ticks: { color: font_color } },
-        y: { ticks: { color: font_color } },
+        x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[0], display: true, color: font_color } },
+        y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[1], display: true, color: font_color } },
     },
     onClick: (chart_event: ChartEvent) => {
         if (!chart_data.value.labels)

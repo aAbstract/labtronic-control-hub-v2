@@ -92,7 +92,7 @@ onMounted(() => {
     height: calc(100% - 32px);
     top: 12px;
     background-color: var(--light-bg-color);
-    border-radius: 8px;
+    border-radius: 4px;
     color: var(--font-color);
     padding: 4px 8px;
     transition: 0.3s ease;

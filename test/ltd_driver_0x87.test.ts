@@ -7,54 +7,63 @@ const TEST_DRIVER_CONFIG: MsgTypeConfig[] = [
         msg_name: 'PISTON_PUMP',
         data_type: DataType.UINT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 1,
         msg_name: 'PERISTALTIC_PUMP',
         data_type: DataType.UINT,
         size_bytes: 1,
+        cfg2: 0,
     },
     {
         msg_type: 2,
         msg_name: 'READ_WEIGHT',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 3,
         msg_name: 'READ_TEMPERATURE',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 4,
         msg_name: 'READ_PRESSURE',
         data_type: DataType.FLOAT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 12,
         msg_name: 'WRITE_PISTON_PUMP',
         data_type: DataType.UINT,
         size_bytes: 4,
+        cfg2: 0,
     },
     {
         msg_type: 13,
         msg_name: 'WRITE_PERISTALTIC_PUMP',
         data_type: DataType.UINT,
         size_bytes: 1,
+        cfg2: 0,
     },
     {
         msg_type: 15,
         msg_name: 'WRITE_RESET_SCALE',
         data_type: DataType.COMMAND,
         size_bytes: 1,
+        cfg2: 0,
     },
     {
         msg_type: 14,
         msg_name: 'DEVICE_ERROR',
         data_type: DataType.UINT,
         size_bytes: 1,
+        cfg2: 0,
     },
 ];
 
@@ -84,10 +93,10 @@ test('ltd_driver_0x87.decode_packet', () => {
     result = ltd_driver_0x87.decode_packet(packet);
     expect(result.err.msg).toBe('Invalid CRC-16');
 
-    // version bytes mismatch case
+    // invalid version bytes
     packet = new Uint8Array([0x87, 0x88, 0x0F, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0x78, 0xB7, 0x0D, 0x0A]);
     result = ltd_driver_0x87.decode_packet(packet);
-    expect(result.err).toBe('Version Bytes Mismatch');
+    expect(result.err).toBe('Invalid Version Bytes');
 
     // packet length mismatch case
     packet = new Uint8Array([0x87, 0x87, 0x0A, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0xBC, 0x68, 0x0D, 0x0A]);
@@ -111,15 +120,16 @@ test('ltd_driver_0x87.decode_packet', () => {
     let device_msg = result.ok as DeviceMsg;
     device_msg.msg_value = Number(device_msg.msg_value.toFixed(3));
     expect(device_msg).toEqual({
-        msg_value: 2.254,
-        b64_msg_value: 'iUEQQA==',
-        seq_number: 0,
         config: {
             data_type: DataType.FLOAT,
             msg_name: 'READ_WEIGHT',
             msg_type: ltd_driver_0x87.get_msg_type_by_name('READ_WEIGHT'),
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: 0,
+        msg_value: 2.254,
+        b64_msg_value: 'iUEQQA==',
     });
 
     // valid case [DEVICE_ERROR]
@@ -128,15 +138,16 @@ test('ltd_driver_0x87.decode_packet', () => {
     expect(result.ok).toBeDefined();
     device_msg = result.ok as DeviceMsg;
     expect(device_msg).toEqual({
-        msg_value: 240,
-        b64_msg_value: '8A==',
-        seq_number: 0,
         config: {
             data_type: DataType.UINT,
             msg_name: 'DEVICE_ERROR',
             msg_type: ltd_driver_0x87.get_msg_type_by_name('DEVICE_ERROR'),
             size_bytes: 1,
+            cfg2: 0,
         },
+        seq_number: 0,
+        msg_value: 240,
+        b64_msg_value: '8A==',
     });
 });
 
@@ -148,15 +159,16 @@ test('ltd_driver_0x87.decode_packet_rc_39218_READ_PRESSURE', () => {
     let device_msg = result.ok as DeviceMsg;
     device_msg.msg_value = Number(device_msg.msg_value.toFixed(3));
     expect(device_msg).toEqual({
-        msg_value: 89.383,
-        b64_msg_value: '8sOyQg==',
-        seq_number: 39218,
         config: {
             data_type: DataType.FLOAT,
             msg_name: 'READ_PRESSURE',
             msg_type: ltd_driver_0x87.get_msg_type_by_name('READ_PRESSURE'),
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: 39218,
+        msg_value: 89.383,
+        b64_msg_value: '8sOyQg==',
     });
 });
 

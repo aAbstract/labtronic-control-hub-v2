@@ -193,8 +193,7 @@ export class LtdDriver implements ILtdDriver {
         if (!this.msg_type_set.has(msg_type))
             return { err: 'Unknown msg_type' };
 
-        const cfg2 = '00000000';
-        const { size_bytes, data_type } = this.driver_msg_type_config_map[msg_type] as MsgTypeConfig;
+        const { size_bytes, data_type, cfg2 } = this.driver_msg_type_config_map[msg_type] as MsgTypeConfig;
         const start_seg = new Uint8Array([this.protocol_version[0], this.protocol_version[1], (LtdDriver.PACKET_MIN_SIZE + size_bytes)]);
 
         const sn_res = LtdDriver.u16_to_2u8(msg_seq_number);
@@ -205,7 +204,7 @@ export class LtdDriver implements ILtdDriver {
         const cfg1_res = this.gen_cfg1(data_type, size_bytes, msg_type);
         if (cfg1_res.err)
             return { err: cfg1_res.err };
-        const cfg_seg = new Uint8Array([cfg1_res.ok as number, parseInt(cfg2, 2)]);
+        const cfg_seg = new Uint8Array([cfg1_res.ok as number, cfg2]);
 
         const data_payload_res = LtdDriver.gen_data_payload(data_type, size_bytes, msg_value);
         if (data_payload_res.err)
@@ -242,10 +241,8 @@ export class LtdDriver implements ILtdDriver {
             };
 
         // packet start bytes
-        const version_byte_1 = packet[0];
-        const version_byte_2 = packet[1];
-        if (version_byte_1 !== version_byte_2)
-            return { err: 'Version Bytes Mismatch' };
+        if (this.protocol_version[0] !== packet[0] || this.protocol_version[1] !== packet[1])
+            return { err: 'Invalid Version Bytes' };
 
         let device_msg = { config: {} } as DeviceMsg;
         // packet size
@@ -301,6 +298,9 @@ export class LtdDriver implements ILtdDriver {
             };
         device_msg.config.msg_type = msg_type;
         device_msg.config.msg_name = this.driver_msg_type_config_map[msg_type].msg_name;
+
+        // decode config byte 2
+        device_msg.config.cfg2 = packet[6];
 
         // parse data payload
         const data_payload = packet.slice(LtdDriver.DATA_START, LtdDriver.DATA_START + size_bytes);

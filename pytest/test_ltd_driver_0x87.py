@@ -2,22 +2,21 @@ from emu_spi.ltd_driver import (
     LtdDriver,
     MsgTypeConfig,
     DeviceMsg,
-    DATA_TYPE_INT,
     DATA_TYPE_UINT,
     DATA_TYPE_FLOAT,
     DATA_TYPE_COMMAND,
 )
 
 TEST_DRIVER_CONFIG: list[MsgTypeConfig] = [
-    MsgTypeConfig(msg_type=0, msg_name='PISTON_PUMP', data_type=DATA_TYPE_UINT, size_bytes=4),
-    MsgTypeConfig(msg_type=1, msg_name='PERISTALTIC_PUMP', data_type=DATA_TYPE_UINT, size_bytes=1),
-    MsgTypeConfig(msg_type=2, msg_name='READ_WEIGHT', data_type=DATA_TYPE_FLOAT, size_bytes=4),
-    MsgTypeConfig(msg_type=3, msg_name='READ_TEMPERATURE', data_type=DATA_TYPE_FLOAT, size_bytes=4),
-    MsgTypeConfig(msg_type=4, msg_name='READ_PRESSURE', data_type=DATA_TYPE_FLOAT, size_bytes=4),
-    MsgTypeConfig(msg_type=12, msg_name='WRITE_PISTON_PUMP', data_type=DATA_TYPE_UINT, size_bytes=4),
-    MsgTypeConfig(msg_type=13, msg_name='WRITE_PERISTALTIC_PUMP', data_type=DATA_TYPE_UINT, size_bytes=1),
-    MsgTypeConfig(msg_type=15, msg_name='WRITE_RESET_SCALE', data_type=DATA_TYPE_COMMAND, size_bytes=1),
-    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1),
+    MsgTypeConfig(msg_type=0, msg_name='PISTON_PUMP', data_type=DATA_TYPE_UINT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='PERISTALTIC_PUMP', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_WEIGHT', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_TEMPERATURE', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=4, msg_name='READ_PRESSURE', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=12, msg_name='WRITE_PISTON_PUMP', data_type=DATA_TYPE_UINT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=13, msg_name='WRITE_PERISTALTIC_PUMP', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=15, msg_name='WRITE_RESET_SCALE', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
 
 
@@ -67,10 +66,10 @@ def test_ltd_driver_0x87_decode_packet():
     result = ltd_driver_0x87.decode_packet(packet)
     assert result.err['msg'] == 'Invalid CRC-16'
 
-    # version bytes mismatch case
+    # invalid version bytes
     packet = bytes([0x87, 0x88, 0x0F, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0x78, 0xB7, 0x0D, 0x0A])
     result = ltd_driver_0x87.decode_packet(packet)
-    assert result.err == 'Version Bytes Mismatch'
+    assert result.err == 'Invalid Version Bytes'
 
     # packet length mismatch case
     packet = bytes([0x87, 0x87, 0x0A, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0xBC, 0x68, 0x0D, 0x0A])
@@ -100,6 +99,7 @@ def test_ltd_driver_0x87_decode_packet():
     assert device_msg.config.msg_name == 'READ_WEIGHT'
     assert device_msg.config.msg_type == ltd_driver_0x87.get_msg_type_by_name('READ_WEIGHT')
     assert device_msg.config.size_bytes == 4
+    assert device_msg.config.cfg2 == 0
 
     # valid case [DEVICE_ERROR]
     packet = bytes([0x87, 0x87, 0x0C, 0x00, 0x00, 0x4E, 0x00, 0xF0, 0x8C, 0x45, 0x0D, 0x0A])
@@ -113,3 +113,4 @@ def test_ltd_driver_0x87_decode_packet():
     assert device_msg.config.msg_name == 'DEVICE_ERROR'
     assert device_msg.config.msg_type == ltd_driver_0x87.get_msg_type_by_name('DEVICE_ERROR')
     assert device_msg.config.size_bytes == 1
+    assert device_msg.config.cfg2 == 0

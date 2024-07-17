@@ -90,7 +90,7 @@ onBeforeMount(() => {
     background-color: var(--dark-bg-color);
     color: var(--font-color);
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 12px;
     font-family: "Lucida Console", "Courier New", monospace;
     font-weight: bold;

@@ -6,7 +6,7 @@ import random
 import readline
 import inspect
 from rlcompleter import Completer
-from test_driver import *
+from test_drivers import *
 
 
 vspi_socket: socket.socket
@@ -130,7 +130,31 @@ def stream_detr_waves_0x13():
         time.sleep(0.2)
 
 
-def read_packet(_driver: LtdDriver):
+def stream_detr_waves_lt_ht107():
+    ltd_driver: LtdDriver = ltd_driver_lt_ht107
+    sn = 0
+    while True:
+        sensors_reading = [(x - 1, x * 10) for x in range(1, 10)] + [(9, 75)]
+        for msg_type, msg_value in sensors_reading:
+            _packet = ltd_driver.encode_packet(sn, msg_type, msg_value).ok
+            vspi_socket.send(_packet)
+        time.sleep(0.2)
+
+
+def stream_lt_ht107_sample(mid_dt: list[int]):
+    ltd_driver: LtdDriver = ltd_driver_lt_ht107
+    sample = [100, 100, 100] + [25, 25, 25] + [25, 25, 25]
+    dt = [-1, -1, -1] + mid_dt + [1, 1, 1]
+    for sn in range(10):
+        sample_enum = list(enumerate(sample))
+        sample = [s + dt[idx] for idx, s in sample_enum]
+        for msg_type, msg_value in sample_enum:
+            _packet = ltd_driver.encode_packet(sn, msg_type, msg_value).ok
+            vspi_socket.send(_packet)
+        time.sleep(0.5)
+
+
+def read_packet(_driver: LtdDriver, control_state_map: dict[int, int]):
     print(f"Listening for LtdDriver-{_driver.protocol_version} packet...")
     packet = b''
     while True:
@@ -152,8 +176,7 @@ def read_packet(_driver: LtdDriver):
         print('Invalid LtdDriver packet')
         return
     device_msg: DeviceMsg = device_msg_res.ok
-    if device_msg.config.msg_type in [12, 13]:
-        control_state_map = {12: 5, 13: 6}
+    if device_msg.config.msg_type in control_state_map:
         vspi_socket.send(_driver.encode_packet(0, control_state_map[device_msg.config.msg_type], device_msg.msg_value).ok)
     print(device_msg)
 
@@ -176,12 +199,25 @@ def print_func_src(func):
 
 def start_control_loop_0x87():
     while True:
-        read_packet(ltd_driver_0x87)
+        read_packet(ltd_driver_0x87, {
+            12: 0,
+            13: 1,
+        })
 
 
 def start_control_loop_0x13():
     while True:
-        read_packet(ltd_driver_0x13)
+        read_packet(ltd_driver_0x13, {
+            12: 5,
+            13: 6,
+        })
+
+
+def start_control_loop_lt_ht107():
+    while True:
+        read_packet(ltd_driver_lt_ht107, {
+            12: 13,
+        })
 
 
 if __name__ == '__main__':

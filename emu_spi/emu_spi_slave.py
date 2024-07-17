@@ -3,7 +3,7 @@ import serial
 import code
 import readline
 from rlcompleter import Completer
-from test_driver import *
+from test_drivers import *
 
 
 PORT_NAME = '/dev/ttyS90'

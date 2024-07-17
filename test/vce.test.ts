@@ -1,5 +1,5 @@
 import { VirtualComputeEngine } from '../src/main/vce';
-import { DataType, VceParamConfig, VceParamType, DeviceMsg, CHXComputedParam, CHXEquation, CHXScript, Result } from '../src/common/models';
+import { DataType, VceParamConfig, VceParamType, DeviceMsg, CHXComputedParam, CHXEquation, CHXScript } from '../src/common/models';
 import { test_data_points } from './tests_data';
 
 const TEST_VCE_CONFIG: VceParamConfig[] = [
@@ -9,6 +9,7 @@ const TEST_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'PISTON_PUMP',
             data_type: DataType.UINT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$I',
         param_type: VceParamType.VCE_CONST,
@@ -21,6 +22,7 @@ const TEST_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'PERISTALTIC_PUMP',
             data_type: DataType.UINT,
             size_bytes: 1,
+            cfg2: 0,
         },
         param_symbol: '$E',
         param_type: VceParamType.VCE_CONST,
@@ -33,6 +35,7 @@ const TEST_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_WEIGHT',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$W',
         param_type: VceParamType.VCE_VAR,
@@ -44,6 +47,7 @@ const TEST_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_TEMPERATURE',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$T',
         param_type: VceParamType.VCE_VAR,
@@ -55,6 +59,7 @@ const TEST_VCE_CONFIG: VceParamConfig[] = [
             msg_name: 'READ_PRESSURE',
             data_type: DataType.FLOAT,
             size_bytes: 4,
+            cfg2: 0,
         },
         param_symbol: '$P',
         param_type: VceParamType.VCE_VAR,
@@ -81,16 +86,16 @@ test('VirtualComputeEngine_patch_sequence_number_mismatch', () => {
     // load VCE_CONSTs
     const vce_consts_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[0].msg_type_config,
             seq_number: 0,
             msg_value: 100,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[0].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[1].msg_type_config,
             seq_number: 1,
             msg_value: 2,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[1].msg_type_config,
         },
     ];
     vce_consts_device_msgs.forEach(dmsg => {
@@ -102,22 +107,22 @@ test('VirtualComputeEngine_patch_sequence_number_mismatch', () => {
     // load VCE_VARs
     const vce_vars_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[2].msg_type_config,
             seq_number: 2,
             msg_value: 10,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[2].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[3].msg_type_config,
             seq_number: 2,
             msg_value: 12,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[3].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[4].msg_type_config,
             seq_number: 3,
             msg_value: 36,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[4].msg_type_config,
         },
     ];
     const vce_res_0 = vce.load_device_msg(vce_vars_device_msgs[0]);
@@ -139,16 +144,16 @@ test('VirtualComputeEngine_invalid_MsgType_sequence', () => {
     // load VCE_CONSTs
     const vce_consts_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[0].msg_type_config,
             seq_number: 0,
             msg_value: 100,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[0].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[1].msg_type_config,
             seq_number: 1,
             msg_value: 2,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[1].msg_type_config,
         },
     ];
     vce_consts_device_msgs.forEach(dmsg => {
@@ -160,22 +165,22 @@ test('VirtualComputeEngine_invalid_MsgType_sequence', () => {
     // load VCE_VARs
     const vce_vars_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[2].msg_type_config,
             seq_number: 2,
             msg_value: 10,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[2].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[3].msg_type_config,
             seq_number: 2,
             msg_value: 12,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[3].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[3].msg_type_config,
             seq_number: 2,
             msg_value: 36,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[3].msg_type_config,
         },
     ];
 
@@ -202,16 +207,16 @@ test('VirtualComputeEngine_success', () => {
     // load VCE_CONSTs
     const vce_consts_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[0].msg_type_config,
             seq_number: 0,
             msg_value: 100,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[0].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[1].msg_type_config,
             seq_number: 1,
             msg_value: 2,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[1].msg_type_config,
         },
     ];
     vce_consts_device_msgs.forEach(dmsg => {
@@ -223,22 +228,22 @@ test('VirtualComputeEngine_success', () => {
     // load VCE_VARs
     const vce_vars_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[2].msg_type_config,
             seq_number: 2,
             msg_value: 10,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[2].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[3].msg_type_config,
             seq_number: 2,
             msg_value: 12,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[3].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[4].msg_type_config,
             seq_number: 2,
             msg_value: 36,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[4].msg_type_config,
         },
     ];
 
@@ -265,26 +270,28 @@ test('VirtualComputeEngine_success', () => {
     expect(tmp_ipc_bus[0][1].device_msg).toBeDefined();
     expect(tmp_ipc_bus[1][1].device_msg).toBeDefined();
     expect(tmp_ipc_bus[0][1].device_msg).toEqual({
-        seq_number: 2,
-        msg_value: 27.5,
-        b64_msg_value: "",
         config: {
             msg_type: 16,
             msg_name: "READ_TEST_CP1",
             data_type: 2,
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: 2,
+        msg_value: 27.5,
+        b64_msg_value: "",
     });
     expect(tmp_ipc_bus[1][1].device_msg).toEqual({
-        seq_number: 2,
-        msg_value: 2.58,
-        b64_msg_value: "",
         config: {
             msg_type: 17,
             msg_name: "READ_TEST_CP2",
             data_type: 2,
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: 2,
+        msg_value: 2.58,
+        b64_msg_value: "",
     });
 });
 
@@ -298,22 +305,22 @@ test('VirtualComputeEngine_context_init_success', () => {
     // load VCE_VARs
     const vce_vars_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[2].msg_type_config,
             seq_number: 2,
             msg_value: 10,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[2].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[3].msg_type_config,
             seq_number: 2,
             msg_value: 12,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[3].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[4].msg_type_config,
             seq_number: 2,
             msg_value: 36,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[4].msg_type_config,
         },
     ];
 
@@ -340,26 +347,28 @@ test('VirtualComputeEngine_context_init_success', () => {
     expect(tmp_ipc_bus[0][1].device_msg).toBeDefined();
     expect(tmp_ipc_bus[1][1].device_msg).toBeDefined();
     expect(tmp_ipc_bus[0][1].device_msg).toEqual({
-        seq_number: 2,
-        msg_value: 27.99,
-        b64_msg_value: "",
         config: {
             msg_type: 16,
             msg_name: "READ_TEST_CP1",
             data_type: 2,
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: 2,
+        msg_value: 27.99,
+        b64_msg_value: "",
     });
     expect(tmp_ipc_bus[1][1].device_msg).toEqual({
-        seq_number: 2,
-        msg_value: 59,
-        b64_msg_value: "",
         config: {
             msg_type: 17,
             msg_name: "READ_TEST_CP2",
             data_type: 2,
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: 2,
+        msg_value: 59,
+        b64_msg_value: "",
     });
 });
 
@@ -374,16 +383,16 @@ test('VirtualComputeEngine_rc_39218', () => {
     // load VCE_CONSTs
     const vce_consts_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[0].msg_type_config,
             seq_number: 0,
             msg_value: 100,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[0].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[1].msg_type_config,
             seq_number: 1,
             msg_value: 2,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[1].msg_type_config,
         },
     ];
     vce_consts_device_msgs.forEach(dmsg => {
@@ -395,22 +404,22 @@ test('VirtualComputeEngine_rc_39218', () => {
     // load VCE_VARs
     const vce_vars_device_msgs: DeviceMsg[] = [
         {
+            config: TEST_VCE_CONFIG[2].msg_type_config,
             seq_number: RC_SN,
             msg_value: 10,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[2].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[3].msg_type_config,
             seq_number: RC_SN,
             msg_value: 12,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[3].msg_type_config,
         },
         {
+            config: TEST_VCE_CONFIG[4].msg_type_config,
             seq_number: RC_SN,
             msg_value: 36,
             b64_msg_value: '',
-            config: TEST_VCE_CONFIG[4].msg_type_config,
         },
     ];
 
@@ -437,26 +446,28 @@ test('VirtualComputeEngine_rc_39218', () => {
     expect(tmp_ipc_bus[0][1].device_msg).toBeDefined();
     expect(tmp_ipc_bus[1][1].device_msg).toBeDefined();
     expect(tmp_ipc_bus[0][1].device_msg).toEqual({
-        seq_number: RC_SN,
-        msg_value: 27.5,
-        b64_msg_value: "",
         config: {
             msg_type: 16,
             msg_name: "READ_TEST_CP1",
             data_type: 2,
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: RC_SN,
+        msg_value: 27.5,
+        b64_msg_value: "",
     });
     expect(tmp_ipc_bus[1][1].device_msg).toEqual({
-        seq_number: RC_SN,
-        msg_value: 2.58,
-        b64_msg_value: "",
         config: {
             msg_type: 17,
             msg_name: "READ_TEST_CP2",
             data_type: 2,
             size_bytes: 4,
+            cfg2: 0,
         },
+        seq_number: RC_SN,
+        msg_value: 2.58,
+        b64_msg_value: "",
     });
 });
 

@@ -16,25 +16,26 @@ class Result:
 
 
 class MsgTypeConfig:
-    def __init__(self, msg_type: int = None, msg_name: str = None, data_type: int = None, size_bytes: int = None):
+    def __init__(self, msg_type: int = None, msg_name: str = None, data_type: int = None, size_bytes: int = None, cfg2: int = None):
         self.msg_type = msg_type
         self.msg_name = msg_name
         self.data_type = data_type
         self.size_bytes = size_bytes
+        self.cfg2 = cfg2
 
     def __str__(self):
-        return f"MsgTypeConfig(msg_type={self.msg_type}, msg_name='{self.msg_name}', data_type={self.data_type}, size_bytes={self.size_bytes})"
+        return f"MsgTypeConfig(msg_type={self.msg_type}, msg_name='{self.msg_name}', data_type={self.data_type}, size_bytes={self.size_bytes}), cfg2={self.cfg2}"
 
 
 class DeviceMsg:
     def __init__(self, seq_number: int = None, msg_value: int = None, b64_msg_value: str = None, config: MsgTypeConfig = MsgTypeConfig()):
+        self.config = config
         self.seq_number = seq_number
         self.msg_value = msg_value
         self.b64_msg_value = b64_msg_value
-        self.config = config
 
     def __str__(self):
-        return f"DeviceMsg(seq_number={self.seq_number}, msg_value={self.msg_value}, b64_msg_value='{self.b64_msg_value}', msg_name={self.config.msg_name})"
+        return f"DeviceMsg(seq_number={self.seq_number}, msg_value={self.msg_value}, b64_msg_value='{self.b64_msg_value}', msg_name={self.config.msg_name}, cfg2={self.config.cfg2})"
 
 
 class LtdDriver:
@@ -200,7 +201,6 @@ class LtdDriver:
         if msg_type not in self.msg_type_set:
             return Result(err='Unknown msg_type')
 
-        cfg2 = '00000000'
         size_bytes = self.driver_msg_type_config_map[msg_type].size_bytes
         data_type = self.driver_msg_type_config_map[msg_type].data_type
         start_seg = bytes([self.protocol_version[0], self.protocol_version[1], (LtdDriver.PACKET_MIN_SIZE + size_bytes)])
@@ -213,7 +213,7 @@ class LtdDriver:
         result = self._gen_cfg1(data_type, size_bytes, msg_type)
         if result.err:
             return result
-        cfg_seg = bytes([result.ok, int(cfg2, 2)])
+        cfg_seg = bytes([result.ok, self.driver_msg_type_config_map[msg_type].cfg2])
 
         bin_parser_res = LtdDriver._get_binary_parser(size_bytes, data_type)
         if bin_parser_res.err:
@@ -247,10 +247,8 @@ class LtdDriver:
             })
 
         # packet start bytes
-        version_byte_1 = packet[0]
-        version_byte_2 = packet[1]
-        if version_byte_1 != version_byte_2:
-            return Result(err='Version Bytes Mismatch')
+        if self.protocol_version[0] != packet[0] or self.protocol_version[1] != packet[1]:
+            return Result(err='Invalid Version Bytes')
 
         device_msg = DeviceMsg()
 
@@ -271,6 +269,9 @@ class LtdDriver:
 
         # decode config byte 1
         cfg1_bits = LtdDriver._bin_byte(packet[5])
+
+        # decode config byte 2
+        device_msg.config.cfg2 = packet[6]
 
         # data type
         data_type_bits = cfg1_bits[:2]

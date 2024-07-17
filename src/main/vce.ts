@@ -55,6 +55,7 @@ export class VirtualComputeEngine {
                 msg_name: 'READ_' + _config.param_name,
                 data_type: DataType.FLOAT,
                 size_bytes: 4,
+                cfg2: 0,
             }
         });
     }
@@ -86,10 +87,10 @@ export class VirtualComputeEngine {
                 return;
             out_record[_var] = cycle_context[_var];
             const device_msg: DeviceMsg = {
+                config: this.cps_config_map[_var],
                 seq_number: this.vce_cycle_sn,
                 msg_value: cycle_context[_var],
                 b64_msg_value: '',
-                config: this.cps_config_map[_var],
             };
             this.ipc_handler(`${this.device_model}_device_msg`, { device_msg });
         });

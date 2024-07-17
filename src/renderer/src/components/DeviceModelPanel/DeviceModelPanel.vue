@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onMounted, inject } from 'vue';
+import { onMounted, inject, ref } from 'vue';
 
 import { add_log } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
@@ -10,7 +10,8 @@ import { subscribe } from '@common/mediator';
 
 const props = defineProps<{ device_ui_config: DeviceUIConfig }>();
 const device_model = inject('device_model') as string;
-const device_model_labeled_img = new URL(`../../device_assets/device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png`, import.meta.url).href;
+
+const device_model_labeled_img = ref(new URL(`../../device_assets/device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png`, import.meta.url).href);
 
 function render_msg_value(msg_type: number, msg_value: string) {
     const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
@@ -43,6 +44,11 @@ onMounted(() => {
                 render_msg_value(msg_type, _msg_value);
         });
     });
+
+    subscribe('change_device_model_asset', 'change_device_model_asset', args => {
+        const _asset = args._asset;
+        device_model_labeled_img.value = new URL(`../../device_assets/etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`, import.meta.url).href;
+    });
 });
 
 </script>
@@ -63,13 +69,13 @@ onMounted(() => {
     position: relative;
     margin-bottom: 16px;
     width: 96%;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 #device_img,
 #device_canvas {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 #device_canvas {

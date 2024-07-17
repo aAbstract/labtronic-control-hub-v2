@@ -4,7 +4,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 // import { init_lt_ch000_serial_adapter } from './device_drivers/lt_ch000';
-import { init_lt_ht103_serial_adapter } from './device_drivers/lt_ht103'
+import { init_lt_ht103_serial_adapter } from './device_drivers/lt_ht103';
+// import { init_lt_ht107_serial_adapter } from './device_drivers/lt_ht107';
 import { init_fsio } from './fsio';
 import { init_system_settings } from './system_settings';
 
@@ -40,6 +41,7 @@ function createWindow(): void {
   init_fsio(mainWindow);
   init_system_settings(mainWindow);
   ipcMain.on('load_device_driver', () => init_lt_ht103_serial_adapter(mainWindow));
+  ipcMain.on('exit', () => process.exit(0));
 }
 
 app.whenReady().then(() => {
@@ -58,5 +60,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-ipcMain.on('exit', () => process.exit(0));

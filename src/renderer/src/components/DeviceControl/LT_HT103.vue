@@ -40,6 +40,7 @@ const slider_pt: any = {
     range: { style: 'background-color: var(--accent-color);' },
 };
 
+// @ts-ignore
 function arr_combs(arr: string[]): string[] {
     const combs: string[] = [];
     for (let i = 0; i < arr.length; i++) {
@@ -77,9 +78,11 @@ const sample_material = ref();
 const sample_material_opts_map: Record<number, DropdownOption<number>[]> = {
     0: ['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'].map((x, idx) => { return { label: x, value: idx } }),
     1: ['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'].map((x, idx) => { return { label: x, value: idx } }),
-    2: arr_combs(['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper']).map((x, idx) => { return { label: x, value: idx } }),
+    // 2: arr_combs(['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper']).map((x, idx) => { return { label: x, value: idx } }),
     3: ['Aluminum'].map((x, idx) => { return { label: x, value: idx } }),
 };
+const top_sample_material = ref();
+const bot_sample_material = ref();
 // dropdowns
 
 // control params
@@ -232,13 +235,20 @@ onMounted(() => {
         </div>
         <div style="height: 12px;"></div>
         <div class="lt_ht103_control_row">
-            <div class="labeled_control">
-                <span style="visibility: hidden;">Op Mode:</span>
-                <Dropdown :pt="dropdown_pt" :options="sample_shape_opts" optionLabel="label" optionValue="value" placeholder="Sample Shape" title="Sample Shape" v-model="sample_shape" />
+            <div v-if="!sample_shape || sample_shape in sample_material_opts_map" style="width: 100%; display: flex; justify-content: flex-start;">
+                <div class="labeled_control">
+                    <span style="visibility: hidden;">Op Mode:</span>
+                    <Dropdown :pt="dropdown_pt" :options="sample_shape_opts" optionLabel="label" optionValue="value" placeholder="Sample Shape" title="Sample Shape" v-model="sample_shape" />
+                </div>
+                <div class="labeled_control">
+                    <span style="visibility: hidden;">C_f:</span>
+                    <Dropdown :pt="dropdown_pt" :options="sample_material_opts_map[sample_shape]" optionLabel="label" optionValue="value" placeholder="Sample Material" title="Sample Material" @update:modelValue="new_value => sample_material = new_value" :modelValue="sample_shape && sample_material_opts_map[sample_shape].length === 1 ? sample_material_opts_map[sample_shape][0].value : sample_material" />
+                </div>
             </div>
-            <div class="labeled_control">
-                <span style="visibility: hidden;">C_f:</span>
-                <Dropdown :pt="dropdown_pt" :options="sample_material_opts_map[sample_shape]" optionLabel="label" optionValue="value" placeholder="Sample Material" title="Sample Material" v-model="sample_material" />
+            <div v-else-if="sample_shape === 2" style="width: 100%; display: flex; justify-content: space-between;">
+                <Dropdown :pt="dropdown_pt" :options="sample_shape_opts" optionLabel="label" optionValue="value" placeholder="Sample Shape" title="Sample Shape" v-model="sample_shape" />
+                <Dropdown :pt="dropdown_pt" :options="['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'].map((x, idx) => { return { label: x, value: idx } })" optionLabel="label" optionValue="value" placeholder="Top Material" title="Top Material" v-model="top_sample_material" />
+                <Dropdown :pt="dropdown_pt" :options="['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'].map((x, idx) => { return { label: x, value: idx } })" optionLabel="label" optionValue="value" placeholder="Bot Material" title="Bot Material" v-model="bot_sample_material" />
             </div>
         </div>
         <div style="height: 12px;"></div>
@@ -260,7 +270,7 @@ onMounted(() => {
         <div style="height: 12px;"></div>
         <div class="lt_ht103_control_row" style="justify-content: space-around;">
             <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-power-off" title="Shutdown Electrical Power" severity="danger" @click="shutdown_device_power()" />
-            <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-sliders-v" title="Tare Temprature" />
+            <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-sliders-v" title="Tare Temprature" @click="electron_renderer_send(`${device_model}_tare_t_h`, {})" />
             <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-save" title="Save Calibration Parameters" v-if="device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION" />
             <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-microchip" title="Send Config to Device" @click="send_device_config()" />
         </div>
@@ -365,7 +375,7 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     background-color: var(--light-bg-color);
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 8px;
 }
 </style>

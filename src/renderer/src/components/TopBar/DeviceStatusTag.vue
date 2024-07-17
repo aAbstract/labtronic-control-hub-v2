@@ -45,7 +45,7 @@ onMounted(() => {
     align-items: center;
     padding: 8px 16px;
     color: var(--font-color);
-    border-radius: 8px;
+    border-radius: 4px;
     margin: 0px 16px;
     color: v-bind(STATUS_COLOR_MAP[device_status]);
     height: v-bind(tag_height);

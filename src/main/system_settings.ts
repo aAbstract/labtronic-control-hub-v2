@@ -14,6 +14,7 @@ const chx_settings_schema: CHXSettings = {
     series: [{ series_name: '', x_param: -1, y_param: -1 }],
     device_config: {},
 };
+// @ts-ignore
 let main_window: BrowserWindow | null = null;
 let chx_settings: CHXSettings | null = null;
 

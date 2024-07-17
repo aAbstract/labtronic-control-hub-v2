@@ -27,7 +27,7 @@ defineProps<{ tag_height: string, icon_size: string }>();
     align-items: center;
     padding: 8px 16px;
     color: var(--font-color);
-    border-radius: 8px;
+    border-radius: 4px;
     color: #FFAB00;
 }
 

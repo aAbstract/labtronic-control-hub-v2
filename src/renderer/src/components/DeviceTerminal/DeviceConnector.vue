@@ -93,7 +93,7 @@ onBeforeMount(() => {
     align-items: center;
     margin-bottom: 8px;
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 4px;
     background-color: var(--dark-bg-color);
 }
 </style>

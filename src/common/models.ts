@@ -15,13 +15,14 @@ export interface MsgTypeConfig {
     msg_name: string;
     data_type: DataType;
     size_bytes: number;
+    cfg2: number;
 };
 
 export interface DeviceMsg {
+    config: MsgTypeConfig;
     seq_number: number;
     msg_value: number;
     b64_msg_value: string;
-    config: MsgTypeConfig;
 };
 
 export interface ILtdDriver {
@@ -181,3 +182,10 @@ export interface LT_HT103_DeviceConfig {
     Q_L_F2: number;
 };
 // device models - LT_HT103
+
+// device models - LT_HT107
+export enum LT_HT107_DeviceMode {
+    LINEAR = 0,
+    RADIAL = 1,
+};
+// device models - LT_HT107

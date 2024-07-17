@@ -21,6 +21,7 @@ import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/
 
 // import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
 import LT_HT103 from '@renderer/components/DeviceControl/LT_HT103.vue';
+// import LT_HT107 from '@renderer/components/DeviceControl/LT_HT107.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -32,6 +33,7 @@ const APP_THEME = {
 };
 // const DEVICE_MODEL = 'LT-CH000';
 const DEVICE_MODEL = 'LT-HT103';
+// const DEVICE_MODEL = 'LT-HT107';
 const toast_service = useToast();
 
 provide('device_model', DEVICE_MODEL);

@@ -67,6 +67,7 @@ export class DeviceUIConfig {
                 const msg_name = _config.msg_name.replace('READ_', '');
                 if (fixed_msg_names.includes(msg_name))
                     return;
+                // assign colors to device computed parameters 
                 const _color = DeviceUIConfig.ROT_COLOR_LIST[_config.msg_type % DeviceUIConfig.ROT_COLOR_LIST.length];
                 this.chart_params_map[_config.msg_type] = new ChartParams(msg_name, _color);
             });
@@ -150,11 +151,41 @@ const LT_H103_DUIC = new DeviceUIConfig(
     {},
     {},
     {
-        0: new ChartParams('T_amb', '#009688'), // READ_T_amb
-        1: new ChartParams('T1', '#FFAB00'), // READ_T1
-        2: new ChartParams('T2', '#6200EA'), // READ_T2
-        3: new ChartParams('T_c', '#2196F3'), // READ_T_c
-        4: new ChartParams('T_h', '#DD2C00'), // READ_T_h
+        // readings
+        0: new ChartParams('T_amb', '#00bcd4'), // READ_T_amb
+        1: new ChartParams('T1', '#9c27b0'), // READ_T1
+        2: new ChartParams('T2', '#3f51b5'), // READ_T2
+        3: new ChartParams('T_c', '#795548'), // READ_T_c
+        4: new ChartParams('T_h', '#4caf50'), // READ_T_h
+
+        // compute parameters
+        16: new ChartParams('Delta_T', '#009688'), // VCE: Delta_T
+        17: new ChartParams('Q_L', '#cddc39'), // VCE: Q_L
+        18: new ChartParams('Q_Cond', '#ff9800'), // VCE: Q_Cond
+        19: new ChartParams('Lambda', '#9e9e9e'), // VCE: Lambda
+
+        // control parameters
+        20: new ChartParams('P_Heater', '#f44336'), // P_H
+        21: new ChartParams('P_Peltier', '#2196f3'), // P_P
+
+    },
+    'LT-HT103',
+);
+
+const LT_H107_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('T1', '#4CAF50'), // READ_T1
+        1: new ChartParams('T2', '#9E9E9E'), // READ_T2
+        2: new ChartParams('T3', '#3F51B5'), // READ_T3
+        3: new ChartParams('T4', '#2196F3'), // READ_T4
+        4: new ChartParams('T5', '#FF9800'), // READ_T5
+        5: new ChartParams('T6', '#9C27B0'), // READ_T6
+        6: new ChartParams('T7', '#009688'), // READ_T7
+        7: new ChartParams('T8', '#CDDC39'), // READ_T8
+        8: new ChartParams('T9', '#795548'), // READ_T9
+        9: new ChartParams('T_H', '#F44336'), // READ_T_H
     },
     'LT-HT103',
 );
@@ -162,4 +193,5 @@ const LT_H103_DUIC = new DeviceUIConfig(
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
     'LT-HT103': LT_H103_DUIC,
+    'LT-HT107': LT_H107_DUIC,
 };

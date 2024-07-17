@@ -39,7 +39,7 @@ const font_color = document.documentElement.style.getPropertyValue('--font-color
     align-items: center;
     padding: 8px 16px;
     color: var(--font-color);
-    border-radius: 8px;
+    border-radius: 4px;
     height: v-bind(tag_height);
 }
 </style>

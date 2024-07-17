@@ -183,7 +183,7 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     background-color: var(--light-bg-color);
-    border-radius: 8px;
+    border-radius: 4px;
     padding-bottom: 8px;
 }
 </style>
