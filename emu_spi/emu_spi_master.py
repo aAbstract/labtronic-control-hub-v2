@@ -141,6 +141,26 @@ def stream_detr_waves_lt_ht107():
         time.sleep(0.2)
 
 
+def stream_detr_waves_lt_ht113():
+    ltd_driver: LtdDriver = ltd_driver_lt_ht113
+    sn = 0
+    while True:
+        t_sam = 50
+        t_amb = 25
+        t_ref = 40
+        w_flw = 325 if math.sin(2 * math.pi * sn / 100) >= 0 else 0
+        packet_t_sam = ltd_driver.encode_packet(sn, 0, t_sam).ok
+        packet_t_amb = ltd_driver.encode_packet(sn, 1, t_amb).ok
+        packet_t_ref = ltd_driver.encode_packet(sn, 2, t_ref).ok
+        packet_w_flw = ltd_driver.encode_packet(sn, 3, w_flw).ok
+        vspi_socket.send(packet_t_sam)
+        vspi_socket.send(packet_t_amb)
+        vspi_socket.send(packet_t_ref)
+        vspi_socket.send(packet_w_flw)
+        sn += 1
+        time.sleep(0.2)
+
+
 def stream_lt_ht107_sample(mid_dt: list[int]):
     ltd_driver: LtdDriver = ltd_driver_lt_ht107
     sample = [100, 100, 100] + [25, 25, 25] + [25, 25, 25]

@@ -190,8 +190,21 @@ const LT_H107_DUIC = new DeviceUIConfig(
     'LT-HT103',
 );
 
+const LT_H113_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('T_sam', '#9C27B0'), // READ_T_sam
+        1: new ChartParams('T_amb', '#00BCD4'), // READ_T_amb
+        2: new ChartParams('T_ref', '#009688'), // READ_T_ref
+        3: new ChartParams('W_flw', '#2196F3'), // READ_W_flw
+    },
+    'LT-HT103',
+);
+
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
     'LT-HT103': LT_H103_DUIC,
     'LT-HT107': LT_H107_DUIC,
+    'LT-HT113': LT_H113_DUIC,
 };

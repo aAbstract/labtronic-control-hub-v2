@@ -50,8 +50,7 @@ onMounted(() => device_model.value = inject('device_model') as string);
 }
 
 #lab_tronic_logo {
-    width: 16vw;
-    max-height: 60px;
+    height: 60px;
 }
 
 #tags_cont {

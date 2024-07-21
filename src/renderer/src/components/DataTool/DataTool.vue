@@ -35,10 +35,9 @@ let is_recording = false;
 const complete_data_point_keys: string[] = [];
 const msg_type_name_map: Record<string, string> = { 'time_ms': 'time_ms', 'seq_number': 'seq_number' };
 const device_model = inject('device_model');
-const panel_pos = ref('-50vw');
+const panel_pos = ref('-60vw');
 const sampling_dt = ref(1000);
-const sampling_resolution = 100;
-const sampling_sn_base = computed(() => Math.floor(sampling_dt.value / sampling_resolution));
+const device_data_freq = ref(0);
 const chx_series = shallowRef<CHXSeries[]>();
 const chx_eqs = shallowRef<CHXEquation[]>();
 const chx_scripts = shallowRef<CHXScript[]>();
@@ -127,9 +126,14 @@ function start_data_recording() {
         time_ms += sampling_dt.value;
         time_fmt.value = fmt_time(time_ms);
 
+        if (!device_data_freq.value) {
+            toast_service.add({ severity: 'error', summary: 'Data Recorder', detail: `Device Data Frequency is: ${device_data_freq.value}`, life: 0 });
+            stop_data_recording();
+        }
+
         // sampling selection criteria: lateset valid point
-        for (let i = 0; i < sampling_resolution; i++) {
-            const idx = last_sn - i * sampling_sn_base.value;
+        for (let i = 0; i < device_data_freq.value; i++) {
+            const idx = last_sn - i; // * sampling_sn_base.value;
             const _data_point = data_points_cache[idx];
             if (!_data_point)
                 continue;
@@ -170,13 +174,13 @@ function exec_chx_script(_script: CHXScript) {
 onMounted(() => {
     subscribe('toggle_data_tool', 'toggle_data_tool_visi', _ => {
         const values_map = {
-            '8px': '-50vw',
-            '-50vw': '8px',
+            '0px': '-60vw',
+            '-60vw': '0px',
         };
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_data_tool', 'hide_data_tool', _ => panel_pos.value = '-50vw');
+    subscribe('hide_data_tool', 'hide_data_tool', _ => panel_pos.value = '-60vw');
 
     electron_renderer_invoke<CHXSeries[]>('get_chx_series').then(_chx_series => {
         if (!_chx_series)
@@ -190,6 +194,12 @@ onMounted(() => {
         chx_eqs.value = _chx_eqs;
     });
 
+    electron_renderer_invoke<number>('get_chx_data_freq').then(_chx_data_freq => {
+        if (!_chx_data_freq)
+            return;
+        device_data_freq.value = _chx_data_freq;
+    });
+
     // chx_series auto hmr
     window.electron?.ipcRenderer.on('chx_series_change', (_, data) => {
         const { _chx_series } = data;
@@ -201,8 +211,10 @@ onMounted(() => {
             return;
         const device_msg: DeviceMsg = data.device_msg;
         const { seq_number } = device_msg;
-        if (seq_number % sampling_sn_base.value !== 0)
-            return;
+
+        // ignore some points in case of high data frequency
+        // if (seq_number % sampling_sn_base.value !== 0)
+        //     return;
 
         const { msg_type } = device_msg.config;
         const { msg_value } = device_msg;
@@ -282,7 +294,8 @@ onMounted(() => {
         <div id="data_tool_header">
             <h1>DATA TOOL</h1>
             <div style="display: flex; align-items: center;">
-                <input id="sampling_dt" title="Sampling dt [ms]" type="number" v-model="sampling_dt">
+                <input class="dt_tf" title="Device Data Frequency [Hz]" style="margin-right: 8px;" type="number" :value="device_data_freq" readonly>
+                <input class="dt_tf" title="Sampling dt [ms]" type="number" v-model="sampling_dt">
                 <Button icon="pi pi-play" title="Start Recording" rounded text @click="start_data_recording()" :style="`color: ${play_btn_color};`" />
                 <Button icon="pi pi-pause" title="Pause Recording" rounded text @click="pause_data_recording()" :style="`color: ${pause_btn_color};`" />
                 <Button icon="pi pi-stop" title="Reset Recording" rounded text @click="stop_data_recording()" style="color: #DD2C00;" />
@@ -336,7 +349,8 @@ onMounted(() => {
                     <Button icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text />
                 </div>
             </template>
-            <DeviceEquation v-for="chx_eq in chx_eqs" :chx_eq="chx_eq" />
+            <DeviceEquation v-if="chx_eqs?.length ?? 0 !== 0" v-for="chx_eq in chx_eqs" :chx_eq="chx_eq" />
+            <div v-else style="margin: 0px 0px 8px 16px;">No Device Equations Defined</div>
         </Fieldset>
 
         <div style="height: 8px;"></div>
@@ -388,7 +402,8 @@ onMounted(() => {
 }
 
 #deqs_field_set {
-    flex-grow: 1;
+    min-height: 67px;
+    height: fit-content;
     overflow-y: scroll;
 }
 
@@ -399,9 +414,9 @@ onMounted(() => {
     align-items: center;
 }
 
-#sampling_dt {
+.dt_tf {
     font-family: "Lucida Console", "Courier New", monospace;
-    width: 100px;
+    width: 60px;
     color: var(--font-color);
     border: none;
     background-color: var(--dark-bg-color);
@@ -410,7 +425,7 @@ onMounted(() => {
     padding: 4px;
 }
 
-#sampling_dt:focus {
+.dt_tf:focus {
     outline: none;
     border: 1px solid var(--accent-color);
 }
@@ -458,9 +473,9 @@ onMounted(() => {
 
 #data_tool_cont {
     position: absolute;
-    width: 96%;
+    width: calc(100% - 8px);
     left: v-bind(panel_pos);
-    height: calc(100% - 32px);
+    height: calc(100% - 24px);
     top: 12px;
     background-color: var(--light-bg-color);
     border-radius: 4px;

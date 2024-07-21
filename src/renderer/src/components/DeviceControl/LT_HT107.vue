@@ -136,13 +136,9 @@ onMounted(() => {
             readings.value = read_config.map(x => [x.msg_type * 10, 0]);
             readings_msg_types = new Set(read_config.map(x => x.msg_type));
             // auto device mode switch
-            if (read_config.length === 6) {
-                sample_shape.value = 0; // radial mode
-                sample_select();
-            } else if (read_config.length = 9) {
-                sample_shape.value = 1; // linear mode
-                sample_select();
-            }
+            if (read_config.length === 6) // radial mode
+                sample_shape.value = 0;
+            sample_select();
         });
     });
 });

@@ -2,10 +2,7 @@ import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver } from "./ltd_driver";
 import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, _ToastMessageOptions, LT_HT107_DeviceMode } from '../../common/models';
-//@ts-ignore
 import { DeviceMsg } from '../../common/models';
-//@ts-ignore
-import { get_chx_cps, get_chx_device_confg } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-HT107';
 const DEVICE_ERROR_MSG_TYPE = 14;

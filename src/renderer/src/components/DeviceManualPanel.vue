@@ -13,13 +13,16 @@ const device_model = inject('device_model');
 const err_msg = ref('');
 
 onMounted(() => {
-    subscribe('toggle_dmp', 'toggle_dmp_visi', _ => {
+    subscribe('toggle_device_manual_panel', 'toggle_device_manual_panel_visi', _ => {
         const values_map = {
             '0px': '-60vw',
             '-60vw': '0px',
         };
         panel_pos.value = values_map[panel_pos.value];
     });
+    
+    subscribe('hide_device_manual_panel', 'hide_device_manual_panel', _ => panel_pos.value = '-60vw');
+
     subscribe('chx_settings_loaded', 'chx_settings_loaded_device_manual_panel', _ => {
         get_manual(device_model as string).then(res => {
             if (res.err) {
@@ -35,7 +38,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="dmp_cont">
+    <div id="device_manual_panel_cont">
         <h4 id="err_msg" v-if="err_msg">{{ err_msg }}</h4>
         <ProgressSpinner v-if="manual_sections.length === 0" />
         <ManualSection v-else v-for="(section, sidx) in manual_sections" :sidx="sidx" :section="section" />
@@ -49,7 +52,7 @@ onMounted(() => {
     text-align: center;
 }
 
-#dmp_cont {
+#device_manual_panel_cont {
     position: absolute;
     width: calc(100% - 8px);
     left: v-bind(panel_pos);

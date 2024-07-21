@@ -52,3 +52,14 @@ DRIVER_CONFIG_LT_HT107: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_ht107 = LtdDriver([0x13, 0x14], DRIVER_CONFIG_LT_HT107)
+
+
+DRIVER_CONFIG_LT_HT113: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_T_sam', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_T_amb', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_ref', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_W_flw', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=4, msg_name='WLS', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+]
+ltd_driver_lt_ht113 = LtdDriver([0x14, 0x14], DRIVER_CONFIG_LT_HT113)

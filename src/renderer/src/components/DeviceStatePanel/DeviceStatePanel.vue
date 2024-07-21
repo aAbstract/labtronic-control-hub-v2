@@ -93,7 +93,7 @@ onBeforeMount(() => {
 
 <template>
     <div id="device_state_panel">
-        <div style="height: 8px;"></div>
+        <div style="height: 12px;"></div>
         <div id="readings_grid" v-on="screenshot_handlers">
             <!-- <h4 id="rg_title">
                 <span>Device Readings</span>
@@ -110,7 +110,7 @@ onBeforeMount(() => {
         <SingleChart class="device_state_chart" v-on="screenshot_handlers" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
         <div style="height: 12px;"></div>
         <MultiChart class="device_state_chart" v-on="screenshot_handlers" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
-        <div style="height: 12px;"></div>
+        <!-- <div style="height: 12px;"></div> -->
     </div>
 </template>
 

@@ -44,6 +44,7 @@ const chart_opts = shallowRef<ChartOptions>({
         y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[1], display: true, color: font_color } },
     },
     onClick: (chart_event: ChartEvent) => {
+        debugger;
         if (!chart_data.value.labels)
             return;
         const _chart: _Chart = (chart_event as any).chart;
@@ -51,7 +52,7 @@ const chart_opts = shallowRef<ChartOptions>({
         const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
         const _x_val = chart_data.value.labels[x_idx] as number;
         const _y_val = chart_data.value.datasets[0].data[x_idx] as number;
-        if (!_x_val || !_y_val)
+        if (isNaN(_x_val) || isNaN(_y_val))
             return;
         chart_marker = {
             x_val: _x_val.toFixed(2),
@@ -70,8 +71,8 @@ function draw_chart_markers(_ctx: CanvasRenderingContext2D, _chart_marker: Chart
 
     // draw marker line
     _ctx.beginPath();
-    _ctx.moveTo(_chart_marker.marker_line_x_offset, _ch - 16);
-    _ctx.lineTo(_chart_marker.marker_line_x_offset, 0);
+    _ctx.moveTo(_chart_marker.marker_line_x_offset, _ch - 40);
+    _ctx.lineTo(_chart_marker.marker_line_x_offset, 12);
     _ctx.lineWidth = 1;
     _ctx.strokeStyle = accent_color;
     _ctx.stroke();
@@ -79,7 +80,7 @@ function draw_chart_markers(_ctx: CanvasRenderingContext2D, _chart_marker: Chart
     // draw marker text
     _ctx.fillStyle = accent_color;
     _ctx.font = 'bold 12px "Lucida Console", "Courier New", monospace';
-    _ctx.fillText(`x: ${_chart_marker.x_val}, y: ${_chart_marker.y_val}`, 24, 12);
+    _ctx.fillText(`x: ${_chart_marker.x_val}, y: ${_chart_marker.y_val}`, 24, _ch - 12);
 }
 
 function render_chart() {
@@ -91,10 +92,10 @@ function render_chart() {
 onMounted(() => {
     subscribe('record_data_point', `record_data_point_${props.chart_idx}`, args => {
         const _data_point: Record<string, number> = args._data_point;
-        const _x = _data_point[props.x_param];
-        const _y = _data_point[props.y_param];
-        chart_data.value.labels?.push(Number(_x.toFixed(2)));
-        chart_data.value.datasets[0].data.push(Number(_y.toFixed(2)));
+        const _x = Number(props.x_param === -1 ? (_data_point['time_ms'] / 1000).toFixed() : _data_point[props.x_param].toFixed(2));
+        const _y = Number(_data_point[props.y_param].toFixed(2));
+        chart_data.value.labels?.push(_x);
+        chart_data.value.datasets[0].data.push(_y);
         render_chart();
     });
 

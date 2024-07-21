@@ -4,9 +4,7 @@ import { LtdDriver } from "./ltd_driver";
 import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation, CHXScript } from '../../common/models';
 import { VirtualComputeEngine } from '../vce';
 import { subscribe } from '../../common/mediator';
-//@ts-ignore
 import { DeviceMsg } from '../../common/models';
-//@ts-ignore
 import { get_chx_cps } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-CH000';

@@ -1,21 +1,29 @@
 <script setup lang="ts">
 
-import { computed } from 'vue';
+import { computed, Ref } from 'vue';
 
-import { NavMenuItem } from '@common/models';
 import { compute_tooltip_pt } from '@renderer/lib/util';
 
-const props = defineProps<{ menu_item: NavMenuItem, is_active: boolean }>();
+interface NavMenuItem {
+    label: string;
+    icon: any;
+    panel_name: string;
+    panel_pos: 'LEFT' | 'RIGHT';
+    is_active: Ref<boolean>;
+    action: () => void;
+};
 
-const icon_class = computed(() => props.is_active ? 'nav_bar_icon_cont nav_bar_icon_cont_active' : 'nav_bar_icon_cont nav_bar_icon_cont_inactive');
+const props = defineProps<{ menu_item: NavMenuItem }>();
+
+const icon_class = computed(() => props.menu_item.is_active.value ? 'nav_bar_icon_cont nav_bar_icon_cont_active' : 'nav_bar_icon_cont nav_bar_icon_cont_inactive');
 const font_color = document.documentElement.style.getPropertyValue('--font-color');
 const accent_color = document.documentElement.style.getPropertyValue('--accent-color');
-const icon_fill_color = computed(() => props.is_active ? accent_color : font_color);
+const icon_fill_color = computed(() => props.menu_item.is_active.value ? accent_color : font_color);
 
 </script>
 
 <template>
-    <div :class="icon_class" @click="menu_item.menu_action()" v-tooltip="{ value: menu_item.label, pt: compute_tooltip_pt('right') }">
+    <div :class="icon_class" @click="menu_item.action()" v-tooltip="{ value: menu_item.label, pt: compute_tooltip_pt('right') }">
         <component class="menu_icon" :is="menu_item.icon" :fill_color="icon_fill_color" />
     </div>
 </template>

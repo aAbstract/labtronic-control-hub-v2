@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted } from 'vue';
+import { ref, Ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
 import NavBarIcon from './NavBarIcon.vue';
@@ -10,91 +10,69 @@ import CalculatorMoney from '@renderer/components/icons/CalculatorMoney.vue';
 import BookOpenCover from '@renderer/components/icons/BookOpenCover.vue';
 import PhotoCapture from '@renderer/components/icons/PhotoCapture.vue';
 import CircleXmark from '@renderer/components/icons/CircleXmark.vue';
-import { NavMenuItem } from '@common/models';
 import { post_event, subscribe } from '@common/mediator';
 import { toggle_screenshot_mode, screenshot_mode } from '@renderer/lib/screenshot';
 
+type PanelPosType = 'LEFT' | 'RIGHT';
+class NavMenuItem {
+    label: string;
+    icon: any;
+    panel_name: string;
+    panel_pos: PanelPosType;
+    is_active: Ref<boolean>;
+    action: () => void;
+
+    constructor(_label: string, _icon: any, _action: () => void, _panel_name: string = '', _panel_pos: PanelPosType = 'LEFT') {
+        this.label = _label;
+        this.icon = _icon;
+        this.panel_name = _panel_name;
+        this.panel_pos = _panel_pos;
+        this.is_active = ref(false);
+        this.action = _action.bind(this);
+    }
+};
+
 const toast_service = useToast();
-const MENU_ITEMS: NavMenuItem[] = [
-    {
-        label: 'DEVICE TERMINAL',
-        icon: SquareTerminalIcon,
-        menu_action() {
-            post_event('toggle_control_panel', {});
-            post_event('hide_data_tool', {});
-            post_event('hide_settings_panel', {});
-        },
-    },
-    {
-        label: 'DATA TOOL',
-        icon: CalculatorMoney,
-        menu_action() {
-            post_event('toggle_data_tool', {});
-            post_event('hide_control_panel', {});
-            post_event('hide_settings_panel', {});
-        },
-    },
-    {
-        label: 'DEVICE MANUAL',
-        icon: BookOpenCover,
-        menu_action() { post_event('toggle_dmp', {}) },
-    },
-    {
-        label: 'SCREENSHOT',
-        icon: PhotoCapture,
-        menu_action() {
-            toggle_screenshot_mode();
-            active_flags.value[3] = screenshot_mode();
-            const mode_str_repr = screenshot_mode() ? 'ON' : 'OFF';
-            const mode_msg = screenshot_mode() ? 'Click on a UI Component to Capture Screenshot' : 'Screenshot Mode is Disabled';
-            toast_service.add({ severity: 'info', summary: `Screenshot ${mode_str_repr}`, detail: mode_msg, life: 3000 });
-        },
-    },
-    {
-        label: 'SETTINGS',
-        icon: SettingsIcon,
-        menu_action() {
-            post_event('toggle_settings_panel', {});
-            post_event('hide_control_panel', {});
-            post_event('hide_data_tool', {});
-        },
-    },
+const menu_items: NavMenuItem[] = [
+    new NavMenuItem('DEVICE TERMINAL', SquareTerminalIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'control_panel', 'LEFT'),
+    new NavMenuItem('SETTINGS', SettingsIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'settings_panel', 'LEFT'),
+    new NavMenuItem('DATA TOOL', CalculatorMoney, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'data_tool', 'RIGHT'),
+    new NavMenuItem('DEVICE MANUAL', BookOpenCover, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'device_manual_panel', 'RIGHT'),
+    new NavMenuItem('SCREENSHOT', PhotoCapture, function (this: NavMenuItem) {
+        toggle_screenshot_mode();
+        const mode_str_repr = screenshot_mode() ? 'ON' : 'OFF';
+        const mode_msg = screenshot_mode() ? 'Click on a UI Component to Capture Screenshot' : 'Screenshot Mode is Disabled';
+        toast_service.add({ severity: 'info', summary: `Screenshot ${mode_str_repr}`, detail: mode_msg, life: 3000 });
+        this.is_active.value = screenshot_mode();
+    }),
 ];
-const EXIT_MENU_ITEM: NavMenuItem = {
-    label: 'EXIT',
-    icon: CircleXmark,
-    menu_action() { post_event('nav_bar_exit', {}) },
-}
-const active_flags = ref(MENU_ITEMS.map(_ => false));
+const exit_menu_item = new NavMenuItem('EXIT', CircleXmark, function (this: NavMenuItem) { post_event('nav_bar_exit', {}) });
 
-function trigger_icon_active_flag_reset(index: number) {
-    const RESET_LIST = [0, 1, 4];
-    if (!RESET_LIST.includes(index))
+function toggle_panel(panel_name: string, panel_pos: PanelPosType) {
+    if (!panel_name || !panel_pos)
         return;
-
-    for (let flag_idx of RESET_LIST) {
-        if (flag_idx === index)
-            active_flags.value[flag_idx] = !active_flags.value[flag_idx];
-        else
-            active_flags.value[flag_idx] = false;
+    for (const m_item of menu_items) {
+        if (panel_name === m_item.panel_name) {
+            post_event(`toggle_${m_item.panel_name}`, {});
+            m_item.is_active.value = !m_item.is_active.value;
+        } else if (panel_pos === m_item.panel_pos) {
+            post_event(`hide_${m_item.panel_name}`, {});
+            m_item.is_active.value = false;
+        }
     }
 }
 
 onMounted(() => {
-    active_flags.value[3] = screenshot_mode();
-    subscribe('toggle_control_panel', 'toggle_control_panel_icon', _ => trigger_icon_active_flag_reset(0));
-    subscribe('toggle_data_tool', 'toggle_data_tool_icon', _ => trigger_icon_active_flag_reset(1));
-    subscribe('toggle_dmp', 'toggle_dmp_icon', _ => active_flags.value[2] = !active_flags.value[2]);
-    subscribe('toggle_settings_panel', 'toggle_settings_panel_icon', _ => trigger_icon_active_flag_reset(4));
+    subscribe('toggle_panel', 'toggle_panel', args => toggle_panel(args.panel_name, args.panel_pos));
 });
 
 </script>
 
 <template>
     <div id="nav_bar_cont">
-        <NavBarIcon v-for="(item, idx) in MENU_ITEMS" :menu_item="item" :is_active="active_flags[idx]" />
+        <NavBarIcon v-for="m_item in menu_items" :menu_item="m_item" />
         <div style="flex-grow: 1;"></div>
-        <NavBarIcon :menu_item="EXIT_MENU_ITEM" :is_active="false" />
+        <NavBarIcon :menu_item="exit_menu_item" />
     </div>
 </template>
 

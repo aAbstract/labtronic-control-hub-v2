@@ -43,7 +43,10 @@ export interface LogMsg {
 export interface NavMenuItem {
     label: string;
     icon: any;
-    menu_action: () => void;
+    panel_name?: string;
+    panel_pos?: 'LEFT' | 'RIGHT';
+    is_active: boolean;
+    menu_action?: () => void;
 };
 
 export interface DropdownOption<T> {
@@ -155,12 +158,13 @@ export interface CHXScriptInjectedParam {
 
 export interface CHXSeries {
     series_name: string;
-    x_param: number;
+    x_param: number; // -1 means time
     y_param: number;
 };
 
 export interface CHXSettings {
     device_model: string;
+    data_freq: number;
     cloud_settings: CHXCloudSettings;
     computed_params: CHXComputedParam[];
     equations: CHXEquation[];

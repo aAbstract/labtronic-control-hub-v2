@@ -5,8 +5,10 @@ import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result } from "../
 
 const CHX_SETTINGS_FILENAME = 'chx_settings.json';
 
+const DEFAULT_DATA_FREQUENCY = 10; // 10Hz
 const chx_settings_schema: CHXSettings = {
     device_model: '',
+    data_freq: DEFAULT_DATA_FREQUENCY,
     cloud_settings: { labtronic_cdn_base_url: '' },
     computed_params: [{ param_name: '', expr: '' }],
     equations: [{ func_name: '', args_list: [], expr: '', result_unit: '' }],
@@ -159,6 +161,7 @@ export function init_system_settings(_main_window: BrowserWindow) {
     main_window = _main_window;
     load_settings(CHX_SETTINGS_FILENAME, chx_settings_schema, (valid_chx_settings) => chx_settings = valid_chx_settings);
 
+    ipcMain.handle('get_chx_data_freq', () => chx_settings?.data_freq ?? DEFAULT_DATA_FREQUENCY);
     ipcMain.handle('get_chx_cloud_settings', () => chx_settings?.cloud_settings ?? '');
     ipcMain.handle('get_chx_cps', () => chx_settings?.computed_params ?? []);
     ipcMain.handle('get_chx_series', () => chx_settings?.series ?? []);

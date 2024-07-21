@@ -89,7 +89,7 @@ onMounted(() => {
     position: absolute;
     width: 96%;
     left: v-bind(panel_pos);
-    height: calc(100% - 32px);
+    height: calc(100% - 24px);
     top: 12px;
     background-color: var(--light-bg-color);
     border-radius: 4px;

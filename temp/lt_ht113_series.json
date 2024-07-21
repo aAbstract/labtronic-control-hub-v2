@@ -1,0 +1,22 @@
+[
+    {
+        "series_name": "time - T_sam",
+        "x_param": -1,
+        "y_param": 0
+    },
+    {
+        "series_name": "time - T_amb",
+        "x_param": -1,
+        "y_param": 1
+    },
+    {
+        "series_name": "time - T_ref",
+        "x_param": -1,
+        "y_param": 2
+    },
+    {
+        "series_name": "time - W_flw",
+        "x_param": -1,
+        "y_param": 3
+    }
+]

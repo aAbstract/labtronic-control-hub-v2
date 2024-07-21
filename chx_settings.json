@@ -1,5 +1,6 @@
 {
-  "device_model": "LT-HT103",
+  "device_model": "LT-HT113",
+  "data_freq": 5,
   "cloud_settings": {
     "labtronic_cdn_base_url": "http://127.0.0.1:8090"
   },
@@ -13,9 +14,24 @@
   ],
   "series": [
     {
-      "series_name": "T_h - Q_L",
-      "x_param": 4,
-      "y_param": 17
+      "series_name": "time - T_sam",
+      "x_param": -1,
+      "y_param": 0
+    },
+    {
+      "series_name": "time - T_amb",
+      "x_param": -1,
+      "y_param": 1
+    },
+    {
+      "series_name": "time - T_ref",
+      "x_param": -1,
+      "y_param": 2
+    },
+    {
+      "series_name": "time - W_flw",
+      "x_param": -1,
+      "y_param": 3
     }
   ],
   "device_config": {
