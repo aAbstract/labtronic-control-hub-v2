@@ -32,7 +32,7 @@ let iid: NodeJS.Timeout | null = null;
 const data_points_count = ref(0);
 
 let is_recording = false;
-const complete_data_point_keys: string[] = [];
+let complete_data_point_keys: string[] = [];
 const msg_type_name_map: Record<string, string> = { 'time_ms': 'time_ms', 'seq_number': 'seq_number' };
 const device_model = inject('device_model');
 const panel_pos = ref('-60vw');
@@ -182,10 +182,13 @@ onMounted(() => {
 
     subscribe('hide_data_tool', 'hide_data_tool', _ => panel_pos.value = '-60vw');
 
-    electron_renderer_invoke<CHXSeries[]>('get_chx_series').then(_chx_series => {
-        if (!_chx_series)
-            return;
-        chx_series.value = _chx_series;
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<CHXSeries[]>(`${device_model}_get_chx_series`).then(_chx_series => {
+            if (!_chx_series)
+                return;
+            chx_series.value = _chx_series;
+            stop_data_recording();
+        });
     });
 
     electron_renderer_invoke<CHXEquation[]>('get_chx_eqs').then(_chx_eqs => {
@@ -198,12 +201,6 @@ onMounted(() => {
         if (!_chx_data_freq)
             return;
         device_data_freq.value = _chx_data_freq;
-    });
-
-    // chx_series auto hmr
-    window.electron?.ipcRenderer.on('chx_series_change', (_, data) => {
-        const { _chx_series } = data;
-        chx_series.value = _chx_series;
     });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
@@ -231,6 +228,7 @@ onMounted(() => {
             if (!device_config)
                 return;
             const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
+            complete_data_point_keys = [];
             read_config.forEach(_read_config => {
                 complete_data_point_keys.push(String(_read_config.msg_type));
                 const { msg_type } = _read_config;
@@ -241,10 +239,12 @@ onMounted(() => {
         });
     });
 
-    electron_renderer_invoke<CHXScript[]>('get_chx_scripts').then(_chx_scripts => {
-        if (!_chx_scripts)
-            return;
-        chx_scripts.value = _chx_scripts;
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<CHXScript[]>(`${device_model}_get_chx_scripts`).then(_chx_scripts => {
+            if (!_chx_scripts)
+                return;
+            chx_scripts.value = _chx_scripts;
+        });
     });
 
     window.electron?.ipcRenderer.on('export_device_data_res', (_, data) => {

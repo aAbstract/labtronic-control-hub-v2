@@ -91,8 +91,17 @@ function save_screenshot(main_window: BrowserWindow, comp_rect: Rectangle) {
     });
 }
 
+function load_device_asset(asset_path: string): string {
+    const file_path = `device_assets/${asset_path}`;
+    const bitmap = fs.readFileSync(file_path);
+    const base64_buffer = Buffer.from(bitmap).toString('base64');
+    const img_ext = asset_path.split('.').pop();
+    return `data:image/${img_ext};base64,${base64_buffer}`;
+}
+
 export function init_fsio(main_window: BrowserWindow) {
     ipcMain.on('import_device_data', () => import_device_data(main_window));
     ipcMain.on('export_device_data', (_, data) => export_device_data(main_window, data.device_data));
     ipcMain.on('save_screenshot', (_, data) => save_screenshot(main_window, data.comp_rect));
+    ipcMain.handle('load_devie_asset', (_, data) => load_device_asset(data.asset_path));
 }

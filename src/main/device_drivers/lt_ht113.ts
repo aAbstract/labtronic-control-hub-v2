@@ -1,7 +1,8 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver } from "./ltd_driver";
-import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, _ToastMessageOptions } from '../../common/models';
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, _ToastMessageOptions, CHXSeries } from '../../common/models';
+import { get_chx_cps, get_chx_eqs, get_chx_scripts, get_chx_series } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-HT113';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -13,6 +14,28 @@ const DEVICE_ERROR_MSG_MAP: Record<number, string> = {
     0xF3: 'Level Sensor out of range',
     0xFF: 'Invalid Packet',
 };
+const DEVICE_SERIES: CHXSeries[] = [
+    {
+        series_name: 'time - T_sam',
+        x_param: -1,
+        y_param: 0,
+    },
+    {
+        series_name: 'time - T_amb',
+        x_param: -1,
+        y_param: 1,
+    },
+    {
+        series_name: 'time - T_ref',
+        x_param: -1,
+        y_param: 2,
+    },
+    {
+        series_name: 'time - W_flw',
+        x_param: -1,
+        y_param: 3,
+    }
+];
 const LT_HT113_DRIVER_CONFIG: MsgTypeConfig[] = [
     {
         msg_type: 0,
@@ -115,6 +138,11 @@ let main_window: BrowserWindow | null = null;
 ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => LT_HT113_DRIVER_CONFIG);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_HT113_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_HT113_VCE_CONFIG);
+
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_cps`, () => get_chx_cps());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => [...DEVICE_SERIES, ...get_chx_series()])
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_eqs`, () => get_chx_eqs());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => get_chx_scripts());
 
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);

@@ -3,9 +3,8 @@ import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver } from "./ltd_driver";
 import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation, CHXScript, LT_HT103_DeviceConfig, LT_HT103_DeviceOperationMode, _ToastMessageOptions } from '../../common/models';
 import { VirtualComputeEngine } from '../vce';
-import { subscribe } from '../../common/mediator';
 import { DeviceMsg } from '../../common/models';
-import { get_chx_cps, get_chx_device_confg } from "../system_settings";
+import { get_chx_device_confg, get_chx_cps, get_chx_scripts, get_chx_series, get_chx_eqs } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-HT103';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -43,6 +42,12 @@ const DEVICE_OP_MODE_CPS_MAP: Record<LT_HT103_DeviceOperationMode, CHXComputedPa
         { param_name: 'P_Peltier', expr: '$P_P' },
     ],
 };
+const DEVICE_SCRIPTS: CHXScript[] = [
+    {
+        script_name: 'lt_ht103_calibrate',
+        script_path: 'device_scripts/lt_ht103_calibrate.js',
+    },
+];
 const DEVICE_OP_MODE_LBL_MAP: Record<LT_HT103_DeviceOperationMode, string> = {
     [LT_HT103_DeviceOperationMode.CALIBRATION]: 'CALIBRATION',
     [LT_HT103_DeviceOperationMode.EXPERIMENT]: 'EXPERIMENT',
@@ -269,6 +274,12 @@ let device_config: LT_HT103_DeviceConfig | null = null;
 ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_HT103_DRIVER_CONFIG, ...(lt_ht103_vce0?.get_cps_config() ?? [])]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_HT103_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_HT103_VCE_CONFIG);
+
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_cps`, () => [...DEVICE_OP_MODE_CPS_MAP[device_op_mode], ...get_chx_cps()]);
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => get_chx_series());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_eqs`, () => get_chx_eqs());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => [...DEVICE_SCRIPTS, ...get_chx_scripts()]);
+
 ipcMain.handle('compute_chx_equation', (_, chx_equation: CHXEquation, args_vals: number[]) => VirtualComputeEngine.compute_chx_equation(chx_equation, args_vals));
 ipcMain.handle('exec_chx_script', async (_, data_points: Record<string, number>[], _script: CHXScript) => await VirtualComputeEngine.exec_chx_script(data_points, _script));
 
@@ -414,15 +425,8 @@ export function init_lt_ht103_serial_adapter(_main_window: BrowserWindow) {
     ipcMain.on(`${DEVICE_MODEL}_serial_port_scan`, () => SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
     SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger);
 
-    // load VCE module with auto HMR
     lt_ht103_vce0 = new VirtualComputeEngine(LT_HT103_VCE_CONFIG, [...DEVICE_OP_MODE_CPS_MAP[device_op_mode], ...get_chx_cps()], mw_ipc_handler, DEVICE_MODEL);
     load_vce_settings_symbols();
-    subscribe('chx_cps_change', `${DEVICE_MODEL}_chx_cps_change`, args => {
-        const _chx_cps: CHXComputedParam[] = [...DEVICE_OP_MODE_CPS_MAP[device_op_mode], ...args._chx_cps];
-        lt_ht103_vce0 = new VirtualComputeEngine(LT_HT103_VCE_CONFIG, _chx_cps, mw_ipc_handler, DEVICE_MODEL);
-        load_vce_settings_symbols();
-        main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
-    });
 
     main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
     mw_logger({ level: 'INFO', msg: `Loaded Device Drivers: ${DEVICE_MODEL}` });

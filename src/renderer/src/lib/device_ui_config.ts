@@ -147,7 +147,7 @@ const LT_CH000_DUIC = new DeviceUIConfig(
     'LT-CH000',
 );
 
-const LT_H103_DUIC = new DeviceUIConfig(
+const LT_HT103_DUIC = new DeviceUIConfig(
     {},
     {},
     {
@@ -172,7 +172,7 @@ const LT_H103_DUIC = new DeviceUIConfig(
     'LT-HT103',
 );
 
-const LT_H107_DUIC = new DeviceUIConfig(
+const LT_HT107_DUIC = new DeviceUIConfig(
     {},
     {},
     {
@@ -190,7 +190,7 @@ const LT_H107_DUIC = new DeviceUIConfig(
     'LT-HT103',
 );
 
-const LT_H113_DUIC = new DeviceUIConfig(
+const LT_HT113_DUIC = new DeviceUIConfig(
     {},
     {},
     {
@@ -202,9 +202,27 @@ const LT_H113_DUIC = new DeviceUIConfig(
     'LT-HT103',
 );
 
+const LT_TO101_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('TC1', '#9C27B0'), // READ_TC1
+        1: new ChartParams('TC2', '#DD2C00'), // READ_TC2
+        2: new ChartParams('TC3', '#FF9800'), // READ_TC3
+        3: new ChartParams('LVL', '#00BCD4'), // READ_LVL
+        4: new ChartParams('PR1', '#2196F3'), // READ_PR1
+        5: new ChartParams('PR2', '#009688'), // READ_PR2
+        6: new ChartParams('PR3', '#9E9E9E'), // READ_PR3
+    },
+    'LT-TO101',
+);
+
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
-    'LT-HT103': LT_H103_DUIC,
-    'LT-HT107': LT_H107_DUIC,
-    'LT-HT113': LT_H113_DUIC,
+
+    'LT-HT103': LT_HT103_DUIC,
+    'LT-HT107': LT_HT107_DUIC,
+    'LT-HT113': LT_HT113_DUIC,
+
+    'LT-TO101': LT_TO101_DUIC,
 };

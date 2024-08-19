@@ -130,6 +130,35 @@ def stream_detr_waves_0x13():
         time.sleep(0.2)
 
 
+def stream_detr_waves_lt_to101():
+    ltd_driver: LtdDriver = ltd_driver_lt_to101
+    sn = 0
+    while True:
+        tc1 = 10
+        tc2 = 20
+        tc3 = 30
+        lvl = 4
+        pr1 = 15
+        pr2 = 25
+        pr3 = 35
+        packet_tc1 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[0].msg_type, tc1).ok
+        packet_tc2 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[1].msg_type, tc2).ok
+        packet_tc3 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[2].msg_type, tc3).ok
+        packet_lvl = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[3].msg_type, lvl).ok
+        packet_pr1 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[4].msg_type, pr1).ok
+        packet_pr2 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[5].msg_type, pr2).ok
+        packet_pr3 = ltd_driver.encode_packet(sn, DRIVER_CONFIG_LT_TO101[6].msg_type, pr3).ok
+        vspi_socket.send(packet_tc1)
+        vspi_socket.send(packet_tc2)
+        vspi_socket.send(packet_tc3)
+        vspi_socket.send(packet_lvl)
+        vspi_socket.send(packet_pr1)
+        vspi_socket.send(packet_pr2)
+        vspi_socket.send(packet_pr3)
+        sn += 1
+        time.sleep(0.2)
+
+
 def stream_detr_waves_lt_ht107():
     ltd_driver: LtdDriver = ltd_driver_lt_ht107
     sn = 0
@@ -172,6 +201,29 @@ def stream_lt_ht107_sample(mid_dt: list[int]):
             _packet = ltd_driver.encode_packet(sn, msg_type, msg_value).ok
             vspi_socket.send(_packet)
         time.sleep(0.5)
+
+
+def burst_lt_ht113_sample():
+    ltd_driver: LtdDriver = ltd_driver_lt_ht113
+    vspi_socket.send(ltd_driver.encode_packet(0, 0, 11).ok)
+    vspi_socket.send(ltd_driver.encode_packet(0, 1, 22).ok)
+    vspi_socket.send(ltd_driver.encode_packet(0, 2, 33).ok)
+    vspi_socket.send(ltd_driver.encode_packet(0, 3, 44).ok)
+    vspi_socket.send(ltd_driver.encode_packet(0, 4, 1).ok)
+
+
+def switch_mode_lt_ht113(mode: int):
+    ltd_driver: LtdDriver = ltd_driver_lt_ht113
+    DRIVER_CONFIG_LT_HT113[0].cfg2 = mode
+    vspi_socket.send(ltd_driver.encode_packet(0, 0, 11).ok)
+    DRIVER_CONFIG_LT_HT113[0].cfg2 = 0
+
+
+def switch_mode_lt_to101(mode: int):
+    ltd_driver: LtdDriver = ltd_driver_lt_to101
+    DRIVER_CONFIG_LT_TO101[0].cfg2 = mode
+    vspi_socket.send(ltd_driver.encode_packet(0, 0, 11).ok)
+    DRIVER_CONFIG_LT_TO101[0].cfg2 = 0
 
 
 def read_packet(_driver: LtdDriver, control_state_map: dict[int, int]):

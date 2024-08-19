@@ -63,3 +63,17 @@ DRIVER_CONFIG_LT_HT113: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_ht113 = LtdDriver([0x14, 0x14], DRIVER_CONFIG_LT_HT113)
+
+DRIVER_CONFIG_LT_TO101: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_TC1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_TC2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_TC3', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_LVL', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=4, msg_name='READ_PR1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=5, msg_name='READ_PR2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=6, msg_name='READ_PR3', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=7, msg_name='CLS', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=8, msg_name='HLS', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+]
+ltd_driver_lt_to101 = LtdDriver([0x24, 0x24], DRIVER_CONFIG_LT_TO101)

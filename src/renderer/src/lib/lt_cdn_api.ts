@@ -21,7 +21,7 @@ export function inject_source_csp(url: string) {
         "script-src 'self'",
         "style-src 'self' 'unsafe-inline'",
         `connect-src 'self' ${url}`,
-        `img-src 'self' ${url}`,
+        `img-src 'self' ${url} data:`,
     ];
     cdn_meta_csp.setAttribute('content', csp_items.join(';'));
     document.head.appendChild(cdn_meta_csp);
@@ -57,13 +57,14 @@ export async function get_fake_manual(_manual_id: string): Promise<_Result> {
 
 export async function get_manual(device_model: string): Promise<_Result> {
     // TODO-LATER: optimize this function
-    const device_id_res = await make_fetch_request('/capi/manuals/get-device-id', { method: 'POST', body: JSON.stringify({ device_model }) });
-    if (device_id_res.err)
-        return device_id_res;
-    const { device_id } = device_id_res.ok;
-    const manual_id_res = await make_fetch_request('/capi/manuals/get-latest-manual-id', { method: 'POST', body: JSON.stringify({ device_id }) });
-    if (manual_id_res.err)
-        return manual_id_res;
-    const { manual_id } = manual_id_res.ok;
-    return await make_fetch_request(`/api/collections/manuals/records/${manual_id}`, { method: 'GET' });
+    // const device_id_res = await make_fetch_request('/capi/manuals/get-device-id', { method: 'POST', body: JSON.stringify({ device_model }) });
+    // if (device_id_res.err)
+    //     return device_id_res;
+    // const { device_id } = device_id_res.ok;
+    // const manual_id_res = await make_fetch_request('/capi/manuals/get-latest-manual-id', { method: 'POST', body: JSON.stringify({ device_id }) });
+    // if (manual_id_res.err)
+    //     return manual_id_res;
+    // const { manual_id } = manual_id_res.ok;
+    // return await make_fetch_request(`/api/collections/manuals/records/${manual_id}`, { method: 'GET' });
+    return await make_fetch_request(`/api/collections/manuals/records/k3ua55qubzwxc2k`, { method: 'GET' });
 }

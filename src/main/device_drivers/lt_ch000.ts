@@ -5,7 +5,6 @@ import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXCompu
 import { VirtualComputeEngine } from '../vce';
 import { subscribe } from '../../common/mediator';
 import { DeviceMsg } from '../../common/models';
-import { get_chx_cps } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-CH000';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -292,7 +291,7 @@ export function init_lt_ch000_serial_adapter(_main_window: BrowserWindow) {
     SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger);
 
     // load VCE module with auto HMR
-    lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, get_chx_cps(), mw_ipc_handler, DEVICE_MODEL);
+    lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, [], mw_ipc_handler, DEVICE_MODEL);
     subscribe('chx_cps_change', `${DEVICE_MODEL}_chx_cps_change`, args => {
         const _chx_cps: CHXComputedParam[] = args._chx_cps;
         lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, _chx_cps, mw_ipc_handler, DEVICE_MODEL);

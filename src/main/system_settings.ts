@@ -1,7 +1,6 @@
 import { ipcMain, BrowserWindow } from "electron";
 import fs from 'fs';
-import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result } from "../common/models";
-// import { post_event } from "../common/mediator";
+import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result, CHXSeries, CHXEquation, CHXScript } from "../common/models";
 
 const CHX_SETTINGS_FILENAME = 'chx_settings.json';
 
@@ -64,80 +63,6 @@ function validate_chx_settings(_chx_settings: CHXSettings | null): Result<string
     return { ok: 'OK' };
 }
 
-// ipcMain.on('save_chx_settings', (_, data) => {
-//     const { _chx_settings } = data;
-//     if (compare_json_schema(_chx_settings, chx_settings)) {
-//         chx_settings = _chx_settings;
-//         fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings, null, 2));
-//         const notif: _ToastMessageOptions = {
-//             severity: 'warn',
-//             summary: 'App Restart',
-//             detail: 'Changes in System Settings Will Take Effect Next Time You Open the App',
-//             life: 0,
-//         };
-//         main_window?.webContents.send('show_system_notif', { notif });
-//     }
-//     else {
-//         const notif: _ToastMessageOptions = {
-//             severity: 'error',
-//             summary: 'Error',
-//             detail: 'Invalid CHX Settings Object',
-//             life: 0,
-//         };
-//         main_window?.webContents.send('show_system_notif', { notif });
-//     }
-// });
-
-// ipcMain.on('save_chx_cps', (_, data) => {
-//     const { _chx_cps } = data;
-//     if (compare_json_schema_arr(_chx_cps, chx_cps)) {
-//         chx_cps = _chx_cps;
-//         fs.writeFileSync(CHX_CPS_FILENAME, JSON.stringify(chx_cps, null, 2));
-//         post_event('chx_cps_change', { _chx_cps });
-//         const notif: _ToastMessageOptions = {
-//             severity: 'info',
-//             summary: 'Info',
-//             detail: 'Device Computed Parameters Updated',
-//             life: 3000,
-//         };
-//         main_window?.webContents.send('show_system_notif', { notif });
-//     }
-//     else {
-//         const notif: _ToastMessageOptions = {
-//             severity: 'error',
-//             summary: 'Error',
-//             detail: 'Invalid CHX Computed Parameters Object',
-//             life: 0,
-//         };
-//         main_window?.webContents.send('show_system_notif', { notif });
-//     }
-// });
-
-// ipcMain.on('save_chx_series', (_, data) => {
-//     const { _chx_series } = data;
-//     if (compare_json_schema_arr(_chx_series, chx_series)) {
-//         chx_series = _chx_series;
-//         fs.writeFileSync(CHX_SERIES_FILENAME, JSON.stringify(chx_series, null, 2));
-//         main_window?.webContents.send('chx_series_change', { _chx_series });
-//         const notif: _ToastMessageOptions = {
-//             severity: 'info',
-//             summary: 'Info',
-//             detail: 'Device Custom Series Updated',
-//             life: 3000,
-//         };
-//         main_window?.webContents.send('show_system_notif', { notif });
-//     }
-//     else {
-//         const notif: _ToastMessageOptions = {
-//             severity: 'error',
-//             summary: 'Error',
-//             detail: 'Invalid CHX Series Object',
-//             life: 0,
-//         };
-//         main_window?.webContents.send('show_system_notif', { notif });
-//     }
-// });
-
 function load_settings(settings_filename: string, target_schema: any, valid_json_callback: (valid_json: any) => void) {
     try {
         const _data = fs.readFileSync(settings_filename, 'utf-8');
@@ -153,6 +78,18 @@ export function get_chx_cps(): CHXComputedParam[] {
     return chx_settings?.computed_params ?? [];
 }
 
+export function get_chx_series(): CHXSeries[] {
+    return chx_settings?.series ?? [];
+}
+
+export function get_chx_eqs(): CHXEquation[] {
+    return chx_settings?.equations ?? [];
+}
+
+export function get_chx_scripts(): CHXScript[] {
+    return chx_settings?.scripts ?? [];
+}
+
 export function get_chx_device_confg(): Record<string, any> {
     return chx_settings?.device_config ?? {};
 }
@@ -163,9 +100,7 @@ export function init_system_settings(_main_window: BrowserWindow) {
 
     ipcMain.handle('get_chx_data_freq', () => chx_settings?.data_freq ?? DEFAULT_DATA_FREQUENCY);
     ipcMain.handle('get_chx_cloud_settings', () => chx_settings?.cloud_settings ?? '');
-    ipcMain.handle('get_chx_cps', () => chx_settings?.computed_params ?? []);
-    ipcMain.handle('get_chx_series', () => chx_settings?.series ?? []);
-    ipcMain.handle('get_chx_eqs', () => chx_settings?.equations ?? []);
-    ipcMain.handle('get_chx_scripts', () => chx_settings?.scripts ?? []);
     ipcMain.handle('get_chx_device_config', () => chx_settings?.device_config ?? {});
+
+    ipcMain.handle('get_chx_eqs', () => chx_settings?.equations ?? []);
 }

@@ -6,34 +6,8 @@
   },
   "computed_params": [],
   "equations": [],
-  "scripts": [
-    {
-      "script_name": "lt_ht103_calibrate",
-      "script_path": "/home/abstract/work/labtronic_software/control_hub_v2/temp/lt_ht103_calibrate.js"
-    }
-  ],
-  "series": [
-    {
-      "series_name": "time - T_sam",
-      "x_param": -1,
-      "y_param": 0
-    },
-    {
-      "series_name": "time - T_amb",
-      "x_param": -1,
-      "y_param": 1
-    },
-    {
-      "series_name": "time - T_ref",
-      "x_param": -1,
-      "y_param": 2
-    },
-    {
-      "series_name": "time - W_flw",
-      "x_param": -1,
-      "y_param": 3
-    }
-  ],
+  "scripts": [],
+  "series": [],
   "device_config": {
     "C_f": 1,
     "Q_L_F1": 0.5,

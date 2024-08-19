@@ -193,3 +193,10 @@ export enum LT_HT107_DeviceMode {
     RADIAL = 1,
 };
 // device models - LT_HT107
+
+// device models - LT_TO101
+export enum LT_TO101_DeviceMode {
+    BOYLE = 0,
+    GLUSS = 1,
+};
+// device models - LT_TO101

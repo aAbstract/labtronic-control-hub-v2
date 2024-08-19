@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
-import { onMounted, shallowRef } from 'vue';
-import { ChartOptions, ChartData, ChartEvent, Chart as _Chart } from 'chart.js';
+import { onMounted, shallowRef, computed } from 'vue';
+import { ChartData, ChartEvent, Chart as _Chart } from 'chart.js';
 import Chart from 'primevue/chart';
 
 import { ChartParams } from '@renderer/lib/device_ui_config';
@@ -23,45 +23,52 @@ const props = defineProps<{
     y_param: number,
     chart_idx: number,
 }>();
-const chart_params = new ChartParams(props.chart_title, props.line_color);
-chart_params.tension = 0;
-const chart_data = shallowRef<ChartData>({
-    labels: [],
-    datasets: [chart_params],
-});
 
 let chart_marker: ChartMarker | null = null;
-const chart_opts = shallowRef<ChartOptions>({
-    responsive: true,
-    maintainAspectRatio: false,
-    aspectRatio: 2,
-    animation: false,
-    plugins: {
-        legend: { display: false },
-    },
-    scales: {
-        x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[0], display: true, color: font_color } },
-        y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[1], display: true, color: font_color } },
-    },
-    onClick: (chart_event: ChartEvent) => {
-        debugger;
-        if (!chart_data.value.labels)
-            return;
-        const _chart: _Chart = (chart_event as any).chart;
-        const x_idx = _chart.scales.x.getValueForPixel(chart_event.x as number) as number;
-        const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
-        const _x_val = chart_data.value.labels[x_idx] as number;
-        const _y_val = chart_data.value.datasets[0].data[x_idx] as number;
-        if (isNaN(_x_val) || isNaN(_y_val))
-            return;
-        chart_marker = {
-            x_val: _x_val.toFixed(2),
-            y_val: _y_val.toFixed(2),
-            marker_line_x_offset: x_offset,
-        };
-        _chart.draw();
-        draw_chart_markers(_chart.ctx, chart_marker);
-    },
+const chart_data = shallowRef<ChartData>({
+    labels: [],
+    datasets: [],
+});
+
+const chart_opts = computed(() => {
+    const chart_params = new ChartParams(props.chart_title, props.line_color);
+    chart_params.tension = 0;
+    chart_data.value = {
+        labels: [],
+        datasets: [chart_params],
+    };
+
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        aspectRatio: 2,
+        animation: false,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[0], display: true, color: font_color } },
+            y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[1], display: true, color: font_color } },
+        },
+        onClick: (chart_event: ChartEvent) => {
+            if (!chart_data.value.labels)
+                return;
+            const _chart: _Chart = (chart_event as any).chart;
+            const x_idx = _chart.scales.x.getValueForPixel(chart_event.x as number) as number;
+            const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
+            const _x_val = chart_data.value.labels[x_idx] as number;
+            const _y_val = chart_data.value.datasets[0].data[x_idx] as number;
+            if (isNaN(_x_val) || isNaN(_y_val))
+                return;
+            chart_marker = {
+                x_val: _x_val.toFixed(2),
+                y_val: _y_val.toFixed(2),
+                marker_line_x_offset: x_offset,
+            };
+            _chart.draw();
+            draw_chart_markers(_chart.ctx, chart_marker);
+        },
+    }
 });
 
 function draw_chart_markers(_ctx: CanvasRenderingContext2D, _chart_marker: ChartMarker | null) {

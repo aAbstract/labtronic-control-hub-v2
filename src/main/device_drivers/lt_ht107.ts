@@ -3,6 +3,7 @@ import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver } from "./ltd_driver";
 import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, _ToastMessageOptions, LT_HT107_DeviceMode } from '../../common/models';
 import { DeviceMsg } from '../../common/models';
+import { get_chx_cps, get_chx_series, get_chx_eqs, get_chx_scripts } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-HT107';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -304,6 +305,11 @@ let main_window: BrowserWindow | null = null;
 ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => filter_driver_config(LT_HT107_DRIVER_CONFIG));
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_HT107_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => filter_vce_config(LT_HT107_VCE_CONFIG));
+
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_cps`, () => get_chx_cps());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => get_chx_series());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_eqs`, () => get_chx_eqs());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => get_chx_scripts());
 
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);

@@ -7,9 +7,12 @@ import { init_fsio } from './fsio';
 import { init_system_settings } from './system_settings';
 
 // import { init_lt_ch000_serial_adapter } from './device_drivers/lt_ch000';
+
 // import { init_lt_ht103_serial_adapter } from './device_drivers/lt_ht103';
 // import { init_lt_ht107_serial_adapter } from './device_drivers/lt_ht107';
-import { init_lt_ht113_serial_adapter } from './device_drivers/lt_ht113';
+// import { init_lt_ht113_serial_adapter } from './device_drivers/lt_ht113';
+
+import { init_lt_to101_serial_adapter } from './device_drivers/lt_to101';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -42,7 +45,7 @@ function createWindow(): void {
   // init routine
   init_fsio(mainWindow);
   init_system_settings(mainWindow);
-  ipcMain.on('load_device_driver', () => init_lt_ht113_serial_adapter(mainWindow));
+  ipcMain.on('load_device_driver', () => init_lt_to101_serial_adapter(mainWindow));
   ipcMain.on('exit', () => process.exit(0));
 }
 

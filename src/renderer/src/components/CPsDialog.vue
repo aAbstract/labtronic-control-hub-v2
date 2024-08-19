@@ -2,6 +2,7 @@
 
 import { ref, onMounted, inject, shallowRef, computed } from 'vue';
 import Dialog from 'primevue/dialog';
+// @ts-ignore
 import Button from 'primevue/button';
 
 import { subscribe } from '@common/mediator';
@@ -34,6 +35,7 @@ function get_data_type_symbol(config: MsgTypeConfig): string {
     return `${dt_map[config.data_type]}${size_map[config.size_bytes]}`;
 }
 
+// @ts-ignore
 function new_cp_btn_click() {
     vce_chx_cps.value?.push({
         param_name: 'NEW_PARAM',
@@ -41,12 +43,14 @@ function new_cp_btn_click() {
     });
 }
 
+// @ts-ignore
 function delete_cp_btn_click(cp_idx: number) {
     vce_chx_cps.value?.splice(cp_idx, 1);
     electron_renderer_send('save_chx_cps', { _chx_cps: clone_object(vce_chx_cps.value) });
     dialog_visible.value = false;
 }
 
+// @ts-ignore
 function save_cps_btn_click() {
     electron_renderer_send('save_chx_cps', { _chx_cps: clone_object(vce_chx_cps.value) });
     dialog_visible.value = false;
@@ -63,10 +67,12 @@ onMounted(() => {
         vce_param_config.value = _vce_param_config;
     });
 
-    electron_renderer_invoke<CHXComputedParam[]>('get_chx_cps').then(chx_cps => {
-        if (!chx_cps)
-            return;
-        vce_chx_cps.value = chx_cps;
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<CHXComputedParam[]>(`${device_model}_get_chx_cps`).then(chx_cps => {
+            if (!chx_cps)
+                return;
+            vce_chx_cps.value = chx_cps;
+        });
     });
 });
 
@@ -91,16 +97,16 @@ onMounted(() => {
         </div>
         <div style="height: 8px;"></div>
         <div id="vce_cps">
-            <div class="cp_row" v-for="(cp, idx) in vce_chx_cps">
-                <input class="cp_param_name" type="text" v-model="cp.param_name">
-                <input class="cp_expr" type="text" v-model="cp.expr">
-                <Button icon="pi pi-trash" severity="danger" text rounded @click="delete_cp_btn_click(idx)" />
+            <div class="cp_row" v-for="(cp, _idx) in vce_chx_cps">
+                <input class="cp_param_name" type="text" v-model="cp.param_name" readonly>
+                <input class="cp_expr" type="text" v-model="cp.expr" readonly>
+                <!-- <Button icon="pi pi-trash" severity="danger" text rounded @click="delete_cp_btn_click(idx)" /> -->
             </div>
         </div>
         <div id="vce_footer_controls">
-            <Button icon="pi pi-save" severity="primary" outlined rounded @click="save_cps_btn_click()" />
-            <div style="width: 8px;"></div>
-            <Button icon="pi pi-plus" severity="primary" outlined rounded @click="new_cp_btn_click()" />
+            <!-- <Button icon="pi pi-save" severity="primary" outlined rounded @click="save_cps_btn_click()" /> -->
+            <!-- <div style="width: 8px;"></div> -->
+            <!-- <Button icon="pi pi-plus" severity="primary" outlined rounded @click="new_cp_btn_click()" /> -->
         </div>
     </Dialog>
 </template>
@@ -139,6 +145,7 @@ onMounted(() => {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+    margin-bottom: 8px;
 }
 
 .cp_row input[type="text"] {

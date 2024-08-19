@@ -6,12 +6,12 @@ import Button from 'primevue/button';
 import { subscribe } from '@common/mediator';
 import { get_base_url } from '@renderer/lib/lt_cdn_api';
 import { CHXCloudSettings } from '@common/models';
-import { electron_renderer_send, compute_tooltip_pt } from '@renderer/lib/util';
+import { electron_renderer_send, compute_tooltip_pt, electron_renderer_invoke } from '@renderer/lib/util';
 
 const panel_pos = ref('-50vw');
 const cdn_server = ref('Loading...');
 const device_model = inject('device_model') as string;
-const device_model_img = new URL(`../device_assets/device_models/${device_model.toLowerCase().replace('-', '_')}.png`, import.meta.url).href;
+const device_model_img = ref('');
 
 function save_chx_settings() {
     const _chx_settings: CHXCloudSettings = { labtronic_cdn_base_url: cdn_server.value };
@@ -30,6 +30,12 @@ onMounted(() => {
     subscribe('hide_settings_panel', 'hide_settings_panel', _ => panel_pos.value = '-50vw');
 
     subscribe('chx_settings_loaded', 'chx_settings_loaded_settings_panel', _ => cdn_server.value = get_base_url());
+
+    electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
+        if (!base64_src)
+            return;
+        device_model_img.value = base64_src;
+    });
 });
 
 </script>

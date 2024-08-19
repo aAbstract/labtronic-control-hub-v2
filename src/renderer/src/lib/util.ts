@@ -13,12 +13,17 @@ export function add_log(log_msg: LogMsg) {
     post_event('add_sys_log', log_msg);
 }
 
-export async function electron_renderer_invoke<T>(channel: string): Promise<T | null> {
+export async function electron_renderer_invoke<T>(channel: string, args: Object | null = null): Promise<T | null> {
     if (!window.electron) {
         add_log({ level: 'ERROR', msg: 'Operation Denied Browser Sandbox' });
         return null;
     }
-    const result: T = await window.electron.ipcRenderer.invoke(channel);
+
+    let result: T;
+    if (args)
+        result = await window.electron.ipcRenderer.invoke(channel, args);
+    else
+        result = await window.electron.ipcRenderer.invoke(channel);
     return result;
 }
 

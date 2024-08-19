@@ -2,6 +2,7 @@
 
 import { ref, onMounted, inject, shallowRef } from 'vue';
 import Dialog from 'primevue/dialog';
+// @ts-ignore
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 
@@ -27,6 +28,7 @@ const dropdown_pt: any = {
     list: { style: 'padding: 0px;' },
 };
 
+// @ts-ignore
 function new_series_btn_click() {
     chx_series.value?.push({
         series_name: 'NEW SERIES',
@@ -35,12 +37,14 @@ function new_series_btn_click() {
     });
 }
 
+// @ts-ignore
 function delete_series_btn_click(series_idx: number) {
     chx_series.value?.splice(series_idx, 1);
     electron_renderer_send('save_chx_series', { _chx_series: clone_object(chx_series.value) });
     dialog_visible.value = false;
 }
 
+// @ts-ignore
 function save_series_btn_click() {
     electron_renderer_send('save_chx_series', { _chx_series: clone_object(chx_series.value) });
     dialog_visible.value = false;
@@ -65,10 +69,12 @@ onMounted(() => {
         });
     });
 
-    electron_renderer_invoke<CHXSeries[]>('get_chx_series').then(_chx_series => {
-        if (!_chx_series)
-            return;
-        chx_series.value = _chx_series;
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<CHXSeries[]>(`${device_model}_get_chx_series`).then(_chx_series => {
+            if (!_chx_series)
+                return;
+            chx_series.value = _chx_series;
+        });
     });
 });
 
@@ -77,17 +83,17 @@ onMounted(() => {
 <template>
     <Dialog style="font-family: Cairo, sans-serif;" v-model:visible="dialog_visible" header="Device Series Config" :style="{ width: '50%' }" :pt="dialog_pt">
         <div id="device_series_config_body">
-            <div class="device_series_item_cont" v-for="(s, idx) in chx_series">
-                <input class="series_name" type="text" v-model="s.series_name">
-                <Dropdown :pt="dropdown_pt" :options="params_opts" optionLabel="label" optionValue="value" placeholder="X Param" v-model="s.x_param" />
-                <Dropdown :pt="dropdown_pt" :options="params_opts" optionLabel="label" optionValue="value" placeholder="Y Param" v-model="s.y_param" />
-                <Button icon="pi pi-trash" severity="danger" text rounded @click="delete_series_btn_click(idx)" />
+            <div class="device_series_item_cont" v-for="(s, _idx) in chx_series">
+                <input class="series_name" type="text" v-model="s.series_name" readonly>
+                <Dropdown :pt="dropdown_pt" :options="params_opts" optionLabel="label" optionValue="value" placeholder="X Param" v-model="s.x_param" disabled />
+                <Dropdown :pt="dropdown_pt" :options="params_opts" optionLabel="label" optionValue="value" placeholder="Y Param" v-model="s.y_param" disabled />
+                <!-- <Button icon="pi pi-trash" severity="danger" text rounded @click="delete_series_btn_click(idx)" /> -->
             </div>
         </div>
         <div id="device_series_config_footer">
-            <Button icon="pi pi-save" severity="primary" outlined rounded @click="save_series_btn_click()" />
-            <div style="width: 8px;"></div>
-            <Button icon="pi pi-plus" severity="primary" outlined rounded @click="new_series_btn_click()" />
+            <!-- <Button icon="pi pi-save" severity="primary" outlined rounded @click="save_series_btn_click()" /> -->
+            <!-- <div style="width: 8px;"></div> -->
+            <!-- <Button icon="pi pi-plus" severity="primary" outlined rounded @click="new_series_btn_click()" /> -->
         </div>
     </Dialog>
 </template>
@@ -116,6 +122,7 @@ onMounted(() => {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 8px;
 }
 
 #device_series_config_footer button {

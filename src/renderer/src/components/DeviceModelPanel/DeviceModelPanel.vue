@@ -2,7 +2,7 @@
 
 import { onMounted, inject, ref } from 'vue';
 
-import { add_log } from '@renderer/lib/util';
+import { add_log, electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import * as GfxApi from '@renderer/lib/gfx_api';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
@@ -11,7 +11,7 @@ import { subscribe } from '@common/mediator';
 const props = defineProps<{ device_ui_config: DeviceUIConfig }>();
 const device_model = inject('device_model') as string;
 
-const device_model_labeled_img = ref(new URL(`../../device_assets/device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png`, import.meta.url).href);
+const device_model_labeled_img = ref('');
 
 function render_msg_value(msg_type: number, msg_value: string) {
     const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
@@ -45,9 +45,21 @@ onMounted(() => {
         });
     });
 
+    electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
+        if (!base64_src)
+            return;
+        device_model_labeled_img.value = base64_src;
+    });
+
     subscribe('change_device_model_asset', 'change_device_model_asset', args => {
         const _asset = args._asset;
-        device_model_labeled_img.value = new URL(`../../device_assets/etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`, import.meta.url).href;
+        const asset_path = `etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`;
+        electron_renderer_invoke<string>('load_devie_asset', { asset_path }).then(base64_src => {
+            if (!base64_src)
+                return;
+            device_model_labeled_img.value = base64_src;
+        });
+        // device_model_labeled_img.value = new URL(`../../device_assets/etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`, import.meta.url).href;
     });
 });
 
