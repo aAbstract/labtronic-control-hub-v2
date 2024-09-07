@@ -217,6 +217,13 @@ const LT_TO101_DUIC = new DeviceUIConfig(
     'LT-TO101',
 );
 
+const LT_RE600_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {},
+    'LT-RE600',
+);
+
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
 
@@ -225,4 +232,6 @@ export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-HT113': LT_HT113_DUIC,
 
     'LT-TO101': LT_TO101_DUIC,
+
+    'LT-RE600': LT_RE600_DUIC,
 };

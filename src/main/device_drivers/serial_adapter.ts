@@ -58,16 +58,18 @@ export class SerialAdapter {
             return;
         }
 
-        const device_msg: DeviceMsg = decode_res.ok as DeviceMsg;
-        if (device_msg.config.msg_type === this.device_error_msg_type) {
-            const error_code = device_msg.msg_value;
-            if (!Object.keys(this.device_error_msg_map).includes(String(error_code))) {
-                this.logger({ level: 'ERROR', msg: `Unknown Device Error Code: ${error_code}` });
-                return;
-            }
-            (device_msg as any).error_msg = this.device_error_msg_map[device_msg.msg_value];
-            this.ipc_handler(`${this.device_model}_device_error`, { device_msg });
-        } else { this.ipc_handler(`${this.device_model}_device_msg`, { device_msg }) }
+        const device_msg_list: DeviceMsg[] = decode_res.ok as DeviceMsg[];
+        device_msg_list.forEach(device_msg => {
+            if (device_msg.config.msg_type === this.device_error_msg_type) {
+                const error_code = device_msg.msg_value;
+                if (!Object.keys(this.device_error_msg_map).includes(String(error_code))) {
+                    this.logger({ level: 'ERROR', msg: `Unknown Device Error Code: ${error_code}` });
+                    return;
+                }
+                (device_msg as any).error_msg = this.device_error_msg_map[device_msg.msg_value];
+                this.ipc_handler(`${this.device_model}_device_error`, { device_msg });
+            } else { this.ipc_handler(`${this.device_model}_device_msg`, { device_msg }) }
+        });
     }
 
     on_serial_port_open() {

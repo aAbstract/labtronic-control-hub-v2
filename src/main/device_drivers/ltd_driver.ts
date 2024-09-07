@@ -58,7 +58,7 @@ export class LtdDriver implements ILtdDriver {
         return padded_bin_byte;
     }
 
-    private static compute_crc16(buffer: Uint8Array): number {
+    static compute_crc16(buffer: Uint8Array): number {
         const CRC16_POLYNOMIAL = new Uint16Array([
             0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF,
             0x8C48, 0x9DC1, 0xAF5A, 0xBED3, 0xCA6C, 0xDBE5, 0xE97E, 0xF8F7,
@@ -101,7 +101,7 @@ export class LtdDriver implements ILtdDriver {
         return (~res) & 0xffff;
     }
 
-    private static bin_parse(buffer: Uint8Array, data_type: DataType): Result<number> {
+    static bin_parse(buffer: Uint8Array, data_type: DataType): Result<number> {
         if (data_type === DataType.FLOAT && (buffer.length === 1 || buffer.length === 2))
             return { err: `Can not Parse Buffer of Size [${buffer.length}] to FLOAT` };
 
@@ -224,9 +224,21 @@ export class LtdDriver implements ILtdDriver {
         return { ok: packet }
     }
 
-    decode_packet(packet: Uint8Array): Result<DeviceMsg> {
+    decode_packet(packet: Uint8Array): Result<DeviceMsg[]> {
+        // check packet size
         if (packet.length <= LtdDriver.PACKET_MIN_SIZE)
             return { err: 'Packet Too Small' };
+        if (packet.length !== packet[2])
+            return {
+                err: {
+                    msg: 'Invalid Packet Size Byte',
+                    detail: `packet[2]=${packet[2]}, packet.length=${packet.length}`,
+                }
+            };
+
+        // check packet header
+        if (this.protocol_version[0] !== packet[0] || this.protocol_version[1] !== packet[1])
+            return { err: 'Invalid Version Bytes' };
 
         // crc16 check
         const packet_crc16_bytes = packet.slice(packet.length - 4, packet.length - 2);
@@ -240,26 +252,12 @@ export class LtdDriver implements ILtdDriver {
                 }
             };
 
-        // packet start bytes
-        if (this.protocol_version[0] !== packet[0] || this.protocol_version[1] !== packet[1])
-            return { err: 'Invalid Version Bytes' };
-
-        let device_msg = { config: {} } as DeviceMsg;
-        // packet size
-        if (packet.length !== packet[2])
-            return {
-                err: {
-                    msg: 'Packet Size Mismatch',
-                    detail: `packet[2]=${packet[2]}, packet.length=${packet.length}`,
-                }
-            };
-        device_msg.config.size_bytes = packet[2];
-
         // packet sequence number
         const seq_number_bytes = packet.slice(3, 5);
         const sn_bin_parse_res = LtdDriver.bin_parse(seq_number_bytes, DataType.UINT);
         if (sn_bin_parse_res.err)
             return { err: sn_bin_parse_res.err };
+        let device_msg = { config: {} } as DeviceMsg;
         device_msg.seq_number = sn_bin_parse_res.ok as number;
 
         // decode config byte 1
@@ -310,6 +308,6 @@ export class LtdDriver implements ILtdDriver {
         if (data_payload_bin_parse_res.err)
             return { err: data_payload_bin_parse_res.err };
         device_msg.msg_value = data_payload_bin_parse_res.ok as number;
-        return { ok: device_msg };
+        return { ok: [device_msg] };
     }
 }

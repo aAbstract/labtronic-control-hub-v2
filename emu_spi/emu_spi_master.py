@@ -1,3 +1,4 @@
+import sys
 import time
 import socket
 import code
@@ -5,11 +6,15 @@ import math
 import random
 import readline
 import inspect
+import serial
+from typing import Literal
 from rlcompleter import Completer
 from test_drivers import *
 
 
 vspi_socket: socket.socket
+device_comm_mode: Literal['W'] | Literal['V'] = None
+device_port: serial.Serial = None
 
 
 def vspi_connect():
@@ -69,7 +74,13 @@ def write_raw_packet(data: list[int]):
 
 def write_msg(_driver: LtdDriver, msg_type: int, msg_value: int):
     packet = _driver.encode_packet(0, msg_type, msg_value).ok
-    vspi_socket.send(packet)
+    print(' '.join([f"{hex(x).replace('0x', '').upper():0>2}" for x in packet]))
+    if device_comm_mode == 'V':
+        vspi_socket.send(packet)
+    elif device_comm_mode == 'W':
+        device_port.write(packet[:3])
+        time.sleep(0.1)
+        device_port.write(packet[3:])
 
 
 def stream_sine_waves_0x87():
@@ -215,7 +226,7 @@ def burst_lt_ht113_sample():
 def switch_mode_lt_ht113(mode: int):
     ltd_driver: LtdDriver = ltd_driver_lt_ht113
     DRIVER_CONFIG_LT_HT113[0].cfg2 = mode
-    vspi_socket.send(ltd_driver.encode_packet(0, 0, 11).ok)
+    write_msg(ltd_driver, 0, 11)
     DRIVER_CONFIG_LT_HT113[0].cfg2 = 0
 
 
@@ -292,8 +303,23 @@ def start_control_loop_lt_ht107():
         })
 
 
+def serial_port_connect():
+    global device_port
+    print('Connecting to Serial Port...')
+    try:
+        device_port = serial.Serial(port='/dev/ttyACM0', baudrate=115200)
+        print('Connecting to Serial Port...OK')
+    except:
+        print('Connecting to Serial Port...ERR')
+        sys.exit(1)
+
+
 if __name__ == '__main__':
-    vspi_connect()
+    device_comm_mode = sys.argv[1]
+    if device_comm_mode == 'W':
+        serial_port_connect()
+    elif device_comm_mode == 'V':
+        vspi_connect()
     print_cli_funcs()
     readline.set_completer(Completer().complete)
     readline.parse_and_bind("tab: complete")

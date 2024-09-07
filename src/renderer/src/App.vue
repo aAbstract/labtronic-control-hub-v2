@@ -41,7 +41,9 @@ const APP_THEME = {
 // const DEVICE_MODEL = 'LT-HT107';
 // const DEVICE_MODEL = 'LT-HT113';
 
-const DEVICE_MODEL = 'LT-TO101';
+// const DEVICE_MODEL = 'LT-TO101';
+
+const DEVICE_MODEL = 'LT-RE600';
 
 const toast_service = useToast();
 

@@ -101,7 +101,7 @@ test('ltd_driver_0x87.decode_packet', () => {
     // packet length mismatch case
     packet = new Uint8Array([0x87, 0x87, 0x0A, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0xBC, 0x68, 0x0D, 0x0A]);
     result = ltd_driver_0x87.decode_packet(packet);
-    expect(result.err.msg).toBe('Packet Size Mismatch');
+    expect(result.err.msg).toBe('Invalid Packet Size Byte');
 
     // data size mismatch case
     packet = new Uint8Array([0x87, 0x87, 0x0F, 0x00, 0x00, 0x10, 0x00, 0x89, 0x41, 0x10, 0x40, 0x80, 0xD0, 0x0D, 0x0A]);
@@ -117,7 +117,7 @@ test('ltd_driver_0x87.decode_packet', () => {
     packet = new Uint8Array([0x87, 0x87, 0x0F, 0x00, 0x00, 0xA2, 0x00, 0x89, 0x41, 0x10, 0x40, 0xA4, 0x1A, 0x0D, 0x0A]);
     result = ltd_driver_0x87.decode_packet(packet);
     expect(result.ok).toBeDefined();
-    let device_msg = result.ok as DeviceMsg;
+    let [device_msg] = result.ok as DeviceMsg[];
     device_msg.msg_value = Number(device_msg.msg_value.toFixed(3));
     expect(device_msg).toEqual({
         config: {
@@ -136,7 +136,7 @@ test('ltd_driver_0x87.decode_packet', () => {
     packet = new Uint8Array([0x87, 0x87, 0x0C, 0x00, 0x00, 0x4E, 0x00, 0xF0, 0x8C, 0x45, 0x0D, 0x0A]);
     result = ltd_driver_0x87.decode_packet(packet);
     expect(result.ok).toBeDefined();
-    device_msg = result.ok as DeviceMsg;
+    [device_msg] = result.ok as DeviceMsg[];
     expect(device_msg).toEqual({
         config: {
             data_type: DataType.UINT,
@@ -156,7 +156,7 @@ test('ltd_driver_0x87.decode_packet_rc_39218_READ_PRESSURE', () => {
     const packet = new Uint8Array([135, 135, 15, 50, 153, 164, 0, 242, 195, 178, 66, 13, 10, 13, 10]);
     let result = ltd_driver_0x87.decode_packet(packet);
     expect(result.ok).toBeDefined();
-    let device_msg = result.ok as DeviceMsg;
+    let [device_msg] = result.ok as DeviceMsg[];
     device_msg.msg_value = Number(device_msg.msg_value.toFixed(3));
     expect(device_msg).toEqual({
         config: {

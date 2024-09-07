@@ -28,7 +28,7 @@ export interface DeviceMsg {
 export interface ILtdDriver {
     protocol_version: [number, number];
     encode_packet(msg_seq_number: number, msg_type: number, msg_value: number): Result<Uint8Array>;
-    decode_packet(packet: Uint8Array): Result<DeviceMsg>;
+    decode_packet(packet: Uint8Array): Result<DeviceMsg[]>;
 };
 
 export type LogLevel = 'INFO' | 'DEBUG' | 'WARN' | 'ERROR' | '';

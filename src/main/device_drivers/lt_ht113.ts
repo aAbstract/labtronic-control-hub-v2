@@ -140,7 +140,7 @@ ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_HT113_DEVICE_CMD_
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_HT113_VCE_CONFIG);
 
 ipcMain.handle(`${DEVICE_MODEL}_get_chx_cps`, () => get_chx_cps());
-ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => [...DEVICE_SERIES, ...get_chx_series()])
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => [...DEVICE_SERIES, ...get_chx_series()]);
 ipcMain.handle(`${DEVICE_MODEL}_get_chx_eqs`, () => get_chx_eqs());
 ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => get_chx_scripts());
 

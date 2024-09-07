@@ -30,7 +30,7 @@ const read_device_config = computed(() => {
     return read_config.map(x => {
         msg_values_cache[x.msg_type] = '000.00';
         cache_changed = true;
-        msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '0xFFFFFF';
+        msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '#FFFFFF';
         msg_type_state_map.value[x.msg_type] = true;
         active_msg_type.value = read_config[0].msg_type;
         return { ...x, msg_name: x.msg_name.replace('READ_', '') };
