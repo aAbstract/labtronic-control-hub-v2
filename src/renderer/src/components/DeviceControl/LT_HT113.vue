@@ -75,15 +75,25 @@ function handle_water_level_switch_msg(wls: boolean) {
     else
         show_lt_ht113_msg('warn', 'WATER LEVEL - INSUFFICIENT');
 }
+const cfg2_set = new Set([0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6]);
 onMounted(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: DeviceMsg = data.device_msg;
-        const { msg_type } = device_msg.config;
+        const { msg_type, cfg2 } = device_msg.config;
         if (msg_type === W_flw_MSG_TYPE)
             W_flw.value = device_msg.msg_value;
         else if (msg_type === WLS_MSG_TYPE)
             handle_water_level_switch_msg(device_msg.msg_value !== 0);
+
+
+        // handle cfg2
+        if (cfg2_set.has(cfg2)) {
+            sample_shape.value = cfg2 - 0xA0;
+            sample_select();
+        } else { show_lt_ht113_msg('error', 'Invalid LT-HT113 Sample Code') }
     });
+
+    post_event('update_device_model_cont_width', { width: '80%' });
 
     handle_water_level_switch_msg(wls_state.value);
 });
@@ -100,7 +110,7 @@ onMounted(() => {
         <div id="lt_ht113_control_txt" class="lt_ht113_control_row">
             <div>
                 <span style="margin-right: 8px;">WATER_FLOW:</span>
-                <span style="color: #2196F3;">{{ W_flw }}</span>
+                <span style="color: #2196F3;">{{ W_flw.toFixed(1) }}</span>
                 <span style="margin-left: 8px;">[L/s]</span>
             </div>
             <div>

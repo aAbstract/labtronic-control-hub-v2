@@ -23,9 +23,9 @@ import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/
 
 // import LT_HT103 from '@renderer/components/DeviceControl/LT_HT103.vue';
 // import LT_HT107 from '@renderer/components/DeviceControl/LT_HT107.vue';
-// import LT_HT113 from '@renderer/components/DeviceControl/LT_HT113.vue';
+import LT_HT113 from '@renderer/components/DeviceControl/LT_HT113.vue';
 
-import LT_TO101 from '@renderer/components/DeviceControl/LT_TO101.vue';
+// import LT_TO101 from '@renderer/components/DeviceControl/LT_TO101.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -39,11 +39,11 @@ const APP_THEME = {
 
 // const DEVICE_MODEL = 'LT-HT103';
 // const DEVICE_MODEL = 'LT-HT107';
-// const DEVICE_MODEL = 'LT-HT113';
+const DEVICE_MODEL = 'LT-HT113';
 
 // const DEVICE_MODEL = 'LT-TO101';
 
-const DEVICE_MODEL = 'LT-RE600';
+// const DEVICE_MODEL = 'LT-RE600';
 
 const toast_service = useToast();
 
@@ -89,7 +89,7 @@ onBeforeMount(() => {
         <div id="model_control_cont">
           <div style="flex-grow: 1;"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_TO101 />
+          <LT_HT113 />
           <div style="flex-grow: 1;"></div>
         </div>
         <TerminalPanel />

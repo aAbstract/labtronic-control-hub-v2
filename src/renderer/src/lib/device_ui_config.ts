@@ -152,22 +152,23 @@ const LT_HT103_DUIC = new DeviceUIConfig(
     {},
     {
         // readings
-        0: new ChartParams('T_amb', '#00bcd4'), // READ_T_amb
-        1: new ChartParams('T1', '#9c27b0'), // READ_T1
-        2: new ChartParams('T2', '#3f51b5'), // READ_T2
+        0: new ChartParams('T1', '#00bcd4'), // READ_T1
+        1: new ChartParams('T2', '#9c27b0'), // READ_T2
+        2: new ChartParams('T_amb', '#3f51b5'), // READ_T_amb
         3: new ChartParams('T_c', '#795548'), // READ_T_c
         4: new ChartParams('T_h', '#4caf50'), // READ_T_h
 
         // compute parameters
-        16: new ChartParams('Delta_T', '#009688'), // VCE: Delta_T
-        17: new ChartParams('Q_L', '#cddc39'), // VCE: Q_L
-        18: new ChartParams('Q_Cond', '#ff9800'), // VCE: Q_Cond
-        19: new ChartParams('Lambda', '#9e9e9e'), // VCE: Lambda
+        16: new ChartParams('Q_L', '#cddc39'), // VCE: Q_L
+        17: new ChartParams('Q_Cond', '#ff9800'), // VCE: Q_Cond
+        18: new ChartParams('Lambda', '#9e9e9e'), // VCE: Lambda
 
         // control parameters
-        20: new ChartParams('P_Heater', '#f44336'), // P_H
-        21: new ChartParams('P_Peltier', '#2196f3'), // P_P
+        19: new ChartParams('P_Heater', '#f44336'), // P_H
+        20: new ChartParams('P_Peltier', '#2196f3'), // P_P
 
+        // conditional compute parameters
+        21: new ChartParams('Delta_T', '#009688'), // VCE: Delta_T
     },
     'LT-HT103',
 );
@@ -187,7 +188,7 @@ const LT_HT107_DUIC = new DeviceUIConfig(
         8: new ChartParams('T9', '#795548'), // READ_T9
         9: new ChartParams('T_H', '#F44336'), // READ_T_H
     },
-    'LT-HT103',
+    'LT-HT107',
 );
 
 const LT_HT113_DUIC = new DeviceUIConfig(
@@ -199,7 +200,7 @@ const LT_HT113_DUIC = new DeviceUIConfig(
         2: new ChartParams('T_ref', '#009688'), // READ_T_ref
         3: new ChartParams('W_flw', '#2196F3'), // READ_W_flw
     },
-    'LT-HT103',
+    'LT-HT113',
 );
 
 const LT_TO101_DUIC = new DeviceUIConfig(

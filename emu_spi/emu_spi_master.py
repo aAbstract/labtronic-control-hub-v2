@@ -15,6 +15,7 @@ from test_drivers import *
 vspi_socket: socket.socket
 device_comm_mode: Literal['W'] | Literal['V'] = None
 device_port: serial.Serial = None
+cfg2 = 0
 
 
 def vspi_connect():
@@ -73,13 +74,14 @@ def write_raw_packet(data: list[int]):
 
 
 def write_msg(_driver: LtdDriver, msg_type: int, msg_value: int):
+    _driver.driver_msg_type_config_map[msg_type].cfg2 = cfg2
     packet = _driver.encode_packet(0, msg_type, msg_value).ok
     print(' '.join([f"{hex(x).replace('0x', '').upper():0>2}" for x in packet]))
     if device_comm_mode == 'V':
         vspi_socket.send(packet)
     elif device_comm_mode == 'W':
         device_port.write(packet[:3])
-        time.sleep(0.1)
+        time.sleep(1E-4)
         device_port.write(packet[3:])
 
 
@@ -224,10 +226,9 @@ def burst_lt_ht113_sample():
 
 
 def switch_mode_lt_ht113(mode: int):
-    ltd_driver: LtdDriver = ltd_driver_lt_ht113
-    DRIVER_CONFIG_LT_HT113[0].cfg2 = mode
-    write_msg(ltd_driver, 0, 11)
-    DRIVER_CONFIG_LT_HT113[0].cfg2 = 0
+    global cfg2
+    cfg2 = mode
+    write_msg(ltd_driver_lt_ht113, 0, 11)
 
 
 def switch_mode_lt_to101(mode: int):

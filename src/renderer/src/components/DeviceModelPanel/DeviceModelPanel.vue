@@ -12,6 +12,7 @@ const props = defineProps<{ device_ui_config: DeviceUIConfig }>();
 const device_model = inject('device_model') as string;
 
 const device_model_labeled_img = ref('');
+const device_model_cont_width = ref('96%');
 
 function render_msg_value(msg_type: number, msg_value: string) {
     const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
@@ -61,6 +62,11 @@ onMounted(() => {
         });
         // device_model_labeled_img.value = new URL(`../../device_assets/etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`, import.meta.url).href;
     });
+
+    subscribe('update_device_model_cont_width', 'update_device_model_cont_width', args => {
+        const wdith: string = args.width;
+        device_model_cont_width.value = wdith;
+    });
 });
 
 </script>
@@ -80,7 +86,7 @@ onMounted(() => {
     justify-content: center;
     position: relative;
     margin-bottom: 16px;
-    width: 96%;
+    width: v-bind(device_model_cont_width);
     border-radius: 4px;
 }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">defineProps<{ fill_color: string }>();</script>
 
 <template>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <g id="_01_align_center" data-name="01 align center" :fill="fill_color">
             <path
                 d="M10.583,20.529A5.028,5.028,0,0,1,3.472,13.42L7.734,9.155,6.319,7.741,2.058,12.006A7.027,7.027,0,0,0,12,21.943l4.262-4.262-1.414-1.414Z" />

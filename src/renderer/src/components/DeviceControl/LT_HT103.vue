@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onMounted, ref, inject } from 'vue';
+import { onMounted, ref, inject, watch } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import Slider from 'primevue/slider';
 import Button from 'primevue/button';
@@ -10,7 +10,7 @@ import ProgressSpinner from 'primevue/progressspinner';
 
 import { DropdownOption, LT_HT103_DeviceConfig, LT_HT103_DeviceOperationMode, DeviceMsg } from '@common/models';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
-import { subscribe } from '@common/mediator';
+import { subscribe, post_event } from '@common/mediator';
 
 enum DeviceKillState {
     WAITING = 0,
@@ -74,10 +74,11 @@ const sample_shape_opts: DropdownOption<number>[] = [
     { label: 'Groove - 40mm', value: 3 },
 ];
 
+const sample_material_arr = ['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'];
 const sample_material = ref();
 const sample_material_opts_map: Record<number, DropdownOption<number>[]> = {
-    0: ['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'].map((x, idx) => { return { label: x, value: idx } }),
-    1: ['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper'].map((x, idx) => { return { label: x, value: idx } }),
+    0: sample_material_arr.map((x, idx) => { return { label: x, value: idx } }),
+    1: sample_material_arr.map((x, idx) => { return { label: x, value: idx } }),
     // 2: arr_combs(['Aluminum', 'Brass', 'Stainless Steel', 'Steel', 'Copper']).map((x, idx) => { return { label: x, value: idx } }),
     3: ['Aluminum'].map((x, idx) => { return { label: x, value: idx } }),
 };
@@ -94,9 +95,45 @@ const act_ph_val = ref('0');
 const act_pp_val = ref('0');
 // control params
 
+watch([sample_shape, sample_material], () => {
+    if (sample_shape.value === null)
+        return;
+
+    // Combination - 50mm
+    if (sample_shape.value === 2) {
+        post_event('change_device_model_asset', { _asset: 'lt_ht103_combination' });
+        return;
+    }
+
+    // Groove - 40mm
+    if (sample_shape.value == 3) {
+        post_event('change_device_model_asset', { _asset: 'lt_ht103_grooved_aluminum' });
+        return;
+    }
+
+    let _sample_shape = 'short';
+    if (sample_shape.value == 1)
+        _sample_shape = 'long';
+
+    let _sample_material = 0;
+    if (sample_material.value)
+        _sample_material = sample_material.value;
+
+    const _asset = `lt_ht103_${_sample_shape}_${sample_material_arr[_sample_material].toLowerCase().replace(' ', '_')}`;
+    post_event('change_device_model_asset', { _asset });
+});
+
 function switch_device_mode() {
     const _device_op_mode = device_op_mode.value;
     electron_renderer_send(`${device_model}_switch_device_op_mode`, { _device_op_mode });
+    if (_device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION) {
+        sample_shape.value = null;
+        post_event('change_device_model_asset', { _asset: 'lt_ht103_calibration' });
+    }
+    else if (_device_op_mode === LT_HT103_DeviceOperationMode.EXPERIMENT) {
+        sample_shape.value = 0;
+        sample_material.value = 0;
+    }
 }
 
 function send_device_config() {
@@ -147,6 +184,8 @@ onMounted(() => {
         Q_L_F1.value = chx_device_config.Q_L_F1;
         Q_L_F2.value = chx_device_config.Q_L_F2;
     });
+
+    post_event('update_device_model_cont_width', { width: '80%' });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: DeviceMsg = data.device_msg;
