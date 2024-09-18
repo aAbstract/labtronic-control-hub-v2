@@ -109,40 +109,12 @@ export class DeviceUIConfig {
 };
 
 const LT_CH000_DUIC = new DeviceUIConfig(
+    {},
+    {},
     {
-        3: { // READ_TEMPERATURE
-            pos: { x: 63.30, y: 11.70 },
-            cell_count: 2,
-        },
-        2: { // READ_WEIGHT
-            pos: { x: 16.75, y: 78.75 },
-            cell_count: 3,
-        },
-        4: { // READ_PRESSURE
-            pos: { x: 16.75, y: 28.25 },
-            cell_count: 2,
-        },
-        0: { // PISTON_PUMP
-            pos: { x: 74.40, y: 86.75 },
-            cell_count: 3,
-        },
-        1: { // PERISTALTIC_PUMP
-            pos: { x: 90.75, y: 57.60 },
-            cell_count: 1,
-        },
-    },
-    {
-        'TANK': {
-            pos: { x: 44.70, y: 16.00 },
-            shape: 'rect',
-            shape_params: { w: 60, h: 100 },
-            color: 'red',
-        },
-    },
-    {
-        3: new ChartParams('TEMPERATURE', '#FFAB00'), // READ_TEMPERATURE
-        2: new ChartParams('WEIGHT', '#64DD17'), // READ_WEIGHT
-        4: new ChartParams('PRESSURE', '#6200EA'), // READ_PRESSURE
+        3: new ChartParams('TEMP', '#FFAB00'), // READ_TEMP
+        2: new ChartParams('WGHT', '#64DD17'), // READ_WGHT
+        4: new ChartParams('PRES', '#6200EA'), // READ_PRES
     },
     'LT-CH000',
 );

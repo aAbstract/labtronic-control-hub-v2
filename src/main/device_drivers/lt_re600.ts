@@ -12,14 +12,14 @@ const LT_RE600_TPH_MSG_LIST = [
     'V12',
     'V23',
     'V31',
-    'Ull_avg',
+    'Ull_avg',//
     'I1',
     'I2',
     'I3',
-    'L_avg',
+    'L_avg',//
     'Sys_P',
     'Sys_Q',
-    'Sys_S',
+    'Sys_S',//
     'Sys_PF',
 ];
 
@@ -29,7 +29,7 @@ const LT_RE600_SPH_MSG_LIST = [
     'I1',
     'Sys_P',
     'Sys_Q',
-    'Sys_S',
+    'Sys_S',//
     'Sys_PF',
 ];
 
@@ -47,8 +47,8 @@ const LT_RE600_DCL_MSG_LIST = [
 
 const LT_RE600_ACD_MSG_LIST = [
     'Freq',
-    'I',
-    'V',
+    'I',//
+    'V',//
     'P',
 ];
 

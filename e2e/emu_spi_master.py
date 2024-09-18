@@ -12,30 +12,37 @@ from rlcompleter import Completer
 from test_drivers import *
 
 
-vspi_socket: socket.socket
+vspi_socket: socket.socket = None
 device_comm_mode: Literal['W'] | Literal['V'] = None
 device_port: serial.Serial = None
 cfg2 = 0
 
 
-def vspi_connect():
+def vspi_connect() -> bool:
     global vspi_socket
     VSPI_IP = '127.0.0.1'
     VSPI_PORT = 6543
     VSPI_ADDR = (VSPI_IP, VSPI_PORT)
-    CONNECTION_TIMEOUT = 10
+    # CONNECTION_TIMEOUT = 10
     vspi_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    vspi_socket.setblocking(False)
-    print('Connecting to VSPI address:', VSPI_ADDR, '...')
-    for _ in range(CONNECTION_TIMEOUT):
-        try:
-            vspi_socket.connect(VSPI_ADDR)
-            print('Connecting to VSPI address:', VSPI_ADDR, '...OK')
-            return
-        except (BlockingIOError, OSError):
-            pass
-        time.sleep(1)
-    print('Connecting to VSPI address:', VSPI_ADDR, '...ERROR')
+    # vspi_socket.setblocking(False)
+    vspi_socket.connect(VSPI_ADDR)
+
+    # for _ in range(CONNECTION_TIMEOUT):
+    #     try:
+    #         vspi_socket.connect(VSPI_ADDR)
+    #         return True
+    #     except (BlockingIOError, OSError):
+    #         pass
+    #     time.sleep(1)
+    # return False
+
+
+def vspi_disconnect():
+    global vspi_socket
+    vspi_socket.close()
+    del vspi_socket
+    vspi_socket = None
 
 
 def write_test_msg():
@@ -68,8 +75,7 @@ def write_error_packet_0x87(error_code: int):
     vspi_socket.send(error_packet)
 
 
-def write_raw_packet(data: list[int]):
-    packet = bytes(data)
+def write_raw_packet(packet: bytes):
     vspi_socket.send(packet)
 
 

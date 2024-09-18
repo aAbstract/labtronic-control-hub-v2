@@ -45,16 +45,3 @@ export function compute_tooltip_pt(dir: ToolTipDir) {
 export function clone_object(object: any): any {
     return JSON.parse(JSON.stringify(object));
 }
-
-export function transform_keys(_objects: Record<string, string | number>[], _transform_map: Record<string, string>): Record<string, string | number>[] {
-    const out_objs = clone_object(_objects) as Record<string, any>[];
-    out_objs.forEach(obj => {
-        Object.keys(obj).forEach(_key => {
-            const msg_value = obj[_key];
-            delete obj[_key];
-            const new_key = _transform_map[_key];
-            obj[new_key] = msg_value;
-        });
-    });
-    return out_objs;
-}

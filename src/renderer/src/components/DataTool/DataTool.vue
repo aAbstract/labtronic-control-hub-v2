@@ -5,6 +5,7 @@ import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
 import OverlayPanel from 'primevue/overlaypanel';
 import { useToast } from 'primevue/usetoast';
+import Checkbox from 'primevue/checkbox';
 
 import { post_event, subscribe } from '@common/mediator';
 import SmallChart from './SmallChart.vue';
@@ -12,7 +13,7 @@ import DeviceEquation from './DeviceEquation.vue';
 import SeriesConfigDialog from './SeriesConfigDialog.vue';
 import DataPreview from './DataPreview.vue';
 import { CHXSeries } from '@common/models';
-import { electron_renderer_invoke, electron_renderer_send, transform_keys, add_log } from '@renderer/lib/util';
+import { electron_renderer_invoke, electron_renderer_send, clone_object, add_log } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInjectedParam, AlertConfig } from '@common/models';
 
@@ -33,19 +34,20 @@ const data_points_count = ref(0);
 
 let is_recording = false;
 let complete_data_point_keys: string[] = [];
-const msg_type_name_map: Record<string, string> = { 'time_ms': 'time_ms', 'seq_number': 'seq_number' };
+const msg_type_name_map: Record<string, string> = { 'time_ms': 'time_ms' };
 const device_model = inject('device_model');
 const panel_pos = ref('-60vw');
 const sampling_dt = ref(1000);
-const device_data_freq = ref(0);
 const chx_series = shallowRef<CHXSeries[]>();
 const chx_eqs = shallowRef<CHXEquation[]>();
 const chx_scripts = shallowRef<CHXScript[]>();
 const ds_op = ref();
+const dt_settings_op = ref();
 const recording_state = ref<RecordingState>(RecordingState.STOPPED);
 const play_btn_color = computed(() => recording_state.value === RecordingState.RUNNING ? '#64DD17' : 'var(--accent-color)');
 const pause_btn_color = computed(() => recording_state.value === RecordingState.PAUSED ? '#FFAB00' : 'var(--accent-color)');
 const toast_service = useToast();
+const chx_advanced_mode = ref(false);
 const field_set_pt = {
     root: { style: 'padding: 0px; width: 100%; background-color: transparent; border-radius: 4px; border-color: var(--empty-gauge-color);' },
     legend: { style: 'padding: 0px 0px 0px 8px; font-size: 14px; background-color: transparent; border: none; color: var(--font-color); font-family: Cairo, sans-serif; font-size: 14px; font-weight: bold;' },
@@ -54,6 +56,11 @@ const field_set_pt = {
 const overlay_panel_pt = {
     content: { style: 'padding: 8px;' },
 };
+const checkbox_pt: any = {
+    box: { style: 'background-color: var(--dark-bg-color); border-color: var(--empty-gauge-color);' },
+    icon: { style: 'color: var(--font-color);' },
+};
+const export_variables_state = ref<Record<string, boolean>>({ 'time_ms': true });
 
 function show_series_config_dialog() {
     post_event('show_series_config_dialog', {});
@@ -63,8 +70,23 @@ function show_data_preview() {
     post_event('show_data_preview', {});
 }
 
+function transform_keys(_objects: Record<string, string | number>[]): Record<string, string | number>[] {
+    const out_objs = clone_object(_objects) as Record<string, any>[];
+    out_objs.forEach(obj => {
+        Object.keys(obj).forEach(_key => {
+            const msg_value = obj[_key];
+            delete obj[_key];
+            if (_key in msg_type_name_map && export_variables_state.value[_key]) {
+                const new_key = msg_type_name_map[_key];
+                obj[new_key] = msg_value;
+            }
+        });
+    });
+    return out_objs;
+}
+
 function export_device_data() {
-    const device_data = transform_keys(recorded_data_points, msg_type_name_map);
+    const device_data = transform_keys(recorded_data_points);
     electron_renderer_send('export_device_data', { device_data });
 }
 
@@ -126,13 +148,8 @@ function start_data_recording() {
         time_ms += sampling_dt.value;
         time_fmt.value = fmt_time(time_ms);
 
-        if (!device_data_freq.value) {
-            toast_service.add({ severity: 'error', summary: 'Data Recorder', detail: `Device Data Frequency is: ${device_data_freq.value}`, life: 0 });
-            stop_data_recording();
-        }
-
         // sampling selection criteria: lateset valid point
-        for (let i = 0; i < device_data_freq.value; i++) {
+        for (let i = 0; i < 5; i++) {
             const idx = last_sn - i; // * sampling_sn_base.value;
             const _data_point = data_points_cache[idx];
             if (!_data_point)
@@ -155,6 +172,10 @@ function start_data_recording() {
 
 function show_data_script_overlay_panel(_event: MouseEvent) {
     ds_op.value.toggle(_event);
+}
+
+function show_data_tool_settings_overlay_panel(_event: MouseEvent) {
+    dt_settings_op.value.toggle(_event);
 }
 
 function exec_chx_script(_script: CHXScript) {
@@ -197,12 +218,6 @@ onMounted(() => {
         chx_eqs.value = _chx_eqs;
     });
 
-    electron_renderer_invoke<number>('get_chx_data_freq').then(_chx_data_freq => {
-        if (!_chx_data_freq)
-            return;
-        device_data_freq.value = _chx_data_freq;
-    });
-
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         if (!is_recording)
             return;
@@ -235,6 +250,7 @@ onMounted(() => {
                 const msg_name = _read_config.msg_name.replaceAll('READ_', '');
                 msg_type_name_map[msg_type] = msg_name;
                 msg_type_name_map[msg_name] = String(msg_type);
+                export_variables_state.value[msg_type] = true;
             });
         });
     });
@@ -262,7 +278,7 @@ onMounted(() => {
             return;
         }
         const imported_device_data = fsio_res.ok ?? [];
-        recorded_data_points = transform_keys(imported_device_data, msg_type_name_map) as DataPointType[];
+        recorded_data_points = transform_keys(imported_device_data) as DataPointType[];
         show_data_preview();
         recorded_data_points.forEach(_data_point => post_event('record_data_point', { _data_point }));
     });
@@ -283,6 +299,10 @@ onMounted(() => {
         };
         post_event('show_alert', { dialog_config });
     });
+
+    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+        electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
+    });
 });
 
 </script>
@@ -294,8 +314,6 @@ onMounted(() => {
         <div id="data_tool_header">
             <h1>DATA TOOL</h1>
             <div style="display: flex; align-items: center;">
-                <input class="dt_tf" title="Device Data Frequency [Hz]" style="margin-right: 8px;" type="number" :value="device_data_freq" readonly>
-                <input class="dt_tf" title="Sampling dt [ms]" type="number" v-model="sampling_dt">
                 <Button icon="pi pi-play" title="Start Recording" rounded text @click="start_data_recording()" :style="`color: ${play_btn_color};`" />
                 <Button icon="pi pi-pause" title="Pause Recording" rounded text @click="pause_data_recording()" :style="`color: ${pause_btn_color};`" />
                 <Button icon="pi pi-stop" title="Reset Recording" rounded text @click="stop_data_recording()" style="color: #DD2C00;" />
@@ -303,6 +321,37 @@ onMounted(() => {
             <div>
                 <Button icon="pi pi-file-import" title="Import Data" rounded text @click="import_device_data()" />
                 <Button icon="pi pi-file-export" title="Export Data" rounded text @click="export_device_data()" />
+                <Button icon="pi pi-cog" title="Data Tool Settings" rounded text @click="show_data_tool_settings_overlay_panel" />
+                <OverlayPanel ref="dt_settings_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+                    <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
+                        <div style="width: 200px; display: flex; flex-direction: row; justify-content: flex-start;">
+                            <span style="font-size: 14px; margin-right: 8px;">Sampling Time [ms]:</span>
+                            <input class="dt_tf" type="number" v-model="sampling_dt">
+                        </div>
+                        <div style="height: 8px;"></div>
+                        <div>
+                            <span style="font-size: 16px;">Export Variables</span>
+                            <div style="margin-bottom: 4px;">
+                                <Checkbox style="margin-right: 8px;" binary :pt="checkbox_pt" v-model="export_variables_state['time_ms']" />
+                                <span style="font-size: 14px;">{{ msg_type_name_map['time_ms'] }}</span>
+                            </div>
+                            <div v-for="dp_key in complete_data_point_keys" style="margin-bottom: 4px;">
+                                <Checkbox style="margin-right: 8px;" binary :pt="checkbox_pt" v-model="export_variables_state[dp_key]" />
+                                <span style="font-size: 14px;">{{ msg_type_name_map[dp_key] }}</span>
+                            </div>
+                        </div>
+                        <div style="height: 8px;"></div>
+                        <div>
+                            <span style="font-size: 16px;">Charts Settings</span>
+                            <div style="width: 200px; display: flex; flex-direction: row; justify-content: flex-start;">
+                                <span style="font-size: 14px; margin-right: 8px;">Y Range</span>
+                                <input class="dt_tf" type="number">
+                                <span style="flex-grow: 1; text-align: center;"> - </span>
+                                <input class="dt_tf" type="number">
+                            </div>
+                        </div>
+                    </div>
+                </OverlayPanel>
             </div>
         </div>
 
@@ -320,6 +369,7 @@ onMounted(() => {
                 <Button icon="pi pi-code" class="data_tool_icon_btn" title="Run Data Script" rounded text @click="show_data_script_overlay_panel" />
                 <OverlayPanel ref="ds_op" :pt="overlay_panel_pt">
                     <div id="ds_op_items_cont">
+                        <h4 v-if="chx_scripts?.length === 0" style="margin: 0px;">No Data Scripts Found for This Device</h4>
                         <div class="ds_op_item" v-for="_script in chx_scripts" @click="exec_chx_script(_script)">
                             <i class="pi pi-file"></i>
                             <span>{{ _script.script_name }}</span>
@@ -333,7 +383,7 @@ onMounted(() => {
             <template #legend>
                 <div class="field_set_header">
                     <span>Device Series</span>
-                    <Button icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text @click="show_series_config_dialog()" />
+                    <Button v-if="chx_advanced_mode" icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text @click="show_series_config_dialog()" />
                 </div>
             </template>
             <div v-for="(s, idx) in chx_series">
@@ -346,7 +396,7 @@ onMounted(() => {
             <template #legend>
                 <div class="field_set_header">
                     <span>Device Equations</span>
-                    <Button icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text />
+                    <Button v-if="chx_advanced_mode" icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text />
                 </div>
             </template>
             <DeviceEquation v-if="chx_eqs?.length ?? 0 !== 0" v-for="chx_eq in chx_eqs" :chx_eq="chx_eq" />
@@ -412,6 +462,10 @@ onMounted(() => {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+}
+
+.field_set_header span {
+    margin-right: 8px;
 }
 
 .dt_tf {
@@ -486,5 +540,6 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    z-index: 1;
 }
 </style>

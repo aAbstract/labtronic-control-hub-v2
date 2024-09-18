@@ -1,9 +1,9 @@
 {
   "device_model": "LT-HT113",
-  "data_freq": 5,
   "cloud_settings": {
     "labtronic_cdn_base_url": "http://127.0.0.1:8090"
   },
+  "chx_advanced": false,
   "computed_params": [],
   "equations": [],
   "scripts": [],

@@ -1,10 +1,11 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { SerialAdapter } from "./serial_adapter";
 import { LtdDriver } from "./ltd_driver";
-import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation, CHXScript } from '../../common/models';
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam } from '../../common/models';
 import { VirtualComputeEngine } from '../vce';
 import { subscribe } from '../../common/mediator';
 import { DeviceMsg } from '../../common/models';
+import { get_chx_cps, get_chx_eqs, get_chx_scripts, get_chx_series } from "../system_settings";
 
 const DEVICE_MODEL = 'LT-CH000';
 const DEVICE_ERROR_MSG_TYPE = 14;
@@ -36,21 +37,21 @@ const LT_CH000_DRIVER_CONFIG: MsgTypeConfig[] = [
     },
     {
         msg_type: 2,
-        msg_name: 'READ_WEIGHT',
+        msg_name: 'READ_WGHT',
         data_type: DataType.FLOAT,
         size_bytes: 4,
         cfg2: 0,
     },
     {
         msg_type: 3,
-        msg_name: 'READ_TEMPERATURE',
+        msg_name: 'READ_TEMP',
         data_type: DataType.FLOAT,
         size_bytes: 4,
         cfg2: 0,
     },
     {
         msg_type: 4,
-        msg_name: 'READ_PRESSURE',
+        msg_name: 'READ_PRES',
         data_type: DataType.FLOAT,
         size_bytes: 4,
         cfg2: 0,
@@ -170,8 +171,10 @@ let lt_ch000_vce0: VirtualComputeEngine | null = null;
 ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_CH000_DRIVER_CONFIG, ...(lt_ch000_vce0?.get_cps_config() ?? [])]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_CH000_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_CH000_VCE_CONFIG);
-ipcMain.handle('compute_chx_equation', (_, chx_equation: CHXEquation, args_vals: number[]) => VirtualComputeEngine.compute_chx_equation(chx_equation, args_vals));
-ipcMain.handle('exec_chx_script', async (_, data_points: Record<string, number>[], _script: CHXScript) => await VirtualComputeEngine.exec_chx_script(data_points, _script));
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_cps`, () => get_chx_cps());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => get_chx_series());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_eqs`, () => get_chx_eqs());
+ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => get_chx_scripts());
 
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);

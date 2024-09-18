@@ -22,7 +22,7 @@ const chart_opts = shallowRef({});
 const chart_data = shallowRef<ChartData>();
 const msg_type_state_map = ref<Record<number, boolean>>({});
 
-function create_chart_options(font_color: string, lines_color: string): ChartOptions {
+function create_chart_options(font_color: string, lines_color: string, y_min: number, y_max: number): ChartOptions {
     return {
         responsive: true,
         maintainAspectRatio: false,
@@ -30,7 +30,7 @@ function create_chart_options(font_color: string, lines_color: string): ChartOpt
         color: font_color,
         scales: {
             x: { ticks: { color: font_color }, grid: { color: lines_color } },
-            y: { ticks: { color: font_color }, grid: { color: lines_color } },
+            y: { ticks: { color: font_color }, grid: { color: lines_color }, min: y_min, max: y_max },
         },
         animation: false,
         plugins: { legend: { display: false } },
@@ -62,7 +62,7 @@ function render_chart() {
 onMounted(() => {
     const chart_font_color = document.documentElement.style.getPropertyValue('--font-color');
     const chart_grid_color = document.documentElement.style.getPropertyValue('--empty-gauge-color');
-    chart_opts.value = create_chart_options(chart_font_color, chart_grid_color);
+    chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, 0, 100);
 
     // auto construct points data cache struct using device driver config
     window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
@@ -110,6 +110,12 @@ onMounted(() => {
         const { new_msg_type_state_map } = args;
         msg_type_state_map.value = new_msg_type_state_map;
         render_chart();
+    });
+
+    subscribe('update_multi_chart_y_min_max', 'update_multi_chart_y_min_max', args => {
+        const y_min: number = args.y_min;
+        const y_max: number = args.y_max;
+        chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, y_min, y_max);
     });
 });
 

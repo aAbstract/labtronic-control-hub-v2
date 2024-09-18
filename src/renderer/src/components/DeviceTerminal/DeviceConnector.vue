@@ -3,6 +3,7 @@
 import { shallowRef, ref, onBeforeMount, computed, inject } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
 
 import { SerialPortMetaData, DropdownOption } from '@common/models';
 import { add_log, electron_renderer_send } from '@renderer/lib/util';
@@ -13,6 +14,7 @@ const is_device_connected = ref(false);
 const btn_color = computed(() => is_device_connected.value ? '#FFAB00' : 'var(--accent-color)');
 const btn_txt = computed(() => is_device_connected.value ? 'DISCONNECT' : 'CONNECT');
 const device_model = inject('device_model');
+const toast_service = useToast();
 const dropdown_pt: any = {
     root: { style: 'background-color: transparent; border: 1px solid var(--font-color); min-width: 160px; width: 10vw; height: 30px;' },
     input: { style: 'padding: 0px 8px; color: var(--font-color); font-family: Cairo, sans-serif; font-size: 14px; font-weight: bold;' },
@@ -39,8 +41,14 @@ function scan_serial_ports_btn_click() {
 }
 
 onBeforeMount(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => is_device_connected.value = true);
-    window.electron?.ipcRenderer.on(`${device_model}_device_disconnected`, _ => is_device_connected.value = false);
+    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => {
+        is_device_connected.value = true;
+        toast_service.add({ severity: 'info', summary: 'Device Connected', detail: 'Connected to Device Port', life: 3000 });
+    });
+    window.electron?.ipcRenderer.on(`${device_model}_device_disconnected`, _ => {
+        is_device_connected.value = false;
+        toast_service.add({ severity: 'warn', summary: 'Device Disconnected', detail: 'Disconnected from Device Port', life: 3000 });
+    });
     window.electron?.ipcRenderer.on(`${device_model}_detected_ports`, (_, data) => {
         const detected_ports = data.detected_ports as SerialPortMetaData[];
         port_opts.value = detected_ports.map(x => {

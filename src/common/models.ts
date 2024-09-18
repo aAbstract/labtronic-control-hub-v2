@@ -164,8 +164,8 @@ export interface CHXSeries {
 
 export interface CHXSettings {
     device_model: string;
-    data_freq: number;
     cloud_settings: CHXCloudSettings;
+    chx_advanced: boolean;
     computed_params: CHXComputedParam[];
     equations: CHXEquation[];
     scripts: CHXScript[];

@@ -16,6 +16,7 @@ import { DeviceMsg } from '@common/models';
 const chart_height = ref('35vh');
 const device_model = inject('device_model') as string;
 const device_config = shallowRef<MsgTypeConfig[]>([]);
+// @ts-ignore
 let cache_changed = false;
 const msg_values_cache: Record<number, string> = {};
 const msg_type_value_map = shallowRef<Record<number, string>>({});
@@ -29,7 +30,8 @@ const read_device_config = computed(() => {
 
     return read_config.map(x => {
         msg_values_cache[x.msg_type] = '000.00';
-        cache_changed = true;
+        update_device_state_panel();
+        // cache_changed = true;
         msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '#FFFFFF';
         msg_type_state_map.value[x.msg_type] = true;
         active_msg_type.value = read_config[0].msg_type;
@@ -62,6 +64,12 @@ function switch_multi_channels_plot() {
     post_event('change_plot_channels', { new_msg_type_state_map: msg_type_state_map.value });
 }
 
+function update_device_state_panel() {
+    const _msg_values_cache = clone_object(msg_values_cache);
+    msg_type_value_map.value = _msg_values_cache;
+    post_event('update_device_model_panel', { _msg_values_cache });
+}
+
 onBeforeMount(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
         electron_renderer_invoke<any>(`${device_model}_get_device_config`).then(_device_config => {
@@ -76,17 +84,18 @@ onBeforeMount(() => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         msg_values_cache[msg_type] = device_msg.msg_value.toFixed(2);
-        cache_changed = true;
+        update_device_state_panel();
+        // cache_changed = true;
     });
 
-    setInterval(() => {
-        if (!cache_changed)
-            return;
-        const _msg_values_cache = clone_object(msg_values_cache);
-        msg_type_value_map.value = _msg_values_cache;
-        post_event('update_device_model_panel', { _msg_values_cache });
-        cache_changed = false;
-    }, 1000);
+    // setInterval(() => {
+    //     if (!cache_changed)
+    //         return;
+    //     const _msg_values_cache = clone_object(msg_values_cache);
+    //     msg_type_value_map.value = _msg_values_cache;
+    //     post_event('update_device_model_panel', { _msg_values_cache });
+    //     cache_changed = false;
+    // }, 1000);
 });
 
 </script>

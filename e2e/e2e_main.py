@@ -1,11 +1,10 @@
-import os
-import argparse
-import json
 import sys
+import json
 import glob
+import argparse
 from e2e_utils import *
-from importlib import import_module
 from selenium import webdriver
+from importlib import import_module
 from selenium.webdriver.chrome.service import Service
 
 
@@ -14,7 +13,7 @@ def create_chrome_test_session() -> webdriver.Chrome:
     chrome_options = webdriver.ChromeOptions()
     chrome_options.debugger_address = '127.0.0.1:9222'
     chrome_options.add_argument("disable-infobars")
-    ilog(func_id, f"Creating chrome testing session")
+    ilog(func_id, 'Creating Chrome Testing Session')
     _webdriver = webdriver.Chrome(service=Service(executable_path='e2e/chromedriver'), options=chrome_options)
     return _webdriver
 

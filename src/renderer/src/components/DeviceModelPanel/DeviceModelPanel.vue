@@ -14,6 +14,7 @@ const device_model = inject('device_model') as string;
 const device_model_labeled_img = ref('');
 const device_model_cont_width = ref('96%');
 
+// @ts-ignore
 function render_msg_value(msg_type: number, msg_value: string) {
     const card_pos_info = props.device_ui_config.get_info_card_pos(msg_type);
     if (!card_pos_info) {
@@ -37,14 +38,14 @@ function canvas_setup() {
 }
 
 onMounted(() => {
-    subscribe('update_device_model_panel', 'update_device_model_panel', args => {
-        const _msg_values_cache: Record<number, string> = args._msg_values_cache;
-        Object.entries(_msg_values_cache).forEach(([_msg_type, _msg_value]) => {
-            const msg_type = Number(_msg_type);
-            if (msg_type < 16)
-                render_msg_value(msg_type, _msg_value);
-        });
-    });
+    // subscribe('update_device_model_panel', 'update_device_model_panel', args => {
+    //     const _msg_values_cache: Record<number, string> = args._msg_values_cache;
+    //     Object.entries(_msg_values_cache).forEach(([_msg_type, _msg_value]) => {
+    //         const msg_type = Number(_msg_type);
+    //         if (msg_type < 16)
+    //             render_msg_value(msg_type, _msg_value);
+    //     });
+    // });
 
     electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
         if (!base64_src)

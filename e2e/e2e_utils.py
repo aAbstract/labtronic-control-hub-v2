@@ -93,7 +93,7 @@ def try_get_elem(driver: webdriver.Chrome, css_selector: str) -> WebElement | No
     return None
 
 
-def try_get_elems(driver: webdriver.Chrome, css_selector: str) -> WebElement | None:
+def try_get_elems(driver: webdriver.Chrome, css_selector: str) -> list[WebElement] | None:
     TIME_OUT = 100
     for _ in range(TIME_OUT):
         try:
@@ -105,18 +105,27 @@ def try_get_elems(driver: webdriver.Chrome, css_selector: str) -> WebElement | N
     return None
 
 
+def is_device_connected(driver: webdriver.Chrome) -> bool:
+    device_conn_state = try_get_elem_txt(driver, '#dev_conn_state_cont')
+    if not device_conn_state:
+        return False
+    if device_conn_state != 'DEVICE: CONNECTED':
+        return False
+    return True
+
+
 def connect_to_emulation_port(driver: webdriver.Chrome) -> int:
-    func_id = 'e2e.e2e_utils.us_connect_to_device'
+    func_id = 'e2e.e2e_utils.connect_to_emulation_port'
     side_bar_btns = try_get_elems(driver, '.nav_bar_icon_cont')
     if not side_bar_btns:
-        elog(func_id, 'Sidebar buttons not found')
+        elog(func_id, 'Sidebar Buttons not Found')
         return 1
     device_terminal_btn = side_bar_btns[0]
     js_click(driver, device_terminal_btn)
 
     device_connector_widgets = try_get_elems(driver, '#device_connector_cont *')
     if not device_connector_widgets:
-        elog(func_id, 'Device connector widgets not found')
+        elog(func_id, 'Device Connector Widgets not Found')
         return 1
     serial_ports_dropdown = device_connector_widgets[0]
     js_click(driver, serial_ports_dropdown)
@@ -125,17 +134,43 @@ def connect_to_emulation_port(driver: webdriver.Chrome) -> int:
 
     device_connect_btn = try_get_elem(driver, 'button[aria-label="CONNECT"]')
     if not device_connect_btn:
-        elog(func_id, 'Device connect button')
+        elog(func_id, 'Device Connect Button not Found')
         return 1
     js_click(driver, device_connect_btn)
     js_click(driver, device_terminal_btn)
 
     device_conn_state = try_get_elem_txt(driver, '#dev_conn_state_cont')
     if not device_conn_state:
-        elog(func_id, 'Device connection state tag not found')
+        elog(func_id, 'Device Connection State Tag not Found')
         return 1
     if device_conn_state != 'DEVICE: CONNECTED':
-        elog(func_id, 'Connection to emulation port faild')
+        elog(func_id, 'Connection to Emulation Port Faild')
         return 1
 
     return 0
+
+
+def disconnect_device(driver: webdriver.Chrome) -> int:
+    func_id = 'e2e.e2e_utils.disconnect_device'
+    side_bar_btns = try_get_elems(driver, '.nav_bar_icon_cont')
+    if not side_bar_btns:
+        elog(func_id, 'Sidebar Buttons not Found')
+        return 1
+    device_terminal_btn = side_bar_btns[0]
+    js_click(driver, device_terminal_btn)
+    device_connect_btn = try_get_elem(driver, 'button[aria-label="DISCONNECT"]')
+    if not device_connect_btn:
+        elog(func_id, 'Device Disconnect Button not Found')
+        return 1
+    js_click(driver, device_connect_btn)
+    js_click(driver, device_terminal_btn)
+    return 0
+
+
+def get_chx_device_state(driver: webdriver.Chrome) -> dict | None:
+    func_id = 'e2e.e2e_utils.get_chx_device_state'
+    device_readings = try_get_elems(driver, '.reading_cont')
+    if not device_readings:
+        elog(func_id, 'CHX Device State not Found')
+        return None
+    return {x.text.split(': ')[0]: float(x.text.split(': ')[1]) for x in device_readings}
