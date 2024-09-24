@@ -102,14 +102,23 @@ watch([sample_shape, sample_material], () => {
     // Combination - 50mm
     if (sample_shape.value === 2) {
         post_event('change_device_model_asset', { _asset: 'lt_ht103_combination' });
+        electron_renderer_send(`${device_model}_load_vce_sample_length`, { sample_length: 50 });
         return;
     }
 
     // Groove - 40mm
     if (sample_shape.value == 3) {
         post_event('change_device_model_asset', { _asset: 'lt_ht103_grooved_aluminum' });
+        electron_renderer_send(`${device_model}_load_vce_sample_length`, { sample_length: 40 });
         return;
     }
+
+    // Short - 20mm
+    if (sample_shape.value === 0)
+        electron_renderer_send(`${device_model}_load_vce_sample_length`, { sample_length: 20 });
+    // Long - 40mm
+    else if (sample_shape.value === 1)
+        electron_renderer_send(`${device_model}_load_vce_sample_length`, { sample_length: 40 });
 
     let _sample_shape = 'short';
     if (sample_shape.value == 1)
@@ -277,11 +286,11 @@ onMounted(() => {
             <div v-if="!sample_shape || sample_shape in sample_material_opts_map" style="width: 100%; display: flex; justify-content: flex-start;">
                 <div class="labeled_control">
                     <span style="visibility: hidden;">Op Mode:</span>
-                    <Dropdown :pt="dropdown_pt" :options="sample_shape_opts" optionLabel="label" optionValue="value" placeholder="Sample Shape" title="Sample Shape" v-model="sample_shape" />
+                    <Dropdown :disabled="device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION" :pt="dropdown_pt" :options="sample_shape_opts" optionLabel="label" optionValue="value" placeholder="Sample Shape" title="Sample Shape" v-model="sample_shape" />
                 </div>
                 <div class="labeled_control">
                     <span style="visibility: hidden;">C_f:</span>
-                    <Dropdown :pt="dropdown_pt" :options="sample_material_opts_map[sample_shape]" optionLabel="label" optionValue="value" placeholder="Sample Material" title="Sample Material" @update:modelValue="new_value => sample_material = new_value" :modelValue="sample_shape && sample_material_opts_map[sample_shape].length === 1 ? sample_material_opts_map[sample_shape][0].value : sample_material" />
+                    <Dropdown :disabled="device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION" :pt="dropdown_pt" :options="sample_material_opts_map[sample_shape]" optionLabel="label" optionValue="value" placeholder="Sample Material" title="Sample Material" @update:modelValue="new_value => sample_material = new_value" :modelValue="sample_shape && sample_material_opts_map[sample_shape].length === 1 ? sample_material_opts_map[sample_shape][0].value : sample_material" />
                 </div>
             </div>
             <div v-else-if="sample_shape === 2" style="width: 100%; display: flex; justify-content: space-between;">

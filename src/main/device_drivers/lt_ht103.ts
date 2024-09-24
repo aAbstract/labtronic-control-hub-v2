@@ -283,6 +283,14 @@ ipcMain.handle(`${DEVICE_MODEL}_get_chx_series`, () => get_chx_series());
 ipcMain.handle(`${DEVICE_MODEL}_get_chx_eqs`, () => get_chx_eqs());
 ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => [...DEVICE_SCRIPTS, ...get_chx_scripts()]);
 
+ipcMain.on(`${DEVICE_MODEL}_load_vce_sample_length`, (_, data) => {
+    if (!lt_ht103_vce0)
+        return;
+
+    const { sample_length } = data;
+    lt_ht103_vce0.load_symbol('$L', sample_length);
+});
+
 ipcMain.handle('compute_chx_equation', (_, chx_equation: CHXEquation, args_vals: number[]) => VirtualComputeEngine.compute_chx_equation(chx_equation, args_vals));
 ipcMain.handle('exec_chx_script', async (_, data_points: Record<string, number>[], _script: CHXScript) => await VirtualComputeEngine.exec_chx_script(data_points, _script));
 
