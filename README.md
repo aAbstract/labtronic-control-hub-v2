@@ -27,6 +27,27 @@ ElectronJS was used to access device native functionality.
 - [x] Export Data, Graphs, Insights
 - [x] Easy Lab Report Generation
 
+## Run on Windows
+1. Install NodeJS from this [Link](https://nodejs.org/en)
+2. Install Git from this [Link](https://git-scm.com/download/win)
+3. Install Python from this [Link](https://www.python.org/downloads/release/python-3126/)
+4. Clone the Repo
+```bash
+git clone git@github.com:aAbstract/labtronic-control-hub-v2.git
+```
+5. Install Dependencies
+```bash
+npm install
+```
+6. Run the Software
+```bash
+npm run dev
+```
+7. Switch CHX Module - TODO
+```bash
+# TODO
+```
+
 ## Main Screen
 <p align="center">
     <img src="screenshot_1.png" alt="Screenshot_1" />
