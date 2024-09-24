@@ -33,7 +33,7 @@ ElectronJS was used to access device native functionality.
 3. Install Python from this [Link](https://www.python.org/downloads/release/python-3126/)
 4. Clone the Repo
 ```bash
-git clone git@github.com:aAbstract/labtronic-control-hub-v2.git
+git clone https://github.com/aAbstract/labtronic-control-hub-v2.git
 ```
 5. Install Dependencies
 ```bash
