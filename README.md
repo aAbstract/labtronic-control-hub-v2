@@ -30,7 +30,7 @@ ElectronJS was used to access device native functionality.
 ## Run on Windows
 1. Install NodeJS from this [Link](https://nodejs.org/en)
 2. Install Git from this [Link](https://git-scm.com/download/win)
-3. Install Python from this [Link](https://www.python.org/downloads/release/python-3126/)
+3. Install Python from this [Link](https://www.python.org/downloads/)
 4. Clone the Repo
 ```bash
 git clone https://github.com/aAbstract/labtronic-control-hub-v2.git
