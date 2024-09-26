@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -143,3 +144,4 @@ if __name__ == '__main__':
 
     chx_module_config = CHX_MAP[chx_module]
     apply_chx_config(chx_module_config)
+    os.system('npm run dev')

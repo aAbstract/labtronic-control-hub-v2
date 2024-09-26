@@ -43,9 +43,9 @@ npm install
 ```bash
 npm run dev
 ```
-7. Switch CHX Module
+7. Run CHX Module
 ```bash
-python scripts/switch_chx_module.py <chx_module_name>
+python scripts/run_chx_module.py <chx_module_name>
 
 # chx_module_name
 # Cross Flow Membrane Filtration: lt_ch000
