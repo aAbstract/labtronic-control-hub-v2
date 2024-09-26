@@ -4,13 +4,22 @@ import { LtdDriver } from "./ltd_driver";
 import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, CHXComputedParam, CHXEquation, CHXScript, LT_HT103_DeviceConfig, LT_HT103_DeviceOperationMode, _ToastMessageOptions } from '../../common/models';
 import { VirtualComputeEngine } from '../vce';
 import { DeviceMsg } from '../../common/models';
-import { get_chx_device_confg, get_chx_cps, get_chx_scripts, get_chx_series, get_chx_eqs } from "../system_settings";
+import {
+    CHX_SETTINGS_FILENAME,
+    get_chx_device_confg,
+    get_chx_cps,
+    get_chx_scripts,
+    get_chx_series,
+    get_chx_eqs,
+    set_chx_device_config,
+    save_chx_settings,
+} from "../system_settings";
 
 const DEVICE_MODEL = 'LT-HT103';
 const DEVICE_ERROR_MSG_TYPE = 14;
 const WRITE_P_HEATER_MSG_TYPE = 12;
 const WRITE_P_PELTIER_MSG_TYPE = 13;
-// const HEART_BEAT_MSG_TYPE = 15;
+const DEVICE_HEART_BEAT_MSG_TYPE = 15;
 const DEVICE_ERROR_MSG_MAP: Record<number, string> = {
     0xF0: 'Temperature {T_Ambient} OTP',
     0xF1: 'Temperature {T1} OTP',
@@ -24,13 +33,9 @@ const DEVICE_ERROR_MSG_MAP: Record<number, string> = {
 };
 const DEVICE_OP_MODE_CPS_MAP: Record<LT_HT103_DeviceOperationMode, CHXComputedParam[]> = {
     [LT_HT103_DeviceOperationMode.CALIBRATION]: [
-        // { param_name: 'Delta_T', expr: '$T1 - $T2' },
         { param_name: 'Q_L', expr: '$C_f * ($T_h - $T_amb)' },
         { param_name: 'Q_Cond', expr: '$P_H - ($C_f * ($T_h - $T_amb))' }, // $P_H - $Q_L
         { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($C_f * ($T_h - $T_amb)))' }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
-        // plot control parameters
-        { param_name: 'P_Heater', expr: '$P_H' },
-        { param_name: 'P_Peltier', expr: '$P_P' },
         // conditional compute parameters
         { param_name: 'Delta_T', expr: '$T1 - $T2' },
     ],
@@ -38,9 +43,6 @@ const DEVICE_OP_MODE_CPS_MAP: Record<LT_HT103_DeviceOperationMode, CHXComputedPa
         { param_name: 'Q_L', expr: '$Q_L_F1 + $Q_L_F2 * $T_h' },
         { param_name: 'Q_Cond', expr: '$P_H - ($Q_L_F1 + $Q_L_F2 * $T_h)' },
         { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($Q_L_F1 + $Q_L_F2 * $T_h))' }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
-        // plot control parameters
-        { param_name: 'P_Heater', expr: '$P_H' },
-        { param_name: 'P_Peltier', expr: '$P_P' },
         // conditional compute parameters
         { param_name: 'Delta_T', expr: '$T1 - $T2' },
     ],
@@ -93,14 +95,14 @@ const LT_HT103_DRIVER_CONFIG: MsgTypeConfig[] = [
     },
     {
         msg_type: 5,
-        msg_name: 'P_HEATER',
+        msg_name: 'READ_P_HEATER',
         data_type: DataType.FLOAT,
         size_bytes: 4,
         cfg2: 0,
     },
     {
         msg_type: 6,
-        msg_name: 'P_PELTIER',
+        msg_name: 'READ_P_PELTIER',
         data_type: DataType.FLOAT,
         size_bytes: 4,
         cfg2: 0,
@@ -123,6 +125,13 @@ const LT_HT103_DRIVER_CONFIG: MsgTypeConfig[] = [
         msg_type: DEVICE_ERROR_MSG_TYPE,
         msg_name: 'DEVICE_ERROR',
         data_type: DataType.UINT,
+        size_bytes: 1,
+        cfg2: 0,
+    },
+    {
+        msg_type: DEVICE_HEART_BEAT_MSG_TYPE,
+        msg_name: 'DEVICE_HEART_BEAT',
+        data_type: DataType.COMMAND,
         size_bytes: 1,
         cfg2: 0,
     },
@@ -334,10 +343,12 @@ function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
 }
 
+const MAX_P_HEATER = 38;
+const MAX_P_PELTIER = 40;
 const LT_HT103_DEVICE_CMD_HELP: string[] = [
     '=======================================================================================================',
-    'SET P_HEATER <value>, Alias: SH <value>  | Control Device P_HEATER, 0 <= value <= 30',
-    'SET P_PELTIER <value>, Alias: SP <value> | Control Device P_PELTIER, 0 <= value <= 120',
+    `SET P_HEATER <value>, Alias: SH <value>  | Control Device P_HEATER, 0 <= value <= ${MAX_P_HEATER}`,
+    `SET P_PELTIER <value>, Alias: SP <value> | Control Device P_PELTIER, 0 <= value <= ${MAX_P_PELTIER}`,
     '=======================================================================================================',
 ];
 function lt_ht103_cmd_exec(cmd: string) {
@@ -360,8 +371,8 @@ function lt_ht103_cmd_exec(cmd: string) {
     const new_set_val = Number(cmd_parts[2]);
 
     if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'P_HEATER' && !isNaN(new_set_val)) {
-        if (!(new_set_val >= 0 && new_set_val <= 30)) {
-            mw_logger({ level: 'ERROR', msg: 'Invalid P_HEATER Value: 0 <= value <= 30' });
+        if (!(new_set_val >= 0 && new_set_val <= MAX_P_HEATER)) {
+            mw_logger({ level: 'ERROR', msg: `Invalid P_HEATER Value: 0 <= value <= ${MAX_P_HEATER}` });
             return;
         }
         serial_adapter?.send_packet(WRITE_P_HEATER_MSG_TYPE, new_set_val);
@@ -369,8 +380,8 @@ function lt_ht103_cmd_exec(cmd: string) {
     }
 
     if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'P_PELTIER' && !isNaN(new_set_val)) {
-        if (!(new_set_val >= 0 && new_set_val <= 120)) {
-            mw_logger({ level: 'ERROR', msg: 'Invalid P_PELTIER Value: 0 <= value <= 120' });
+        if (!(new_set_val >= 0 && new_set_val <= MAX_P_PELTIER)) {
+            mw_logger({ level: 'ERROR', msg: `Invalid P_PELTIER Value: 0 <= value <= ${MAX_P_PELTIER}` });
             return;
         }
         serial_adapter?.send_packet(WRITE_P_PELTIER_MSG_TYPE, new_set_val);
@@ -431,6 +442,27 @@ export function init_lt_ht103_serial_adapter(_main_window: BrowserWindow) {
             device_config = get_chx_device_confg() as LT_HT103_DeviceConfig;
         const { config_name, config_value } = data;
         device_config[config_name] = config_value;
+        set_chx_device_config(device_config);
+    });
+
+    ipcMain.on('save_chx_device_config', () => {
+        if (save_chx_settings()) {
+            const notif: _ToastMessageOptions = {
+                severity: 'success',
+                summary: 'CHX Settings Saved',
+                detail: 'CHX Settings Saved to File: ' + CHX_SETTINGS_FILENAME,
+                life: 3000,
+            };
+            main_window?.webContents.send('show_system_notif', { notif });
+        } else {
+            const notif: _ToastMessageOptions = {
+                severity: 'error',
+                summary: 'CHX Settings Error',
+                detail: 'Error Saving CHX Settings to File: ' + CHX_SETTINGS_FILENAME,
+                life: 3000,
+            };
+            main_window?.webContents.send('show_system_notif', { notif });
+        }
     });
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_scan`, () => SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
@@ -441,4 +473,16 @@ export function init_lt_ht103_serial_adapter(_main_window: BrowserWindow) {
 
     main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
     mw_logger({ level: 'INFO', msg: `Loaded Device Drivers: ${DEVICE_MODEL}` });
+
+    // device heart beat signal
+    setInterval(() => {
+        if (!serial_adapter)
+            return;
+
+        if (!serial_adapter.is_connected)
+            return;
+
+        serial_adapter.send_packet(DEVICE_HEART_BEAT_MSG_TYPE, 0);
+
+    }, 1000);
 }

@@ -20,7 +20,7 @@ onMounted(() => {
         };
         panel_pos.value = values_map[panel_pos.value];
     });
-    
+
     subscribe('hide_device_manual_panel', 'hide_device_manual_panel', _ => panel_pos.value = '-60vw');
 
     subscribe('chx_settings_loaded', 'chx_settings_loaded_device_manual_panel', _ => {
@@ -39,8 +39,8 @@ onMounted(() => {
 
 <template>
     <div id="device_manual_panel_cont">
-        <h4 id="err_msg" v-if="err_msg">{{ err_msg }}</h4>
-        <ProgressSpinner v-if="manual_sections.length === 0" />
+        <h4 id="err_msg" v-if="err_msg">{{ `Can not Reach LabTronic CDN Server: ${err_msg}` }}</h4>
+        <ProgressSpinner v-if="manual_sections.length === 0 && !err_msg" />
         <ManualSection v-else v-for="(section, sidx) in manual_sections" :sidx="sidx" :section="section" />
     </div>
 </template>
@@ -48,7 +48,7 @@ onMounted(() => {
 <style scoped>
 #err_msg {
     margin: 0px;
-    color: #DD2C00;
+    color: #FFAB00;
     text-align: center;
 }
 
@@ -68,5 +68,6 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     overflow-y: scroll;
+    z-index: 1;
 }
 </style>

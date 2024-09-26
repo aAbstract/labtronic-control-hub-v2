@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
-import { onMounted, shallowRef, computed } from 'vue';
-import { ChartData, ChartEvent, Chart as _Chart } from 'chart.js';
+import { onMounted, shallowRef, watch } from 'vue';
+import { ChartData, ChartEvent, ChartOptions, Chart as _Chart } from 'chart.js';
 import Chart from 'primevue/chart';
 
 import { ChartParams } from '@renderer/lib/device_ui_config';
@@ -30,7 +30,26 @@ const chart_data = shallowRef<ChartData>({
     datasets: [],
 });
 
-const chart_opts = computed(() => {
+function on_chart_click(chart_event: ChartEvent) {
+    if (!chart_data.value.labels)
+        return;
+    const _chart: _Chart = (chart_event as any).chart;
+    const x_idx = _chart.scales.x.getValueForPixel(chart_event.x as number) as number;
+    const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
+    const _x_val = chart_data.value.labels[x_idx] as number;
+    const _y_val = chart_data.value.datasets[0].data[x_idx] as number;
+    if (isNaN(_x_val) || isNaN(_y_val))
+        return;
+    chart_marker = {
+        x_val: _x_val.toFixed(2),
+        y_val: _y_val.toFixed(2),
+        marker_line_x_offset: x_offset,
+    };
+    _chart.draw();
+    draw_chart_markers(_chart.ctx, chart_marker);
+}
+
+function create_chart_options(font_color: string, grid_color: string, y_min: number, y_max: number): ChartOptions {
     const chart_params = new ChartParams(props.chart_title, props.line_color);
     chart_params.tension = 0;
     chart_data.value = {
@@ -47,29 +66,15 @@ const chart_opts = computed(() => {
             legend: { display: false },
         },
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[0], display: true, color: font_color } },
-            y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: props.chart_title.split(' - ')[1], display: true, color: font_color } },
+            x: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: props.chart_title.split(' - ')[0], display: true, color: font_color } },
+            y: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: props.chart_title.split(' - ')[1], display: true, color: font_color }, min: y_min, max: y_max },
         },
-        onClick: (chart_event: ChartEvent) => {
-            if (!chart_data.value.labels)
-                return;
-            const _chart: _Chart = (chart_event as any).chart;
-            const x_idx = _chart.scales.x.getValueForPixel(chart_event.x as number) as number;
-            const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
-            const _x_val = chart_data.value.labels[x_idx] as number;
-            const _y_val = chart_data.value.datasets[0].data[x_idx] as number;
-            if (isNaN(_x_val) || isNaN(_y_val))
-                return;
-            chart_marker = {
-                x_val: _x_val.toFixed(2),
-                y_val: _y_val.toFixed(2),
-                marker_line_x_offset: x_offset,
-            };
-            _chart.draw();
-            draw_chart_markers(_chart.ctx, chart_marker);
-        },
+        onClick: on_chart_click,
     }
-});
+}
+
+const chart_opts = shallowRef<ChartOptions>(create_chart_options(font_color, chart_grid_color, 0, 10));
+watch(props, () => chart_opts.value = create_chart_options(font_color, chart_grid_color, 0, 10));
 
 function draw_chart_markers(_ctx: CanvasRenderingContext2D, _chart_marker: ChartMarker | null) {
     if (!_ctx || !_chart_marker)
@@ -110,6 +115,12 @@ onMounted(() => {
         chart_data.value.labels = [];
         chart_data.value.datasets[0].data = [];
         render_chart();
+    });
+
+    subscribe(`update_chx_series_chart_y_min_max_${props.chart_title}`, `update_chx_series_chart_y_min_max_${props.chart_title}`, args => {
+        const y_min: number = args.y_min;
+        const y_max: number = args.y_max;
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, y_min, y_max);
     });
 });
 

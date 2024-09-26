@@ -29,7 +29,7 @@ const DEVICE_MODE_SERIES_MAP: Record<LT_TO101_DeviceMode, CHXSeries[]> = {
             y_param: 4,
         },
         {
-            series_name: 'time - Prop',
+            series_name: 'time - PV',
             x_param: -1,
             y_param: 16,
         },
@@ -41,7 +41,7 @@ const DEVICE_MODE_SERIES_MAP: Record<LT_TO101_DeviceMode, CHXSeries[]> = {
             y_param: 5,
         },
         {
-            series_name: 'time - Prop2',
+            series_name: 'time - P_T',
             x_param: -1,
             y_param: 17,
         },
@@ -236,11 +236,11 @@ const LT_TO101_VCE_CONFIG: VceParamConfig[] = [
 ];
 const DEVICE_MODE_CPS_MAP: Record<LT_TO101_DeviceMode, CHXComputedParam[]> = {
     [LT_TO101_DeviceMode.BOYLE]: [
-        { param_name: 'Proportionality', expr: '$LVL * $PR1' }, // VCE0:16
+        { param_name: 'PV', expr: '$LVL * $PR1', unit: '[bar * L]' }, // VCE0:16
     ],
     [LT_TO101_DeviceMode.GLUSS]: [
         { param_name: 'T_avg', expr: '($TC2 + $TC3) / 2' }, // VCE0:16
-        { param_name: 'Prop2', expr: '(($TC2 + $TC3) / 2) * $PR2' }, // VCE0:17
+        { param_name: 'P_T', expr: '(($TC2 + $TC3) / 2 + 273.15) * $PR2 * 100', unit: '[Kpa / K]' }, // VCE0:17
     ],
 };
 

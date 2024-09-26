@@ -2,6 +2,8 @@
 
 import { onBeforeMount, shallowRef, computed, inject, ref } from 'vue';
 import Checkbox from 'primevue/checkbox';
+import Button from 'primevue/button';
+import OverlayPanel from 'primevue/overlaypanel';
 
 import { MsgTypeConfig } from '@common/models';
 import SingleChart from '@renderer/components/Charts/SingleChart.vue';
@@ -9,7 +11,7 @@ import MultiChart from '@renderer/components/Charts/MultiChart.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
-import { electron_renderer_invoke, clone_object } from '@renderer/lib/util';
+import { electron_renderer_invoke, clone_object, compute_tooltip_pt } from '@renderer/lib/util';
 // @ts-ignore
 import { DeviceMsg } from '@common/models';
 
@@ -42,6 +44,15 @@ const checkbox_pt: any = {
     box: { style: 'background-color: var(--dark-bg-color); border-color: var(--empty-gauge-color);' },
     icon: { style: 'color: var(--font-color);' },
 };
+const overlay_panel_pt = {
+    content: { style: 'padding: 8px;' },
+};
+const single_chart_settings_op = ref();
+const multi_chart_settings_op = ref();
+const single_chart_y_min = ref(0);
+const single_chart_y_max = ref(100);
+const multi_chart_y_min = ref(0);
+const multi_chart_y_max = ref(100);
 
 function map_chart_height(_key: number): number {
     const _map: Record<number, number> = {
@@ -68,6 +79,30 @@ function update_device_state_panel() {
     const _msg_values_cache = clone_object(msg_values_cache);
     msg_type_value_map.value = _msg_values_cache;
     post_event('update_device_model_panel', { _msg_values_cache });
+}
+
+function show_single_chart_settings_overlay_panel(_event: MouseEvent) {
+    single_chart_settings_op.value.toggle(_event);
+}
+
+function show_multi_chart_settings_overlay_panel(_event: MouseEvent) {
+    multi_chart_settings_op.value.toggle(_event);
+}
+
+function set_single_chart_y_min_max() {
+    const y_min = single_chart_y_min.value;
+    const y_max = single_chart_y_max.value;
+    if (isNaN(y_min) || isNaN(y_max))
+        return;
+    post_event('update_single_chart_y_min_max', { y_min, y_max });
+}
+
+function set_multi_chart_y_min_max() {
+    const y_min = multi_chart_y_min.value;
+    const y_max = multi_chart_y_max.value;
+    if (isNaN(y_min) || isNaN(y_max))
+        return;
+    post_event('update_multi_chart_y_min_max', { y_min, y_max });
 }
 
 onBeforeMount(() => {
@@ -115,15 +150,70 @@ onBeforeMount(() => {
                 </div>
             </div>
         </div>
-        <div style="height: 8px;"></div>
+        <div style="height: 8px;" class="chx_chart_gap">
+            <Button class="chx_charts_settings_btn" icon="pi pi-cog" @click="show_single_chart_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
+            <OverlayPanel ref="single_chart_settings_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+                <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
+                    <div style="width: 280px;">
+                        <span style="font-size: 14px; margin-right: 8px; width: 125px;">Single Chart Y Range</span>
+                        <input class="dt_tf" type="number" v-model="single_chart_y_min" @keyup.enter="set_single_chart_y_min_max()">
+                        <span style="flex-grow: 1; text-align: center;"> - </span>
+                        <input class="dt_tf" type="number" v-model="single_chart_y_max" @keyup.enter="set_single_chart_y_min_max()">
+                    </div>
+                </div>
+            </OverlayPanel>
+        </div>
         <SingleChart class="device_state_chart" v-on="screenshot_handlers" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
-        <div style="height: 12px;"></div>
+        <div style="height: 12px;" class="chx_chart_gap">
+            <Button class="chx_charts_settings_btn" icon="pi pi-cog" @click="show_multi_chart_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
+            <OverlayPanel ref="multi_chart_settings_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+                <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
+                    <div style="width: 280px;">
+                        <span style="font-size: 14px; margin-right: 8px; width: 125px;">Multi Chart Y Range</span>
+                        <input class="dt_tf" type="number" v-model="multi_chart_y_min" @keyup.enter="set_multi_chart_y_min_max()">
+                        <span style="flex-grow: 1; text-align: center;"> - </span>
+                        <input class="dt_tf" type="number" v-model="multi_chart_y_max" @keyup.enter="set_multi_chart_y_min_max()">
+                    </div>
+                </div>
+            </OverlayPanel>
+        </div>
         <MultiChart class="device_state_chart" v-on="screenshot_handlers" :device_ui_config="DEVICE_UI_CONFIG_MAP[device_model]" :fps="30" />
         <!-- <div style="height: 12px;"></div> -->
     </div>
 </template>
 
 <style scoped>
+.dt_tf {
+    font-family: "Lucida Console", "Courier New", monospace;
+    width: 60px;
+    color: var(--font-color);
+    border: none;
+    background-color: var(--dark-bg-color);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px;
+}
+
+.dt_tf:focus {
+    outline: none;
+    border: 1px solid var(--accent-color);
+}
+
+.chx_chart_gap {
+    position: relative;
+    width: 100%;
+}
+
+.chx_charts_settings_btn {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    color: var(--accent-color);
+}
+
 .device_state_chart {
     height: v-bind(chart_height);
     width: calc(100% - 8px);

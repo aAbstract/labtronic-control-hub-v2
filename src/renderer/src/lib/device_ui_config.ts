@@ -130,17 +130,17 @@ const LT_HT103_DUIC = new DeviceUIConfig(
         3: new ChartParams('T_c', '#795548'), // READ_T_c
         4: new ChartParams('T_h', '#4caf50'), // READ_T_h
 
+        // control parameters
+        5: new ChartParams('P_HEATER', '#f44336'), // READ_P_HEATER
+        6: new ChartParams('P_PELTIER', '#2196f3'), // READ_P_PELTIER
+
         // compute parameters
         16: new ChartParams('Q_L', '#cddc39'), // VCE: Q_L
         17: new ChartParams('Q_Cond', '#ff9800'), // VCE: Q_Cond
         18: new ChartParams('Lambda', '#9e9e9e'), // VCE: Lambda
 
-        // control parameters
-        19: new ChartParams('P_Heater', '#f44336'), // P_H
-        20: new ChartParams('P_Peltier', '#2196f3'), // P_P
-
         // conditional compute parameters
-        21: new ChartParams('Delta_T', '#009688'), // VCE: Delta_T
+        19: new ChartParams('Delta_T', '#009688'), // VCE: Delta_T
     },
     'LT-HT103',
 );

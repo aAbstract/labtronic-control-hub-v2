@@ -52,8 +52,8 @@ function arr_combs(arr: string[]): string[] {
 }
 
 // device_config
-const MAX_P_HEATER = 30;
-const MAX_P_PELTIER = 120;
+const MAX_P_HEATER = 38;
+const MAX_P_PELTIER = 40;
 const C_f = ref<string | number>('X.XX');
 const Q_L_F1 = ref<string | number>('X.XX');
 const Q_L_F2 = ref<string | number>('X.XX');
@@ -185,6 +185,10 @@ function shutdown_device_power() {
     }, 5000);
 }
 
+function save_chx_settings() {
+    electron_renderer_send('save_chx_device_config', {});
+}
+
 onMounted(() => {
     electron_renderer_invoke<LT_HT103_DeviceConfig>('get_chx_device_config').then(chx_device_config => {
         if (!chx_device_config)
@@ -210,7 +214,7 @@ onMounted(() => {
         if (kill_listen && msg_type === 6 && device_msg.msg_value === 0)
             kill_peltier_state.value = DeviceKillState.SUCCESS;
 
-        if (kill_heater_state.value === DeviceKillState.SUCCESS && kill_peltier_state.value === DeviceKillState.SUCCESS) {
+        if (kill_heater_state.value === DeviceKillState.SUCCESS && kill_peltier_state.value === DeviceKillState.SUCCESS && kill_listen) {
             kill_listen = false;
             kill_dialog_visible.value = false;
             if (kill_loop_iid)
@@ -232,6 +236,8 @@ onMounted(() => {
         electron_renderer_send(`${device_model}_set_device_config`, { config_name: 'Q_L_F2', config_value: _Q_L_F2 });
         toast_service.add({ severity: 'success', summary: 'CHX Script', detail: 'Calculated Q_L Linear Model Slope', life: 3000 });
     });
+
+    post_event('update_device_model_cont_width', { width: '75%' });
 });
 
 </script>
@@ -265,27 +271,27 @@ onMounted(() => {
         </Dialog>
         <div class="lt_ht103_control_row">
             <div class="labeled_control">
-                <span>Op Mode:</span>
+                <span>Mode:</span>
                 <Dropdown :pt="dropdown_pt" :options="device_op_mode_opts" optionLabel="label" optionValue="value" placeholder="Device Operation Mode" title="Device Operation Mode" v-model="device_op_mode" @change="switch_device_mode()" />
             </div>
-            <div v-if="device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION" class="labeled_control">
+            <div class="labeled_control">
                 <span>C_f:</span>
-                <input style="width: 50px;" class="lt_ht103_inp" title="Correction Factor" type="text" readonly v-model="C_f">
+                <input class="lt_ht103_inp" title="Correction Factor" type="text" readonly v-model="C_f">
             </div>
-            <div v-if="device_op_mode === LT_HT103_DeviceOperationMode.EXPERIMENT" class="labeled_control">
+            <div class="labeled_control">
                 <span>Q_L_F1:</span>
-                <input style="width: 50px;" class="lt_ht103_inp" title="Q_L Linear Model F1" type="text" readonly v-model="Q_L_F1">
+                <input class="lt_ht103_inp" title="Q_L Linear Model F1" type="text" readonly v-model="Q_L_F1">
             </div>
-            <div v-if="device_op_mode === LT_HT103_DeviceOperationMode.EXPERIMENT" class="labeled_control">
+            <div class="labeled_control">
                 <span>Q_L_F2:</span>
-                <input style="width: 50px;" class="lt_ht103_inp" title="Q_L Linear Model F2" type="text" readonly v-model="Q_L_F2">
+                <input class="lt_ht103_inp" title="Q_L Linear Model F2" type="text" readonly v-model="Q_L_F2">
             </div>
         </div>
         <div style="height: 12px;"></div>
         <div class="lt_ht103_control_row">
             <div v-if="!sample_shape || sample_shape in sample_material_opts_map" style="width: 100%; display: flex; justify-content: flex-start;">
                 <div class="labeled_control">
-                    <span style="visibility: hidden;">Op Mode:</span>
+                    <span style="visibility: hidden;">Mode:</span>
                     <Dropdown :disabled="device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION" :pt="dropdown_pt" :options="sample_shape_opts" optionLabel="label" optionValue="value" placeholder="Sample Shape" title="Sample Shape" v-model="sample_shape" />
                 </div>
                 <div class="labeled_control">
@@ -319,7 +325,7 @@ onMounted(() => {
         <div class="lt_ht103_control_row" style="justify-content: space-around;">
             <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-power-off" title="Shutdown Electrical Power" severity="danger" @click="shutdown_device_power()" />
             <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-sliders-v" title="Tare Temprature" @click="electron_renderer_send(`${device_model}_tare_t_h`, {})" />
-            <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-save" title="Save Calibration Parameters" v-if="device_op_mode === LT_HT103_DeviceOperationMode.CALIBRATION" />
+            <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-save" title="Save Calibration Parameters" @click="save_chx_settings()" />
             <Button class="lt_ht103_control_rbtn" rounded outlined icon="pi pi-microchip" title="Send Config to Device" @click="send_device_config()" />
         </div>
     </div>
@@ -389,7 +395,7 @@ onMounted(() => {
     color: var(--font-color);
     font-weight: bold;
     font-size: 14px;
-    margin-right: 12px;
+    margin-right: 8px;
 }
 
 .lt_ht103_inp {
@@ -400,6 +406,7 @@ onMounted(() => {
     font-size: 12px;
     font-weight: bold;
     padding: 4px;
+    width: 30px;
 }
 
 .lt_ht103_inp:focus {

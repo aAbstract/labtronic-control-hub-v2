@@ -111,15 +111,15 @@ function plot_filtered_data() {
     chart_data.value = { labels, datasets: chart_params_list };
 }
 
-function create_chart_options(font_color: string, lines_color: string): ChartOptions {
+function create_chart_options(font_color: string, grid_color: string): ChartOptions {
     return {
         responsive: true,
         maintainAspectRatio: false,
         aspectRatio: 2,
         color: font_color,
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: lines_color } },
-            y: { ticks: { color: font_color }, grid: { color: lines_color } },
+            x: { ticks: { color: font_color }, grid: { color: grid_color } },
+            y: { ticks: { color: font_color }, grid: { color: grid_color } },
         },
         animation: false,
     };

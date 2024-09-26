@@ -43,9 +43,17 @@ npm install
 ```bash
 npm run dev
 ```
-7. Switch CHX Module - TODO
+7. Switch CHX Module
 ```bash
-# TODO
+python scripts/switch_chx_module.py <chx_module_name>
+
+# chx_module_name
+# Cross Flow Membrane Filtration: lt_ch000
+# Heat Conduction in Metals: lt_ht103
+# Linear and Radial Heat Conduction: lt_ht107
+# Unsteady Heat Transfer Apparatus: lt_ht113
+# Change of State of Gases: lt_to101
+# Wind Energy Training System: lt_re600
 ```
 
 ## Main Screen

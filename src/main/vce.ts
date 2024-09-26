@@ -49,7 +49,7 @@ export class VirtualComputeEngine {
         this.cps_script = _cps_config.map(_config => `${_config.param_name}=${_config.expr}`).join(';');
         _cps_config.forEach((_config, index) => {
             const msg_type = 16 + this.vce_instance_id * 10 + index; // create out of hardware addressing bounds
-            this.cps_expr_map[msg_type] = _config.expr;
+            this.cps_expr_map[msg_type] = _config.expr + (_config.unit ?? '');
             this.cps_config_map[_config.param_name] = {
                 msg_type,
                 msg_name: 'READ_' + _config.param_name,
@@ -157,6 +157,9 @@ export class VirtualComputeEngine {
     }
 
     load_device_msg(device_msg: DeviceMsg): Result<Record<string, number>> {
+        if (isNaN(device_msg.msg_value))
+            return { err: 'VCE: Attempt to Inject NaN Value' };
+
         const { msg_type } = device_msg.config;
         if (!this.vce_var_msg_types.has(msg_type)) {
             this.load_msg_into_context(device_msg);

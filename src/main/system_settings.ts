@@ -2,7 +2,7 @@ import { ipcMain, BrowserWindow } from "electron";
 import fs from 'fs';
 import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result, CHXSeries, CHXEquation, CHXScript } from "../common/models";
 
-const CHX_SETTINGS_FILENAME = 'chx_settings.json';
+export const CHX_SETTINGS_FILENAME = 'chx_settings.json';
 
 const chx_settings_schema: CHXSettings = {
     device_model: '',
@@ -62,15 +62,19 @@ function validate_chx_settings(_chx_settings: CHXSettings | null): Result<string
     return { ok: 'OK' };
 }
 
-function load_settings(settings_filename: string, target_schema: any, valid_json_callback: (valid_json: any) => void) {
+function load_chx_settings(): boolean {
     try {
-        const _data = fs.readFileSync(settings_filename, 'utf-8');
+        const _data = fs.readFileSync(CHX_SETTINGS_FILENAME, 'utf-8');
         const _json = JSON.parse(_data);
-        if (validate_chx_settings(_json))
-            valid_json_callback(_json);
-        else
-            throw new Error(`Invalid Schema, settings_filename=${settings_filename}`);
-    } catch (_) { fs.writeFileSync(settings_filename, JSON.stringify(target_schema, null, 2)) }
+        if (validate_chx_settings(_json)) {
+            chx_settings = _json;
+            return true;
+        }
+        else { return false }
+    } catch (_) {
+        fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings_schema, null, 2));
+        return false;
+    }
 }
 
 export function get_chx_cps(): CHXComputedParam[] {
@@ -93,9 +97,25 @@ export function get_chx_device_confg(): Record<string, any> {
     return chx_settings?.device_config ?? {};
 }
 
+export function set_chx_device_config(_device_config: Record<string, any>) {
+    if (!_device_config || !chx_settings)
+        return;
+    chx_settings.device_config = _device_config;
+}
+
+export function save_chx_settings(): boolean {
+    if (!validate_chx_settings(chx_settings))
+        return false;
+
+    try {
+        fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings, null, 2));
+        return true;
+    } catch (_) { return false }
+}
+
 export function init_system_settings(_main_window: BrowserWindow) {
     main_window = _main_window;
-    load_settings(CHX_SETTINGS_FILENAME, chx_settings_schema, (valid_chx_settings) => chx_settings = valid_chx_settings);
+    load_chx_settings();
     ipcMain.handle('get_chx_advanced', () => chx_settings?.chx_advanced ?? false);
     ipcMain.handle('get_chx_cloud_settings', () => chx_settings?.cloud_settings ?? '');
     ipcMain.handle('get_chx_device_config', () => chx_settings?.device_config ?? {});

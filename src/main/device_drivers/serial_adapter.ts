@@ -6,6 +6,8 @@ export class SerialAdapter {
 
     private static readonly BAUD_RATE = 115200;
 
+    is_connected: boolean;
+
     private serial_port: SerialPort;
     private stream_parser: DelimiterParser;
     private device_model: string;
@@ -32,6 +34,7 @@ export class SerialAdapter {
         this.device_error_msg_map = _device_error_msg_map;
         this.ipc_handler = _ipc_handler;
         this.logger = _logger;
+        this.is_connected = false;
 
         this.on_data = this.on_data.bind(this);
         this.on_serial_port_open = this.on_serial_port_open.bind(this);
@@ -68,13 +71,20 @@ export class SerialAdapter {
                 }
                 (device_msg as any).error_msg = this.device_error_msg_map[device_msg.msg_value];
                 this.ipc_handler(`${this.device_model}_device_error`, { device_msg });
-            } else { this.ipc_handler(`${this.device_model}_device_msg`, { device_msg }) }
+            } else {
+                if (device_msg.msg_value === -9999) {
+                    device_msg.msg_value = NaN;
+                    device_msg.b64_msg_value = '';
+                }
+                this.ipc_handler(`${this.device_model}_device_msg`, { device_msg });
+            }
         });
     }
 
     on_serial_port_open() {
         this.logger({ level: 'INFO', msg: 'Connected to Device Serial Port' });
         this.ipc_handler(`${this.device_model}_device_connected`, {});
+        this.is_connected = true;
     }
 
     private on_serial_port_close() {
@@ -141,7 +151,6 @@ export class SerialAdapter {
         }
 
         const device_packet = encode_res.ok;
-        this.logger({ level: 'DEBUG', msg: `Writing: ${device_packet}` });
         this.serial_port.write(device_packet);
         this.seq_number = (this.seq_number + 1) % 0xFFFF;
     }

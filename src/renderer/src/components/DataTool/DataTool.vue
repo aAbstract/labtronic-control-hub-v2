@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, inject, computed, shallowRef } from 'vue';
+import { ref, onMounted, inject, computed, shallowRef, Ref } from 'vue';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
 import OverlayPanel from 'primevue/overlaypanel';
@@ -13,7 +13,7 @@ import DeviceEquation from './DeviceEquation.vue';
 import SeriesConfigDialog from './SeriesConfigDialog.vue';
 import DataPreview from './DataPreview.vue';
 import { CHXSeries } from '@common/models';
-import { electron_renderer_invoke, electron_renderer_send, clone_object, add_log } from '@renderer/lib/util';
+import { electron_renderer_invoke, electron_renderer_send, clone_object, add_log, compute_tooltip_pt } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInjectedParam, AlertConfig } from '@common/models';
 
@@ -61,6 +61,8 @@ const checkbox_pt: any = {
     icon: { style: 'color: var(--font-color);' },
 };
 const export_variables_state = ref<Record<string, boolean>>({ 'time_ms': true });
+const chx_series_chart_settings_op_refs: Record<string, Ref> = {};
+const chx_series_chart_settings_y_min_max: Ref<Record<string, [number, number]>> = ref({});
 
 function show_series_config_dialog() {
     post_event('show_series_config_dialog', {});
@@ -70,7 +72,22 @@ function show_data_preview() {
     post_event('show_data_preview', {});
 }
 
-function transform_keys(_objects: Record<string, string | number>[]): Record<string, string | number>[] {
+function transform_import_keys(_objects: Record<string, string | number>[]): Record<string, string | number>[] {
+    const out_objs = clone_object(_objects) as Record<string, any>[];
+    out_objs.forEach(obj => {
+        Object.keys(obj).forEach(_key => {
+            const msg_value = obj[_key];
+            delete obj[_key];
+            if (_key in msg_type_name_map) {
+                const new_key = msg_type_name_map[_key];
+                obj[new_key] = msg_value;
+            }
+        });
+    });
+    return out_objs;
+}
+
+function transform_export_keys(_objects: Record<string, string | number>[]): Record<string, string | number>[] {
     const out_objs = clone_object(_objects) as Record<string, any>[];
     out_objs.forEach(obj => {
         Object.keys(obj).forEach(_key => {
@@ -86,7 +103,7 @@ function transform_keys(_objects: Record<string, string | number>[]): Record<str
 }
 
 function export_device_data() {
-    const device_data = transform_keys(recorded_data_points);
+    const device_data = transform_export_keys(recorded_data_points);
     electron_renderer_send('export_device_data', { device_data });
 }
 
@@ -192,6 +209,18 @@ function exec_chx_script(_script: CHXScript) {
     });
 }
 
+function show_chx_series_chart_settings_overlay_panel(_event: MouseEvent, chx_series_name: string) {
+    chx_series_chart_settings_op_refs[chx_series_name].value[0].toggle(_event);
+}
+
+function set_chx_series_chart_y_min_max(chx_series_name: string) {
+    const y_min = chx_series_chart_settings_y_min_max.value[chx_series_name][0];
+    const y_max = chx_series_chart_settings_y_min_max.value[chx_series_name][1];
+    if (isNaN(y_min) || isNaN(y_max))
+        return;
+    post_event(`update_chx_series_chart_y_min_max_${chx_series_name}`, { y_min, y_max });
+}
+
 onMounted(() => {
     subscribe('toggle_data_tool', 'toggle_data_tool_visi', _ => {
         const values_map = {
@@ -209,6 +238,10 @@ onMounted(() => {
                 return;
             chx_series.value = _chx_series;
             stop_data_recording();
+            _chx_series.forEach(x => {
+                chx_series_chart_settings_op_refs[x.series_name] = ref();
+                chx_series_chart_settings_y_min_max.value[x.series_name] = [0, 10];
+            });
         });
     });
 
@@ -278,7 +311,7 @@ onMounted(() => {
             return;
         }
         const imported_device_data = fsio_res.ok ?? [];
-        recorded_data_points = transform_keys(imported_device_data) as DataPointType[];
+        recorded_data_points = transform_import_keys(imported_device_data) as DataPointType[];
         show_data_preview();
         recorded_data_points.forEach(_data_point => post_event('record_data_point', { _data_point }));
     });
@@ -386,7 +419,18 @@ onMounted(() => {
                     <Button v-if="chx_advanced_mode" icon="pi pi-cog" class="data_tool_icon_btn" title="Configure Series" rounded text @click="show_series_config_dialog()" />
                 </div>
             </template>
-            <div v-for="(s, idx) in chx_series">
+            <div v-for="(s, idx) in chx_series" style="position: relative;">
+                <Button class="chx_charts_settings_btn" icon="pi pi-cog" @click="e => show_chx_series_chart_settings_overlay_panel(e, s.series_name)" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
+                <OverlayPanel :ref="chx_series_chart_settings_op_refs[s.series_name]" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+                    <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
+                        <div style="width: fit-content;">
+                            <span style="font-size: 14px; margin-right: 8px; width: 125px;">{{ `${s.series_name} Chart Y Range` }}</span>
+                            <input class="dt_tf" type="number" v-model="chx_series_chart_settings_y_min_max[s.series_name][0]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)">
+                            <span style="flex-grow: 1; text-align: center;"> - </span>
+                            <input class="dt_tf" type="number" v-model="chx_series_chart_settings_y_min_max[s.series_name][1]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)">
+                        </div>
+                    </div>
+                </OverlayPanel>
                 <SmallChart :chart_title="s.series_name" :line_color="DeviceUIConfig.get_rot_color(idx)" :x_param="s.x_param" :y_param="s.y_param" :chart_idx="idx" />
                 <div style="height: 12px;"></div>
             </div>
@@ -408,6 +452,16 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.chx_charts_settings_btn {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    color: var(--accent-color);
+}
+
 #ds_op_items_cont {
     font-family: "Lucida Console", "Courier New", monospace;
     min-width: 200px;
@@ -540,6 +594,6 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    z-index: 1;
+    z-index: 2;
 }
 </style>

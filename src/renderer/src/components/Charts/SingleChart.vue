@@ -22,15 +22,15 @@ const dt_ms = Math.round((1 / props.fps) * 1000);
 const chart_opts = shallowRef({});
 const chart_data = shallowRef<ChartData>();
 
-function create_chart_options(font_color: string, lines_color: string, y_min: number, y_max: number): ChartOptions {
+function create_chart_options(font_color: string, grid_color: string, y_min: number, y_max: number): ChartOptions {
     return {
         responsive: true,
         maintainAspectRatio: false,
         aspectRatio: 2,
         color: font_color,
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: lines_color } },
-            y: { ticks: { color: font_color }, grid: { color: lines_color }, min: y_min, max: y_max },
+            x: { ticks: { color: font_color }, grid: { color: grid_color } },
+            y: { ticks: { color: font_color }, grid: { color: grid_color }, min: y_min, max: y_max },
         },
         animation: false,
         plugins: { legend: { display: false } },

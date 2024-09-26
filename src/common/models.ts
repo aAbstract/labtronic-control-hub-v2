@@ -138,6 +138,7 @@ export interface CHXCloudSettings {
 export interface CHXComputedParam {
     param_name: string;
     expr: string;
+    unit?: string;
 };
 
 export interface CHXEquation {
