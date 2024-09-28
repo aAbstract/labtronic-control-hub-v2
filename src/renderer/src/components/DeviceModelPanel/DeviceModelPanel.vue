@@ -8,11 +8,19 @@ import * as GfxApi from '@renderer/lib/gfx_api';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 import { subscribe } from '@common/mediator';
 
+import Message from 'primevue/message';
+
 const props = defineProps<{ device_ui_config: DeviceUIConfig }>();
 const device_model = inject('device_model') as string;
-
 const device_model_labeled_img = ref('');
 const device_model_cont_width = ref('96%');
+const show_device_model_panel_msg = ref(false);
+const device_model_panel_severity = ref('warn');
+const device_model_panel_content = ref('Device Model Panel Message');
+const pv_msg_pt: any = {
+    root: { style: 'margin: 0px; width: 100%; height: fit-content; font-family: Cairo, sans-serif;' },
+    wrapper: { style: 'padding: 4px 8px;' },
+};
 
 // @ts-ignore
 function render_msg_value(msg_type: number, msg_value: string) {
@@ -38,14 +46,14 @@ function canvas_setup() {
 }
 
 onMounted(() => {
-    // subscribe('update_device_model_panel', 'update_device_model_panel', args => {
-    //     const _msg_values_cache: Record<number, string> = args._msg_values_cache;
-    //     Object.entries(_msg_values_cache).forEach(([_msg_type, _msg_value]) => {
-    //         const msg_type = Number(_msg_type);
-    //         if (msg_type < 16)
-    //             render_msg_value(msg_type, _msg_value);
-    //     });
-    // });
+    subscribe('update_device_model_panel', 'update_device_model_panel', args => {
+        const _msg_values_cache: Record<number, string> = args._msg_values_cache;
+        Object.entries(_msg_values_cache).forEach(([_msg_type, _msg_value]) => {
+            const msg_type = Number(_msg_type);
+            if (msg_type < 16)
+                render_msg_value(msg_type, _msg_value);
+        });
+    });
 
     electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
         if (!base64_src)
@@ -61,6 +69,7 @@ onMounted(() => {
                 return;
             device_model_labeled_img.value = base64_src;
         });
+        show_device_model_panel_msg.value = false;
         // device_model_labeled_img.value = new URL(`../../device_assets/etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`, import.meta.url).href;
     });
 
@@ -68,18 +77,37 @@ onMounted(() => {
         const wdith: string = args.width;
         device_model_cont_width.value = wdith;
     });
+
+    subscribe('show_device_model_panel_msg', 'show_device_model_panel_msg', args => {
+        const severity: string = args.severity;
+        const content: string = args.content;
+        device_model_panel_severity.value = severity;
+        device_model_panel_content.value = content;
+        show_device_model_panel_msg.value = true;
+    });
 });
 
 </script>
 
 <template>
     <div id="main_canvas_cont" v-on="screenshot_handlers">
-        <img id="device_img" :src="device_model_labeled_img" alt="Device Solid Model" @load="canvas_setup()">
-        <canvas id="device_canvas" @click="GfxApi.debug_canvas_click"></canvas>
+        <img v-if="!show_device_model_panel_msg" id="device_img" :src="device_model_labeled_img" alt="Device Solid Model" @load="canvas_setup()">
+        <canvas v-if="!show_device_model_panel_msg" id="device_canvas" @click="GfxApi.debug_canvas_click"></canvas>
+        <div v-if="show_device_model_panel_msg" id="device_model_panel_msg_cont">
+            <Message :severity="device_model_panel_severity" :pt="pv_msg_pt" :closable="false">{{ device_model_panel_content }}</Message>
+        </div>
     </div>
 </template>
 
 <style scoped>
+#device_model_panel_msg_cont {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 #main_canvas_cont {
     display: flex;
     flex-direction: column;

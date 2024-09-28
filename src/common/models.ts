@@ -139,6 +139,7 @@ export interface CHXComputedParam {
     param_name: string;
     expr: string;
     unit?: string;
+    msg_type?: number;
 };
 
 export interface CHXEquation {
@@ -190,8 +191,11 @@ export interface LT_HT103_DeviceConfig {
 
 // device models - LT_HT107
 export enum LT_HT107_DeviceMode {
-    LINEAR = 0,
-    RADIAL = 1,
+    SAMPLE_DISCONNECTED = 0,
+    LINEAR_1 = 1,
+    LINEAR_2 = 2,
+    LINEAR_3 = 3,
+    RADIAL = 4,
 };
 // device models - LT_HT107
 

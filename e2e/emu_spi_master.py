@@ -140,11 +140,15 @@ def stream_detr_waves_0x13():
         packet_t_amb = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[2].msg_type, t_amb).ok
         packet_t_c = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[3].msg_type, t_c).ok
         packet_t_h = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[4].msg_type, t_h).ok
+        packet_p_h = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[5].msg_type, 0).ok
+        packet_p_p = ltd_driver.encode_packet(sn, DRIVER_CONFIG_0x13[6].msg_type, 0).ok
         vspi_socket.send(packet_t1)
         vspi_socket.send(packet_t2)
         vspi_socket.send(packet_t_amb)
         vspi_socket.send(packet_t_c)
         vspi_socket.send(packet_t_h)
+        vspi_socket.send(packet_p_p)
+        vspi_socket.send(packet_p_h)
         sn += 1
         time.sleep(0.2)
 
@@ -220,6 +224,12 @@ def stream_lt_ht107_sample(mid_dt: list[int]):
             _packet = ltd_driver.encode_packet(sn, msg_type, msg_value).ok
             vspi_socket.send(_packet)
         time.sleep(0.5)
+
+
+def switch_mode_lt_ht107(mode: int):
+    global cfg2
+    cfg2 = mode
+    write_msg(ltd_driver_lt_ht107, 0, 11)
 
 
 def burst_lt_ht113_sample():

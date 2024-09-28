@@ -23,6 +23,13 @@ const dialog_pt = {
     content: { style: 'padding: 0px 16px;' },
 };
 
+function scroll_table_down() {
+    if (!dialog_visible.value)
+        return;
+    const data_preview_cont = document.querySelector('#data_preview_cont') as HTMLElement;
+    data_preview_cont.scrollTop = data_preview_cont.scrollHeight;
+}
+
 onMounted(() => {
     subscribe('show_data_preview', 'show_data_preview', _ => {
         dialog_visible.value = true;
@@ -48,6 +55,7 @@ onMounted(() => {
     subscribe('record_data_point', 'record_data_point_data_preview', args => {
         data_points_cache.push(args._data_point);
         data_points.value = [...data_points_cache];
+        scroll_table_down();
     });
 
     subscribe('clear_recorded_data', 'clear_recorded_data_data_preview', () => {
@@ -59,7 +67,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Dialog style="font-family: Cairo, sans-serif;" v-model:visible="dialog_visible" header="Data Preview" :style="{ width: '50%' }" :pt="dialog_pt">
+    <Dialog style="font-family: Cairo, sans-serif;" v-model:visible="dialog_visible" header="Data Preview" :style="{ width: '44%' }" :pt="dialog_pt">
         <div id="data_preview_cont">
             <!-- table header -->
             <div class="data_point_row" style="border-bottom: 2px solid var(--font-color); padding-bottom: 8px;">

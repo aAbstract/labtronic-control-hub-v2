@@ -52,8 +52,10 @@ function on_chart_click(chart_event: ChartEvent) {
 function create_chart_options(font_color: string, grid_color: string, y_min: number, y_max: number): ChartOptions {
     const chart_params = new ChartParams(props.chart_title, props.line_color);
     chart_params.tension = 0;
+    if (chart_data.value.datasets.length > 0)
+        chart_params.data = chart_data.value.datasets[0].data as number[];
     chart_data.value = {
-        labels: [],
+        labels: chart_data.value.labels,
         datasets: [chart_params],
     };
 
@@ -117,7 +119,13 @@ onMounted(() => {
         render_chart();
     });
 
-    subscribe(`update_chx_series_chart_y_min_max_${props.chart_title}`, `update_chx_series_chart_y_min_max_${props.chart_title}`, args => {
+    subscribe('update_chx_series_chart_y_min_max', `update_chx_series_chart_y_min_max_${props.chart_title}`, args => {
+        const chx_series_name: string = args.chx_series_name;
+        if (!chx_series_name)
+            return;
+        if (chx_series_name !== props.chart_title)
+            return;
+
         const y_min: number = args.y_min;
         const y_max: number = args.y_max;
         chart_opts.value = create_chart_options(font_color, chart_grid_color, y_min, y_max);

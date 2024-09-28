@@ -33,7 +33,7 @@ const read_device_config = computed(() => {
     return read_config.map(x => {
         msg_values_cache[x.msg_type] = '000.00';
         update_device_state_panel();
-        // cache_changed = true;
+        cache_changed = true;
         msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '#FFFFFF';
         msg_type_state_map.value[x.msg_type] = true;
         active_msg_type.value = read_config[0].msg_type;
@@ -78,7 +78,7 @@ function switch_multi_channels_plot() {
 function update_device_state_panel() {
     const _msg_values_cache = clone_object(msg_values_cache);
     msg_type_value_map.value = _msg_values_cache;
-    post_event('update_device_model_panel', { _msg_values_cache });
+    // post_event('update_device_model_panel', { _msg_values_cache });
 }
 
 function show_single_chart_settings_overlay_panel(_event: MouseEvent) {
@@ -119,18 +119,16 @@ onBeforeMount(() => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         msg_values_cache[msg_type] = device_msg.msg_value.toFixed(2);
-        update_device_state_panel();
-        // cache_changed = true;
+        // update_device_state_panel();
+        cache_changed = true;
     });
 
-    // setInterval(() => {
-    //     if (!cache_changed)
-    //         return;
-    //     const _msg_values_cache = clone_object(msg_values_cache);
-    //     msg_type_value_map.value = _msg_values_cache;
-    //     post_event('update_device_model_panel', { _msg_values_cache });
-    //     cache_changed = false;
-    // }, 1000);
+    setInterval(() => {
+        if (!cache_changed)
+            return;
+        update_device_state_panel();
+        cache_changed = false;
+    }, 1000);
 });
 
 </script>

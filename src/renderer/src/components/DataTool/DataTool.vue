@@ -218,7 +218,7 @@ function set_chx_series_chart_y_min_max(chx_series_name: string) {
     const y_max = chx_series_chart_settings_y_min_max.value[chx_series_name][1];
     if (isNaN(y_min) || isNaN(y_max))
         return;
-    post_event(`update_chx_series_chart_y_min_max_${chx_series_name}`, { y_min, y_max });
+    post_event('update_chx_series_chart_y_min_max', { y_min, y_max, chx_series_name });
 }
 
 onMounted(() => {

@@ -10,7 +10,10 @@ const DEVICE_ERROR_MSG_TYPE = 14;
 const WRITE_P_HEATER_MSG_TYPE = 12;
 // const HEART_BEAT_MSG_TYPE = 15;
 const DEVICE_MODE_LBL_MAP: Record<LT_HT107_DeviceMode, string> = {
-    [LT_HT107_DeviceMode.LINEAR]: 'LINEAR',
+    [LT_HT107_DeviceMode.SAMPLE_DISCONNECTED]: 'SAMPLE_DISCONNECTED',
+    [LT_HT107_DeviceMode.LINEAR_1]: 'LINEAR_1',
+    [LT_HT107_DeviceMode.LINEAR_2]: 'LINEAR_2',
+    [LT_HT107_DeviceMode.LINEAR_3]: 'LINEAR_3',
     [LT_HT107_DeviceMode.RADIAL]: 'RADIAL',
 };
 const DEVICE_ERROR_MSG_MAP: Record<number, string> = {
@@ -262,23 +265,47 @@ const LT_HT107_VCE_CONFIG: VceParamConfig[] = [
 
 const switch_msg_types = new Set([6, 7, 8]);
 function filter_driver_config(_driver_config: MsgTypeConfig[]): MsgTypeConfig[] {
-    if (device_mode === LT_HT107_DeviceMode.LINEAR) {
+    if (device_mode === LT_HT107_DeviceMode.SAMPLE_DISCONNECTED) {
+        _driver_config.forEach(_conifg => _conifg.cfg2 = 0xA0)
+        return _driver_config;
+    }
+    if (device_mode === LT_HT107_DeviceMode.LINEAR_1) {
         _driver_config.forEach(_conifg => _conifg.cfg2 = 0xA1)
         return _driver_config;
     }
-    else if (device_mode === LT_HT107_DeviceMode.RADIAL) {
+    if (device_mode === LT_HT107_DeviceMode.LINEAR_2) {
         _driver_config.forEach(_conifg => _conifg.cfg2 = 0xA2)
+        return _driver_config;
+    }
+    if (device_mode === LT_HT107_DeviceMode.LINEAR_3) {
+        _driver_config.forEach(_conifg => _conifg.cfg2 = 0xA3)
+        return _driver_config;
+    }
+    else if (device_mode === LT_HT107_DeviceMode.RADIAL) {
+        _driver_config.forEach(_conifg => _conifg.cfg2 = 0xA4)
         return _driver_config.filter(x => !switch_msg_types.has(x.msg_type));
     }
     else { return []; }
 }
 function filter_vce_config(_vce_config: VceParamConfig[]): VceParamConfig[] {
-    if (device_mode === LT_HT107_DeviceMode.LINEAR) {
+    if (device_mode === LT_HT107_DeviceMode.SAMPLE_DISCONNECTED) {
+        _vce_config.forEach(_conifg => _conifg.msg_type_config.cfg2 = 0xA0)
+        return _vce_config;
+    }
+    if (device_mode === LT_HT107_DeviceMode.LINEAR_1) {
         _vce_config.forEach(_conifg => _conifg.msg_type_config.cfg2 = 0xA1)
         return _vce_config;
     }
-    else if (device_mode === LT_HT107_DeviceMode.RADIAL) {
+    if (device_mode === LT_HT107_DeviceMode.LINEAR_2) {
         _vce_config.forEach(_conifg => _conifg.msg_type_config.cfg2 = 0xA2)
+        return _vce_config;
+    }
+    if (device_mode === LT_HT107_DeviceMode.LINEAR_3) {
+        _vce_config.forEach(_conifg => _conifg.msg_type_config.cfg2 = 0xA3)
+        return _vce_config;
+    }
+    else if (device_mode === LT_HT107_DeviceMode.RADIAL) {
+        _vce_config.forEach(_conifg => _conifg.msg_type_config.cfg2 = 0xA4)
         return _vce_config.filter(x => !switch_msg_types.has(x.msg_type_config.msg_type));
     }
     else { return []; }
@@ -290,7 +317,7 @@ function device_mode_switch(new_device_mode: LT_HT107_DeviceMode) {
     device_mode = new_device_mode;
     main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
     const notif: _ToastMessageOptions = {
-        severity: 'info',
+        severity: new_device_mode === LT_HT107_DeviceMode.SAMPLE_DISCONNECTED ? 'warn' : 'info',
         summary: 'Device Mode Switch',
         detail: 'Device Mode Changed To: ' + DEVICE_MODE_LBL_MAP[device_mode],
         life: 3000,
@@ -319,9 +346,15 @@ function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
     if (channel === `${DEVICE_MODEL}_device_msg`) {
         const device_msg: DeviceMsg = data.device_msg;
-        if (device_msg.config.cfg2 === 0xA1)
-            device_mode_switch(LT_HT107_DeviceMode.LINEAR);
+        if (device_msg.config.cfg2 === 0xA0)
+            device_mode_switch(LT_HT107_DeviceMode.SAMPLE_DISCONNECTED);
+        else if (device_msg.config.cfg2 === 0xA1)
+            device_mode_switch(LT_HT107_DeviceMode.LINEAR_1);
         else if (device_msg.config.cfg2 === 0xA2)
+            device_mode_switch(LT_HT107_DeviceMode.LINEAR_2);
+        else if (device_msg.config.cfg2 === 0xA3)
+            device_mode_switch(LT_HT107_DeviceMode.LINEAR_3);
+        else if (device_msg.config.cfg2 === 0xA4)
             device_mode_switch(LT_HT107_DeviceMode.RADIAL);
     }
 }
@@ -387,10 +420,10 @@ export function init_lt_ht107_serial_adapter(_main_window: BrowserWindow) {
         lt_ht107_cmd_exec(cmd);
     });
 
-    ipcMain.on(`${DEVICE_MODEL}_switch_device_mode`, (_, data) => {
-        const _device_mode: LT_HT107_DeviceMode = data._device_mode;
-        device_mode_switch(_device_mode);
-    });
+    // ipcMain.on(`${DEVICE_MODEL}_switch_device_mode`, (_, data) => {
+    //     const _device_mode: LT_HT107_DeviceMode = data._device_mode;
+    //     device_mode_switch(_device_mode);
+    // });
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_scan`, () => SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
     SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger);

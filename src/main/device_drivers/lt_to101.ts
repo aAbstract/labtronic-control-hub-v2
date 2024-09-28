@@ -29,7 +29,7 @@ const DEVICE_MODE_SERIES_MAP: Record<LT_TO101_DeviceMode, CHXSeries[]> = {
             y_param: 4,
         },
         {
-            series_name: 'time - PV',
+            series_name: 'time - P_times_V',
             x_param: -1,
             y_param: 16,
         },
@@ -37,13 +37,13 @@ const DEVICE_MODE_SERIES_MAP: Record<LT_TO101_DeviceMode, CHXSeries[]> = {
     [LT_TO101_DeviceMode.GLUSS]: [
         {
             series_name: 'T_avg - PR2',
-            x_param: 16,
+            x_param: 17,
             y_param: 5,
         },
         {
-            series_name: 'time - P_T',
+            series_name: 'time - P_over_T',
             x_param: -1,
-            y_param: 17,
+            y_param: 18,
         },
     ],
 };
@@ -236,11 +236,11 @@ const LT_TO101_VCE_CONFIG: VceParamConfig[] = [
 ];
 const DEVICE_MODE_CPS_MAP: Record<LT_TO101_DeviceMode, CHXComputedParam[]> = {
     [LT_TO101_DeviceMode.BOYLE]: [
-        { param_name: 'PV', expr: '$LVL * $PR1', unit: '[bar * L]' }, // VCE0:16
+        { param_name: 'P_times_V', expr: '$LVL * $PR1', unit: '[bar * L]', msg_type: 16 },
     ],
     [LT_TO101_DeviceMode.GLUSS]: [
-        { param_name: 'T_avg', expr: '($TC2 + $TC3) / 2' }, // VCE0:16
-        { param_name: 'P_T', expr: '(($TC2 + $TC3) / 2 + 273.15) * $PR2 * 100', unit: '[Kpa / K]' }, // VCE0:17
+        { param_name: 'T_avg', expr: '($TC2 + $TC3) / 2', msg_type: 17 },
+        { param_name: 'P_over_T', expr: '$PR2 * 100 / (($TC2 + $TC3) / 2 + 273.15)', unit: '[Kpa / K]', msg_type: 18 },
     ],
 };
 

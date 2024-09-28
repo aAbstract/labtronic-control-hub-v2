@@ -186,6 +186,11 @@ const LT_TO101_DUIC = new DeviceUIConfig(
         4: new ChartParams('PR1', '#2196F3'), // READ_PR1
         5: new ChartParams('PR2', '#009688'), // READ_PR2
         6: new ChartParams('PR3', '#9E9E9E'), // READ_PR3
+
+        // compute parameters
+        16: new ChartParams('P_times_V', '#cddc39'), // VCE: P_times_V
+        17: new ChartParams('T_avg', '#4CAF50'), // VCE: T_avg
+        18: new ChartParams('P_over_T', '#3F51B5'), // VCE: P_over_T
     },
     'LT-TO101',
 );

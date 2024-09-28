@@ -58,20 +58,20 @@ python scripts/run_chx_module.py <chx_module_name>
 
 ## Main Screen
 <p align="center">
-    <img src="screenshot_1.png" alt="Screenshot_1" />
+    <img src="data/screenshot_1.png" alt="Screenshot_1" />
 </p>
 
 ## Data Panel
 <p align="center">
-    <img src="screenshot_2.png" alt="Screenshot_2" />
+    <img src="data/screenshot_2.png" alt="Screenshot_2" />
 </p>
 
 ## Device Manual Panel
 <p align="center">
-    <img src="screenshot_3.png" alt="Screenshot_3" />
+    <img src="data/screenshot_3.png" alt="Screenshot_3" />
 </p>
 
 ## Data Tool
 <p align="center">
-    <img src="screenshot_4.png" alt="Screenshot_4" />
+    <img src="data/screenshot_4.png" alt="Screenshot_4" />
 </p>
