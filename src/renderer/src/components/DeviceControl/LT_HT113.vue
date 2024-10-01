@@ -87,10 +87,14 @@ onMounted(() => {
 
 
         // handle cfg2
-        if (cfg2_set.has(cfg2) && (cfg2 - 0xA0) != sample_shape.value) {
+        if (!cfg2_set.has(cfg2)) {
+            show_lt_ht113_msg('error', 'Invalid LT-HT113 Sample Code');
+            return;
+        }
+        if ((cfg2 - 0xA0) != sample_shape.value) {
             sample_shape.value = cfg2 - 0xA0;
             sample_select();
-        } else { show_lt_ht113_msg('error', 'Invalid LT-HT113 Sample Code') }
+        }
     });
 
     post_event('update_device_model_cont_width', { width: '80%' });

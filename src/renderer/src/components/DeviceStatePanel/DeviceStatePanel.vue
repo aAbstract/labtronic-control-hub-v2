@@ -31,7 +31,7 @@ const read_device_config = computed(() => {
     chart_height.value = `${_chart_height}vh`;
 
     return read_config.map(x => {
-        msg_values_cache[x.msg_type] = '000.00';
+        msg_values_cache[x.msg_type] = '00.0';
         update_device_state_panel();
         cache_changed = true;
         msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '#FFFFFF';
@@ -118,7 +118,7 @@ onBeforeMount(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
-        msg_values_cache[msg_type] = device_msg.msg_value.toFixed(2);
+        msg_values_cache[msg_type] = device_msg.msg_value.toFixed(1);
         // update_device_state_panel();
         cache_changed = true;
     });

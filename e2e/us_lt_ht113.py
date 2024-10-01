@@ -2,7 +2,7 @@ import time
 from e2e_utils import *
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from test_drivers import ltd_driver_lt_ht113
+from vspi.test_drivers import ltd_driver_lt_ht113
 from emu_spi_master import (
     vspi_connect,
     vspi_disconnect,

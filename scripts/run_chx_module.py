@@ -32,10 +32,20 @@ CHX_MAP = {
         serial_adapter_module='./device_drivers/lt_ht113',
         control_panel_module='@renderer/components/DeviceControl/LT_HT113.vue',
     ),
+    'lt_ht004': CHXModuleConfig(
+        device_model='LT-HT004',
+        serial_adapter_module='./device_drivers/lt_ht004',
+        control_panel_module='@renderer/components/DeviceControl/LT_HT004.vue',
+    ),
     'lt_to101': CHXModuleConfig(
         device_model='LT-TO101',
         serial_adapter_module='./device_drivers/lt_to101',
         control_panel_module='@renderer/components/DeviceControl/LT_TO101.vue',
+    ),
+    'lt_to202': CHXModuleConfig(
+        device_model='LT-TO202',
+        serial_adapter_module='./device_drivers/lt_to202',
+        control_panel_module='@renderer/components/DeviceControl/LT_TO202.vue',
     ),
     'lt_re600': CHXModuleConfig(
         device_model='LT-RE600',

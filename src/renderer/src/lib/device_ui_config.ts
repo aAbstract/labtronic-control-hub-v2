@@ -175,6 +175,20 @@ const LT_HT113_DUIC = new DeviceUIConfig(
     'LT-HT113',
 );
 
+const LT_HT004_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('PT1000_In', '#9C27B0'), // READ_PT1000_In
+        1: new ChartParams('PT1000_Out', '#FF9800'), // READ_PT1000_Out
+        2: new ChartParams('PT1000_Heater', '#DD2C00'), // READ_PT1000_Heater
+        3: new ChartParams('TC_Surface', '#00BCD4'), // READ_TC_Surface
+        4: new ChartParams('P_Heater', '#2196F3'), // READ_P_Heater
+        5: new ChartParams('AirFlow', '#009688'), // READ_AirFlow
+    },
+    'LT-HT004',
+);
+
 const LT_TO101_DUIC = new DeviceUIConfig(
     {},
     {},
@@ -195,6 +209,18 @@ const LT_TO101_DUIC = new DeviceUIConfig(
     'LT-TO101',
 );
 
+const LT_TO202_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('PT1000', '#9C27B0'), // READ_PT1000
+        1: new ChartParams('PT1000_Heater', '#FF9800'), // READ_PT1000_Heater
+        2: new ChartParams('NTC', '#DD2C00'), // READ_NTC
+        3: new ChartParams('TC_K_Type', '#00BCD4'), // READ_TC_K_Type
+    },
+    'LT-TO202',
+);
+
 const LT_RE600_DUIC = new DeviceUIConfig(
     {},
     {},
@@ -208,8 +234,10 @@ export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-HT103': LT_HT103_DUIC,
     'LT-HT107': LT_HT107_DUIC,
     'LT-HT113': LT_HT113_DUIC,
+    'LT-HT004': LT_HT004_DUIC,
 
     'LT-TO101': LT_TO101_DUIC,
+    'LT-TO202': LT_TO202_DUIC,
 
     'LT-RE600': LT_RE600_DUIC,
 };

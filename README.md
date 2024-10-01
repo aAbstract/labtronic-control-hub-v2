@@ -49,10 +49,15 @@ python scripts/run_chx_module.py <chx_module_name>
 
 # chx_module_name
 # Cross Flow Membrane Filtration: lt_ch000
+
 # Heat Conduction in Metals: lt_ht103
 # Linear and Radial Heat Conduction: lt_ht107
 # Unsteady Heat Transfer Apparatus: lt_ht113
+# Free and Forced Convection: lt_ht004
+
 # Change of State of Gases: lt_to101
+# Temperature Measurement Trainer: lt_to202
+
 # Wind Energy Training System: lt_re600
 ```
 

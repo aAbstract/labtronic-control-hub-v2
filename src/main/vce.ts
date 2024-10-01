@@ -194,4 +194,29 @@ export class VirtualComputeEngine {
     get_cps_config(): MsgTypeConfig[] {
         return Object.values(this.cps_config_map).map(x => { return { ...x, cp_expr: this.cps_expr_map[x.msg_type] } });
     }
+
+    static map_driver_config_to_vce_param_config(
+        driver_config: MsgTypeConfig[],
+        vce_var_msg_types: number[],
+        vce_const_msg_types: number[],
+    ) {
+        const _vce_var_msg_types = new Set(vce_var_msg_types);
+        const _vce_const_msg_types = new Set(vce_const_msg_types);
+        return driver_config.map(_config => {
+            const param_name = _config.msg_name.replace('READ_', '');
+            const _vce_param_config: VceParamConfig = {
+                msg_type_config: { ..._config },
+                param_type: VceParamType.VCE_VAR,
+                param_symbol: '$' + param_name,
+                desc: 'NONE',
+            };
+            if (_vce_var_msg_types.has(_config.msg_type)) { _vce_param_config.param_type = VceParamType.VCE_VAR }
+            else if (_vce_const_msg_types.has(_config.msg_type)) { _vce_param_config.param_type = VceParamType.VCE_CONST }
+            else {
+                _vce_param_config.param_type = VceParamType.VCE_CONST;
+                _vce_param_config.msg_type_config.msg_type = -1;
+            }
+            return _vce_param_config;
+        });
+    }
 }

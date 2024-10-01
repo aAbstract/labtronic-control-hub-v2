@@ -66,6 +66,18 @@ DRIVER_CONFIG_LT_HT113: list[MsgTypeConfig] = [
 ltd_driver_lt_ht113 = LtdDriver([0x14, 0x14], DRIVER_CONFIG_LT_HT113)
 
 
+DRIVER_CONFIG_LT_HT004: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_PT1000_In', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_PT1000_Out', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_PT1000_Heater', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_TC_Surface', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=4, msg_name='READ_P_Heater', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=5, msg_name='READ_AirFlow', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+]
+ltd_driver_lt_ht004 = LtdDriver([0x23, 0x24], DRIVER_CONFIG_LT_HT004)
+
+
 DRIVER_CONFIG_LT_TO101: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=0, msg_name='READ_TC1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=1, msg_name='READ_TC2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
@@ -79,3 +91,13 @@ DRIVER_CONFIG_LT_TO101: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_to101 = LtdDriver([0x24, 0x24], DRIVER_CONFIG_LT_TO101)
+
+
+DRIVER_CONFIG_LT_TO202: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_PT1000', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_PT1000_Heater', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_NTC', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_TC_K_Type', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+]
+ltd_driver_lt_to202 = LtdDriver([0x32, 0x42], DRIVER_CONFIG_LT_TO202)

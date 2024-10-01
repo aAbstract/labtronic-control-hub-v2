@@ -280,7 +280,7 @@ onMounted(() => {
             read_config.forEach(_read_config => {
                 complete_data_point_keys.push(String(_read_config.msg_type));
                 const { msg_type } = _read_config;
-                const msg_name = _read_config.msg_name.replaceAll('READ_', '');
+                const msg_name = _read_config.msg_name.replace('READ_', '');
                 msg_type_name_map[msg_type] = msg_name;
                 msg_type_name_map[msg_name] = String(msg_type);
                 export_variables_state.value[msg_type] = true;
