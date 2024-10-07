@@ -197,6 +197,16 @@ class LtdDriver:
             return -1
         return target_config[0].msg_type
 
+    def fltsq_encode(self, msg_sequence: list[tuple[int, float]]) -> Result:
+        float_binary_parser = LtdDriver._get_binary_parser(4, DATA_TYPE_FLOAT).ok
+        packet_size = 7 + len(msg_sequence) * 4
+        packet = bytes([self.protocol_version[0], self.protocol_version[1], packet_size])
+        for _, fltsq_msg_value in msg_sequence:
+            packet += struct.pack(float_binary_parser, fltsq_msg_value)
+        packet += LtdDriver._u16_to_2u8(LtdDriver._compute_crc16(packet)).ok
+        packet += bytes([0x0D, 0x0A])
+        return Result(ok=packet)
+
     def encode_packet(self, msg_seq_number: int, msg_type: int, msg_value: int) -> Result:
         if msg_type not in self.msg_type_set:
             return Result(err='Unknown msg_type')

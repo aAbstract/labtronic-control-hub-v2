@@ -152,6 +152,23 @@ const dtfs: DiagramTextFieldParams[] = [
         },
     },
 ];
+const lt_re600_meters = ref<Record<string, number>>({
+    'm1_output': 0,
+
+    'm2_v': 0,
+    'm2_i': 0,
+    'm2_p': 0,
+
+    'm3_v': 0,
+    'm3_i': 0,
+    'm3_p': 0,
+
+    'm4_v': 0,
+    'm4_i': 0,
+    'm4_p': 0,
+
+    'm5_speed': 0,
+});
 
 const tabview_pt = {
     root: { style: 'width: 100%; height: 100%; border-radius: 4px; font-family: "Cairo", sans-serif;' },
@@ -220,7 +237,7 @@ onMounted(() => {
         <TabView id="lt_re600_tabview" :pt="tabview_pt">
             <TabPanel header="System Diagram" :pt="tabpanel_pt">
                 <img style="width: 90%; margin-left: 5%;" :src="system_diagram_src" alt="System Diagram">
-                <input v-if="lt_re600_screen_mode" v-for="dtf in dtfs" :style="`top: ${dtf.top_offsets[lt_re600_screen_mode]}px; left: ${dtf.left_offsets[lt_re600_screen_mode]}px;`" class="dt_tf" type="text" readonly>
+                <input v-if="lt_re600_screen_mode" v-for="dtf in dtfs" :style="`top: ${dtf.top_offsets[lt_re600_screen_mode]}px; left: ${dtf.left_offsets[lt_re600_screen_mode]}px;`" class="dt_tf" type="text" :value="lt_re600_meters[dtf.dtf_name]" readonly>
             </TabPanel>
             <TabPanel header="Chart 1" :pt="tabpanel_pt">
                 <span>Chart 1</span>

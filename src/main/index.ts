@@ -7,10 +7,12 @@ import { init_fsio } from './fsio';
 import { init_system_settings } from './system_settings';
 import { init_lt_re600_serial_adapter } from './device_drivers/lt_re600';
 
+const BASE_HRES = 1280;
+const BASE_VRES = 720;
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    width: process.platform !== 'win32' ? BASE_HRES : BASE_HRES + 16,
+    height: process.platform !== 'win32' ? BASE_VRES : BASE_VRES + 40,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),

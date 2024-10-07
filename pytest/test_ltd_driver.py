@@ -1,4 +1,5 @@
-from emu_spi.ltd_driver import (
+import struct
+from e2e._vspi.ltd_driver import (
     LtdDriver,
     MsgTypeConfig,
     DeviceMsg,
@@ -114,3 +115,15 @@ def test_ltd_driver_0x87_decode_packet():
     assert device_msg.config.msg_type == ltd_driver_0x87.get_msg_type_by_name('DEVICE_ERROR')
     assert device_msg.config.size_bytes == 1
     assert device_msg.config.cfg2 == 0
+
+
+def test_fltsq_encode():
+    ltd_driver_fltsq = LtdDriver([0x99, 0x99], [])
+    packet = ltd_driver_fltsq.fltsq_encode([(x - 1, x / 10) for x in range(30)] * 30).ok
+    assert len(packet) == 127
+    
+    float_binary_parser = LtdDriver._get_binary_parser(4, DATA_TYPE_FLOAT).ok
+    for i in range(30):
+        start_idx = 3 + i * 4
+        ith_float_buffer = packet[start_idx:start_idx + 4]
+        ith_float = struct.unpack(float_binary_parser, ith_float_buffer)
