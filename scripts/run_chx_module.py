@@ -1,58 +1,18 @@
 import os
 import re
 import sys
-from dataclasses import dataclass
 
 
-@dataclass
-class CHXModuleConfig:
-    device_model: str
-    serial_adapter_module: str
-    control_panel_module: str
-
-
-CHX_MAP = {
-    'lt_ch000': CHXModuleConfig(
-        device_model='LT-CH000',
-        serial_adapter_module='./device_drivers/lt_ch000',
-        control_panel_module='@renderer/components/DeviceControl/LT_CH000.vue',
-    ),
-    'lt_ht103': CHXModuleConfig(
-        device_model='LT-HT103',
-        serial_adapter_module='./device_drivers/lt_ht103',
-        control_panel_module='@renderer/components/DeviceControl/LT_HT103.vue',
-    ),
-    'lt_ht107': CHXModuleConfig(
-        device_model='LT-HT107',
-        serial_adapter_module='./device_drivers/lt_ht107',
-        control_panel_module='@renderer/components/DeviceControl/LT_HT107.vue',
-    ),
-    'lt_ht113': CHXModuleConfig(
-        device_model='LT-HT113',
-        serial_adapter_module='./device_drivers/lt_ht113',
-        control_panel_module='@renderer/components/DeviceControl/LT_HT113.vue',
-    ),
-    'lt_ht004': CHXModuleConfig(
-        device_model='LT-HT004',
-        serial_adapter_module='./device_drivers/lt_ht004',
-        control_panel_module='@renderer/components/DeviceControl/LT_HT004.vue',
-    ),
-    'lt_to101': CHXModuleConfig(
-        device_model='LT-TO101',
-        serial_adapter_module='./device_drivers/lt_to101',
-        control_panel_module='@renderer/components/DeviceControl/LT_TO101.vue',
-    ),
-    'lt_to202': CHXModuleConfig(
-        device_model='LT-TO202',
-        serial_adapter_module='./device_drivers/lt_to202',
-        control_panel_module='@renderer/components/DeviceControl/LT_TO202.vue',
-    ),
-    'lt_re600': CHXModuleConfig(
-        device_model='LT-RE600',
-        serial_adapter_module='./device_drivers/lt_re600',
-        control_panel_module='@renderer/components/DeviceControl/LT_RE600.vue',
-    ),
-}
+CHX_MODULES = [
+    'lt_ch000',
+    'lt_ht103',
+    'lt_ht107',
+    'lt_ht113',
+    'lt_ht004',
+    'lt_to101',
+    'lt_to202',
+    'lt_re600',
+]
 
 
 def sub_line(src_code: str, pattern: re.Pattern[str], patch: str) -> tuple[bool, str, str]:
@@ -64,13 +24,13 @@ def sub_line(src_code: str, pattern: re.Pattern[str], patch: str) -> tuple[bool,
     return False, '\n'.join(src_lines), ''
 
 
-def apply_chx_config(_config: CHXModuleConfig):
+def apply_chx_config(chx_module: str):
     index_ts_file = 'src/main/index.ts'
     app_vue_file = 'src/renderer/src/App.vue'
 
     # patch index.ts
-    chx_serial_adapter = _config.device_model.lower().replace('-', '_')
-    chx_serial_adapter_patch = f"import {{ init_{chx_serial_adapter}_serial_adapter }} from '{_config.serial_adapter_module}';"
+    chx_serial_adapter = chx_module
+    chx_serial_adapter_patch = f"import {{ init_{chx_serial_adapter}_serial_adapter }} from './device_drivers/{chx_serial_adapter}';"
     chx_serial_adapter_init_patch = f"  ipcMain.on('load_device_driver', () => init_{chx_serial_adapter}_serial_adapter(mainWindow));"
     with open(index_ts_file, 'r') as f:
         index_ts_src = f.read()
@@ -99,8 +59,8 @@ def apply_chx_config(_config: CHXModuleConfig):
         f.write(patched_2)
 
     # patch App.vue
-    chx_device_model = _config.device_model.replace('-', '_')
-    chx_device_model_patch = f"const DEVICE_MODEL = '{_config.device_model}';"
+    chx_device_model = chx_module.upper()
+    chx_device_model_patch = f"const DEVICE_MODEL = '{chx_device_model.replace('_','-')}';"
     chx_control_panel_import_patch = f"import {chx_device_model} from '@renderer/components/DeviceControl/{chx_device_model}.vue';"
     chx_control_panel_mount_patch = f"          <{chx_device_model} />"
     with open(app_vue_file, 'r') as f:
@@ -142,16 +102,15 @@ def apply_chx_config(_config: CHXModuleConfig):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('Usage python scripts/switch_chx_module.py <chx_module_name>')
-        print('chx_module:', list(CHX_MAP.keys()))
+        print('Usage python scripts/switch_chx_module.py <chx_module>')
+        print('chx_module:', CHX_MODULES)
         sys.exit(1)
 
     chx_module = sys.argv[1]
-    if chx_module not in CHX_MAP:
+    if chx_module not in CHX_MODULES:
         print('Invalid chx_module')
-        print('chx_module:', list(CHX_MAP.keys()))
+        print('chx_module:', CHX_MODULES)
         sys.exit(1)
 
-    chx_module_config = CHX_MAP[chx_module]
-    apply_chx_config(chx_module_config)
+    apply_chx_config(chx_module)
     os.system('npm run dev')

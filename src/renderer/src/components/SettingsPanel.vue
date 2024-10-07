@@ -185,6 +185,7 @@ onMounted(() => {
 }
 
 .sp_section .controls_row span {
+    font-size: 16px;
     width: 200px;
 }
 
@@ -206,7 +207,7 @@ onMounted(() => {
 .sp_section h1 {
     margin: 0px;
     width: 100%;
-    font-size: 18px;
+    font-size: 16px;
     border-bottom: 2px solid var(--empty-gauge-color);
     margin-bottom: 16px;
     display: flex;
@@ -237,5 +238,6 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     overflow-y: scroll;
+    z-index: 2;
 }
 </style>

@@ -143,4 +143,6 @@ export function init_lt_re600_serial_adapter(_main_window: BrowserWindow) {
 
     main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
     mw_logger({ level: 'INFO', msg: `Loaded Device Drivers: ${DEVICE_MODEL}` });
+
+    ipcMain.on(`${DEVICE_MODEL}_toggle_fullscreen`, () => main_window?.setFullScreen(true));
 }

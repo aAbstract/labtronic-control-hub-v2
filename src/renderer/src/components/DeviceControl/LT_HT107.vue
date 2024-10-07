@@ -109,11 +109,13 @@ const chart_opts = shallowRef<ChartOptions>({
 function map_heater_power_color_code(heater_power: number): string {
     if (heater_power > 0 && heater_power <= 40)
         return '#64DD17';
-    if (heater_power > 40 && heater_power <= 80)
+    if (heater_power > 45 && heater_power <= 80)
         return '#FFAB00';
-    if (heater_power > 80 && heater_power <= 120)
+    if (heater_power > 85 && heater_power <= 120)
         return '#DD2C00';
-    return font_color;
+    if (isNaN(heater_power))
+        return font_color;
+    return '#DD2C00';
 }
 
 function update_position_chart() {

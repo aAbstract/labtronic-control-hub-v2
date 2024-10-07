@@ -14,6 +14,7 @@ const props = defineProps<{ device_ui_config: DeviceUIConfig }>();
 const device_model = inject('device_model') as string;
 const device_model_labeled_img = ref('');
 const device_model_cont_width = ref('96%');
+const device_model_cont_margin_bottom = ref('16px');
 const show_device_model_panel_msg = ref(false);
 const device_model_panel_severity = ref('warn');
 const device_model_panel_content = ref('Device Model Panel Message');
@@ -75,7 +76,11 @@ onMounted(() => {
 
     subscribe('update_device_model_cont_width', 'update_device_model_cont_width', args => {
         const wdith: string = args.width;
-        device_model_cont_width.value = wdith;
+        const margin_bottom: string = args.margin_bottom;
+        if (wdith)
+            device_model_cont_width.value = wdith;
+        if (margin_bottom)
+            device_model_cont_margin_bottom.value = margin_bottom;
     });
 
     subscribe('show_device_model_panel_msg', 'show_device_model_panel_msg', args => {
@@ -114,7 +119,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     position: relative;
-    margin-bottom: 16px;
+    margin-bottom: v-bind(device_model_cont_margin_bottom);
     width: v-bind(device_model_cont_width);
     border-radius: 4px;
 }

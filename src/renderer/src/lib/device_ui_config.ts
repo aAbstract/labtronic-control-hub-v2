@@ -214,7 +214,7 @@ const LT_TO202_DUIC = new DeviceUIConfig(
     {},
     {
         0: new ChartParams('PT1000', '#9C27B0'), // READ_PT1000
-        1: new ChartParams('PT1000_Heater', '#FF9800'), // READ_PT1000_Heater
+        1: new ChartParams('T_Heater', '#FF9800'), // READ_T_Heater
         2: new ChartParams('NTC', '#DD2C00'), // READ_NTC
         3: new ChartParams('TC_K_Type', '#00BCD4'), // READ_TC_K_Type
     },

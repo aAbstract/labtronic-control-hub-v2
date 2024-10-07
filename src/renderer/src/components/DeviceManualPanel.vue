@@ -68,6 +68,6 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     overflow-y: scroll;
-    z-index: 1;
+    z-index: 2;
 }
 </style>

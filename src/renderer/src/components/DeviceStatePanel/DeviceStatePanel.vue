@@ -264,6 +264,8 @@ onBeforeMount(() => {
     border-radius: 4px;
     padding: 8px;
     width: calc(100% - 8px);
+    max-height: 15vh;
+    overflow-y: scroll;
 }
 
 #device_state_panel {

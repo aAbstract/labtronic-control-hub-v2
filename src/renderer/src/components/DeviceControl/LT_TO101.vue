@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { onMounted, inject, ref, computed } from 'vue';
+import Button from 'primevue/button';
 
 import { post_event } from '@common/mediator';
 import { MsgTypeConfig, LT_TO101_DeviceMode, DeviceMsg } from '@common/models';
@@ -58,6 +59,7 @@ onMounted(() => {
                 <span class="lc_span" style="width: 8px;"></span>
                 <span class="lc_span">{{ device_mode_exp_name_map[device_mode] }}</span>
             </div>
+            <Button id="data_tool_button" label="DATA TOOL" icon="pi pi-calculator" outlined @click="post_event('toggle_panel', { panel_name: 'data_tool', panel_pos: 'RIGHT' })" />
         </div>
         <div v-if="device_mode === LT_TO101_DeviceMode.BOYLE" class="lt_to101_control_row">
             <span :style="`color: ${compressor_lbl_color};`" class="lc_span">Compressor:</span>
@@ -73,6 +75,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+#data_tool_button {
+    height: 30px;
+    width: fit-content;
+    font-size: 12px;
+}
+
 .lt_to101_led {
     width: 40px;
     height: 40px;
@@ -91,8 +99,8 @@ onMounted(() => {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    width: 100%;
     margin-right: 12px;
+    flex-grow: 1;
 }
 
 

@@ -1,7 +1,6 @@
 from ltd_driver import (
     LtdDriver,
     MsgTypeConfig,
-    DeviceMsg,
     DATA_TYPE_UINT,
     DATA_TYPE_FLOAT,
     DATA_TYPE_COMMAND,

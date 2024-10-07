@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onBeforeMount, provide } from 'vue';
+import { onBeforeMount, provide, ref } from 'vue';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 
@@ -16,10 +16,10 @@ import Alert from '@renderer/components/Alert.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { CHXCloudSettings, MsgTypeConfig, _ToastMessageOptions } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
-import LT_HT113 from '@renderer/components/DeviceControl/LT_HT113.vue';
+import LT_RE600 from '@renderer/components/DeviceControl/LT_RE600.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -29,8 +29,9 @@ const APP_THEME = {
   '--accent-color': '#29B2F8',
   '--empty-gauge-color': '#2D3A4B',
 };
-const DEVICE_MODEL = 'LT-HT113';
+const DEVICE_MODEL = 'LT-RE600';
 const toast_service = useToast();
+const spring_display = ref<string>('block');
 
 provide('device_model', DEVICE_MODEL);
 
@@ -53,6 +54,8 @@ onBeforeMount(() => {
     post_event('chx_settings_loaded', {});
   });
 
+  subscribe('remove_ui_springs', 'remove_ui_springs', _ => spring_display.value = 'none');
+
   // update ui params for dynamic msg_types like computed parameters
   window.electron?.ipcRenderer.on(`${DEVICE_MODEL}_device_config_ready`, () => {
     electron_renderer_invoke<MsgTypeConfig>(`${DEVICE_MODEL}_get_device_config`).then(device_config => post_event(`${DEVICE_MODEL}_update_ui_params`, { device_config }));
@@ -72,10 +75,10 @@ onBeforeMount(() => {
       <NavBar />
       <div id="left_panel_cont">
         <div id="model_control_cont">
-          <div style="flex-grow: 1;"></div>
+          <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_HT113 />
-          <div style="flex-grow: 1;"></div>
+          <LT_RE600 />
+          <div class="ui_spring"></div>
         </div>
         <TerminalPanel />
         <SettingsPanel />
@@ -90,6 +93,11 @@ onBeforeMount(() => {
 </template>
 
 <style>
+.ui_spring {
+  display: v-bind(spring_display);
+  flex-grow: 1;
+}
+
 .device_model_panel {
   width: 100%;
   height: 100%;

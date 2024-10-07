@@ -105,6 +105,7 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    z-index: 2;
 }
 
 #control_panel_header {

@@ -22,7 +22,7 @@ const LT_TO202_DRIVER_CONFIG: MsgTypeConfig[] = [
     },
     {
         msg_type: 1,
-        msg_name: 'READ_PT1000_Heater',
+        msg_name: 'READ_T_Heater',
         data_type: DataType.FLOAT,
         size_bytes: 4,
         cfg2: 0,

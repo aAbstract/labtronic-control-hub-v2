@@ -1,3 +1,4 @@
+import time
 import socket
 import serial
 from enum import Enum
@@ -67,7 +68,7 @@ class VSPI:
         elif self.vspi_mode == VSPICommMode.WIRED:
             self.vspi_serial_port.close()
 
-    def write_raw_packet(self, packet: bytes):
+    def write_packet(self, packet: bytes):
         self.vspi_socket.send(packet)
 
     def write_msg(self, msg_type: int, msg_value: int):
@@ -114,3 +115,16 @@ class VSPI:
     def start_feedback_control_loop_sync(self):
         while True:
             self._handle_control_packet()
+
+    def _burst_const_msgs(self, offset: int = 20):
+        for msg_type in self.device_driver.driver_msg_type_config_map:
+            # ignore device error packet
+            if msg_type == 14:
+                continue
+            msg_value = offset + (msg_type + 1) * 10
+            self.write_msg(msg_type, msg_value)
+
+    def stream_const_sequence_sync(self):
+        while True:
+            self._burst_const_msgs()
+            time.sleep(0.2)
