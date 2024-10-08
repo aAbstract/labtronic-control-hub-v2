@@ -49,6 +49,7 @@ export class LtdDriverFloatSequence implements ILtdDriver {
 
         // decode data payload
         const device_msg_list: DeviceMsg[] = [];
+        const timestamp = Date.now();
         for (let i = 0; i < this.driver_config.length; i++) {
             const ith_buffer_seg_offset = LtdDriverFloatSequence.DATA_START + i * 4;
             const ith_buffer_seg_end = ith_buffer_seg_offset + 4;
@@ -60,7 +61,7 @@ export class LtdDriverFloatSequence implements ILtdDriver {
             const b64_msg_value = btoa(String.fromCharCode.apply(null, Array.from(buffer_seg)));
             device_msg_list.push({
                 config: this.driver_config[i],
-                seq_number: 0,
+                seq_number: timestamp,
                 msg_value,
                 b64_msg_value,
             });

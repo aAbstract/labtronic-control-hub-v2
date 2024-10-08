@@ -119,11 +119,12 @@ def test_ltd_driver_0x87_decode_packet():
 
 def test_fltsq_encode():
     ltd_driver_fltsq = LtdDriver([0x99, 0x99], [])
-    packet = ltd_driver_fltsq.fltsq_encode([(x - 1, x / 10) for x in range(30)] * 30).ok
+    packet = ltd_driver_fltsq.fltsq_encode([(x / 10) for x in range(30)]).ok
     assert len(packet) == 127
-    
+
     float_binary_parser = LtdDriver._get_binary_parser(4, DATA_TYPE_FLOAT).ok
     for i in range(30):
         start_idx = 3 + i * 4
         ith_float_buffer = packet[start_idx:start_idx + 4]
-        ith_float = struct.unpack(float_binary_parser, ith_float_buffer)
+        ith_float = struct.unpack(float_binary_parser, ith_float_buffer)[0]
+        assert round(ith_float, 2) == i / 10

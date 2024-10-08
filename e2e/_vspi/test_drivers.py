@@ -100,3 +100,6 @@ DRIVER_CONFIG_LT_TO202: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_to202 = LtdDriver([0x32, 0x42], DRIVER_CONFIG_LT_TO202)
+
+
+ltd_driver_lt_re600 = LtdDriver([0x99, 0x99], [])

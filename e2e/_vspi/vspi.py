@@ -81,6 +81,18 @@ class VSPI:
         elif self.vspi_mode == VSPICommMode.WIRED:
             self.vspi_serial_port.write(packet)
 
+    def fltsq_write_msg(self, msg_types: list[int], msg_values: list[int], msg_count: int):
+        msg_sequence = [0] * msg_count
+        for idx, _t in enumerate(msg_types):
+            msg_sequence[_t] = msg_values[idx]
+        packet = self.device_driver.fltsq_encode(msg_sequence).ok
+        if self.debug:
+            print(' '.join([f"{hex(x).replace('0x', '').upper():0>2}" for x in packet]))
+        if self.vspi_mode == VSPICommMode.NETWORK:
+            self.vspi_socket.send(packet)
+        elif self.vspi_mode == VSPICommMode.WIRED:
+            self.vspi_serial_port.write(packet)
+
     def switch_device_mode(self, device_mode_cfg2: int):
         self.device_cfg2 = device_mode_cfg2
         self.write_msg(0, 11)

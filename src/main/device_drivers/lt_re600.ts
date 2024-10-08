@@ -49,7 +49,7 @@ const LT_RE600_ACD_MSG_LIST = [
     'Freq',
     'I', // hide
     'V', // hide
-    'P',
+    'P', // hide
 ];
 
 export const LT_RE600_MSG_LIST = [

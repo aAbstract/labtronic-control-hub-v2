@@ -205,3 +205,22 @@ export enum LT_TO101_DeviceMode {
     GLUSS = 1,
 };
 // device models - LT_TO101
+
+// device models - LT_RE600
+export enum LT_RE600_ScreenMode {
+    W1280 = 1,
+    W1920 = 2,
+};
+
+export interface LT_RE600_MeterParams {
+    meter_name: string;
+    top_offsets: Record<LT_RE600_ScreenMode, number>;
+    left_offsets: Record<LT_RE600_ScreenMode, number>;
+    meter_values: LT_RE600_MeterValue[];
+};
+
+export interface LT_RE600_MeterValue {
+    msg_type: number;
+    msg_name: string;
+};
+// device models - LT_RE600

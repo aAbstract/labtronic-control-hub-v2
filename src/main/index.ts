@@ -12,7 +12,7 @@ const BASE_VRES = 720;
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: process.platform !== 'win32' ? BASE_HRES : BASE_HRES + 16,
-    height: process.platform !== 'win32' ? BASE_VRES : BASE_VRES + 40,
+    height: process.platform !== 'win32' ? BASE_VRES : BASE_VRES + 32,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),

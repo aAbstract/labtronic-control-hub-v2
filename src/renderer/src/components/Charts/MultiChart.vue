@@ -29,7 +29,7 @@ function create_chart_options(font_color: string, grid_color: string, y_min: num
         aspectRatio: 2,
         color: font_color,
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: grid_color } },
+            x: { ticks: { color: font_color, display: false }, grid: { color: grid_color } },
             y: { ticks: { color: font_color }, grid: { color: grid_color }, min: y_min, max: y_max },
         },
         animation: false,

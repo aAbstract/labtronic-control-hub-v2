@@ -100,8 +100,8 @@ const chart_opts = shallowRef<ChartOptions>({
         epoch_plugin: { display: true },
     } as any,
     scales: {
-        x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: 'Position (mm)', display: true, color: font_color } },
-        y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: 'Temprature (C)', display: true, color: font_color }, min: 25, max: 100 },
+        x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: 'Position [mm]', display: true, color: font_color } },
+        y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: 'Temprature [Celsius]', display: true, color: font_color }, min: 25, max: 100 },
     },
 });
 // post_chart

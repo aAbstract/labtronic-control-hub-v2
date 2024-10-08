@@ -7,168 +7,102 @@ import Button from 'primevue/button';
 
 import { post_event } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
-enum LTRE600ScreenMode {
-    W1280 = 1,
-    W1920 = 2,
-};
+import { LT_RE600_ScreenMode, LT_RE600_MeterParams } from '@common/models';
+import LT_RE600_Meter from '@renderer/components/LT_RE600/Meter.vue';
+import LT_RE600_Chart from '@renderer/components/LT_RE600/Chart.vue';
 
-interface DiagramTextFieldParams {
-    dtf_name: string;
-    top_offsets: Record<LTRE600ScreenMode, number>;
-    left_offsets: Record<LTRE600ScreenMode, number>;
-};
-
-const dtfs: DiagramTextFieldParams[] = [
-    // m1    
+const meters: LT_RE600_MeterParams[] = [
     {
-        dtf_name: 'm1_output',
+        meter_name: 'M1: Generator',
         top_offsets: {
-            [LTRE600ScreenMode.W1280]: 65,
-            [LTRE600ScreenMode.W1920]: 100,
+            [LT_RE600_ScreenMode.W1280]: 210,
+            [LT_RE600_ScreenMode.W1920]: 325,
         },
         left_offsets: {
-            [LTRE600ScreenMode.W1280]: 465,
-            [LTRE600ScreenMode.W1920]: 715,
+            [LT_RE600_ScreenMode.W1280]: 150,
+            [LT_RE600_ScreenMode.W1920]: 230,
         },
-    },
-
-    // m2
-    {
-        dtf_name: 'm2_v',
-        top_offsets: {
-            [LTRE600ScreenMode.W1280]: 431,
-            [LTRE600ScreenMode.W1920]: 662,
-        },
-        left_offsets: {
-            [LTRE600ScreenMode.W1280]: 800,
-            [LTRE600ScreenMode.W1920]: 1225,
-        },
+        meter_values: [
+            { msg_type: 0, msg_name: 'Freq' },
+            { msg_type: 1, msg_name: 'V12' },
+            { msg_type: 2, msg_name: 'V23' },
+            { msg_type: 3, msg_name: 'V31' },
+            { msg_type: 5, msg_name: 'I1' },
+            { msg_type: 6, msg_name: 'I2' },
+            { msg_type: 7, msg_name: 'I3' },
+            { msg_type: 9, msg_name: 'Sys_P' },
+            { msg_type: 10, msg_name: 'Sys_Q' },
+            { msg_type: 12, msg_name: 'Sys_PF' },
+        ],
     },
     {
-        dtf_name: 'm2_i',
+        meter_name: 'M2: AC Load',
         top_offsets: {
-            [LTRE600ScreenMode.W1280]: 431,
-            [LTRE600ScreenMode.W1920]: 662,
+            [LT_RE600_ScreenMode.W1280]: 390,
+            [LT_RE600_ScreenMode.W1920]: 600,
         },
         left_offsets: {
-            [LTRE600ScreenMode.W1280]: 885,
-            [LTRE600ScreenMode.W1920]: 1355,
+            [LT_RE600_ScreenMode.W1280]: 755,
+            [LT_RE600_ScreenMode.W1920]: 1192,
         },
+        meter_values: [
+            { msg_type: 13, msg_name: 'Freq' },
+            { msg_type: 14, msg_name: 'V1' },
+            { msg_type: 15, msg_name: 'I1' },
+            { msg_type: 16, msg_name: 'Sys_P' },
+            { msg_type: 17, msg_name: 'Sys_Q' },
+            { msg_type: 19, msg_name: 'Sys_PF' },
+        ],
     },
     {
-        dtf_name: 'm2_p',
+        meter_name: 'M3: Battery',
         top_offsets: {
-            [LTRE600ScreenMode.W1280]: 431,
-            [LTRE600ScreenMode.W1920]: 662,
+            [LT_RE600_ScreenMode.W1280]: 412,
+            [LT_RE600_ScreenMode.W1920]: 635,
         },
         left_offsets: {
-            [LTRE600ScreenMode.W1280]: 980,
-            [LTRE600ScreenMode.W1920]: 1500,
+            [LT_RE600_ScreenMode.W1280]: 150,
+            [LT_RE600_ScreenMode.W1920]: 230,
         },
-    },
-
-    // m3
-    {
-        dtf_name: 'm3_v',
-        top_offsets: {
-            [LTRE600ScreenMode.W1280]: 455,
-            [LTRE600ScreenMode.W1920]: 698,
-        },
-        left_offsets: {
-            [LTRE600ScreenMode.W1280]: 206,
-            [LTRE600ScreenMode.W1920]: 315,
-        },
+        meter_values: [
+            { msg_type: 20, msg_name: 'V' },
+            { msg_type: 21, msg_name: 'I' },
+            { msg_type: 22, msg_name: 'P' },
+        ],
     },
     {
-        dtf_name: 'm3_i',
+        meter_name: 'M4: DC Load',
         top_offsets: {
-            [LTRE600ScreenMode.W1280]: 455,
-            [LTRE600ScreenMode.W1920]: 698,
+            [LT_RE600_ScreenMode.W1280]: 100,
+            [LT_RE600_ScreenMode.W1920]: 200,
         },
         left_offsets: {
-            [LTRE600ScreenMode.W1280]: 291,
-            [LTRE600ScreenMode.W1920]: 445,
+            [LT_RE600_ScreenMode.W1280]: 755,
+            [LT_RE600_ScreenMode.W1920]: 1192,
         },
+        meter_values: [
+            { msg_type: 23, msg_name: 'V' },
+            { msg_type: 24, msg_name: 'I' },
+            { msg_type: 25, msg_name: 'P' },
+        ],
     },
     {
-        dtf_name: 'm3_p',
+        meter_name: 'M5: Generator',
         top_offsets: {
-            [LTRE600ScreenMode.W1280]: 455,
-            [LTRE600ScreenMode.W1920]: 698,
+            [LT_RE600_ScreenMode.W1280]: 40,
+            [LT_RE600_ScreenMode.W1920]: 80,
         },
         left_offsets: {
-            [LTRE600ScreenMode.W1280]: 386,
-            [LTRE600ScreenMode.W1920]: 590,
+            [LT_RE600_ScreenMode.W1280]: 330,
+            [LT_RE600_ScreenMode.W1920]: 502,
         },
-    },
-
-    // m4
-    {
-        dtf_name: 'm4_v',
-        top_offsets: {
-            [LTRE600ScreenMode.W1280]: 193,
-            [LTRE600ScreenMode.W1920]: 297,
-        },
-        left_offsets: {
-            [LTRE600ScreenMode.W1280]: 767,
-            [LTRE600ScreenMode.W1920]: 1174
-            ,
-        },
-    },
-    {
-        dtf_name: 'm4_i',
-        top_offsets: {
-            [LTRE600ScreenMode.W1280]: 193,
-            [LTRE600ScreenMode.W1920]: 297,
-        },
-        left_offsets: {
-            [LTRE600ScreenMode.W1280]: 852,
-            [LTRE600ScreenMode.W1920]: 1305,
-        },
-    },
-    {
-        dtf_name: 'm4_p',
-        top_offsets: {
-            [LTRE600ScreenMode.W1280]: 193,
-            [LTRE600ScreenMode.W1920]: 297,
-        },
-        left_offsets: {
-            [LTRE600ScreenMode.W1280]: 947,
-            [LTRE600ScreenMode.W1920]: 1450,
-        },
-    },
-
-    // m5
-    {
-        dtf_name: 'm5_speed',
-        top_offsets: {
-            [LTRE600ScreenMode.W1280]: 276,
-            [LTRE600ScreenMode.W1920]: 423,
-        },
-        left_offsets: {
-            [LTRE600ScreenMode.W1280]: 300,
-            [LTRE600ScreenMode.W1920]: 462,
-        },
+        meter_values: [
+            { msg_type: 26, msg_name: 'Freq' },
+        ],
     },
 ];
-const lt_re600_meters = ref<Record<string, number>>({
-    'm1_output': 0,
-
-    'm2_v': 0,
-    'm2_i': 0,
-    'm2_p': 0,
-
-    'm3_v': 0,
-    'm3_i': 0,
-    'm3_p': 0,
-
-    'm4_v': 0,
-    'm4_i': 0,
-    'm4_p': 0,
-
-    'm5_speed': 0,
-});
 
 const tabview_pt = {
     root: { style: 'width: 100%; height: 100%; border-radius: 4px; font-family: "Cairo", sans-serif;' },
@@ -183,23 +117,7 @@ const lt_re600_control_panel_pos = ref('relative');
 const lt_re600_control_panel_width = computed(() => lt_re600_control_panel_pos.value === 'relative' ? '96%' : 'calc(100vw - 60px - 16px)');
 const lt_re600_control_panel_left_offset = computed(() => lt_re600_control_panel_pos.value === 'relative' ? '0px' : '8px');
 const lt_re600_control_panel_top_offset = computed(() => lt_re600_control_panel_pos.value === 'relative' ? '0px' : '8px');
-const lt_re600_screen_mode = ref<LTRE600ScreenMode | null>(null);
-const dtf_font_size = computed(() => {
-    if (lt_re600_screen_mode.value === LTRE600ScreenMode.W1280)
-        return '16px';
-    else if (lt_re600_screen_mode.value === LTRE600ScreenMode.W1920)
-        return '28px';
-    else
-        return '16px';
-});
-const dtf_width = computed(() => {
-    if (lt_re600_screen_mode.value === LTRE600ScreenMode.W1280)
-        return '64px';
-    else if (lt_re600_screen_mode.value === LTRE600ScreenMode.W1920)
-        return '95px';
-    else
-        return '64px';
-});
+const lt_re600_control_panel_border = computed(() => lt_re600_control_panel_pos.value === 'relative' ? 'none' : '2px solid var(--empty-gauge-color)');
 
 function toggle_fullscreen() {
     const __map = {
@@ -208,15 +126,15 @@ function toggle_fullscreen() {
     };
     lt_re600_control_panel_pos.value = __map[lt_re600_control_panel_pos.value];
     if (lt_re600_control_panel_pos.value === 'relative') {
-        lt_re600_screen_mode.value = null;
+        post_event('change_lt_re600_screen_mode', { _screen_mode: null });
         return;
     }
 
     const window_width = window.innerWidth;
     if (window_width < 1600)
-        lt_re600_screen_mode.value = LTRE600ScreenMode.W1280;
+        post_event('change_lt_re600_screen_mode', { _screen_mode: LT_RE600_ScreenMode.W1280 });
     else
-        lt_re600_screen_mode.value = LTRE600ScreenMode.W1920;
+        post_event('change_lt_re600_screen_mode', { _screen_mode: LT_RE600_ScreenMode.W1920 });
 }
 
 onMounted(() => {
@@ -232,43 +150,24 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="lt_re600_control_main_cont">
+    <div id="lt_re600_control_main_cont" v-on="screenshot_handlers">
         <Button icon="pi pi-expand" id="expand_btn" title="Toggle Full Screen" rounded text @click="toggle_fullscreen()" />
         <TabView id="lt_re600_tabview" :pt="tabview_pt">
             <TabPanel header="System Diagram" :pt="tabpanel_pt">
                 <img style="width: 90%; margin-left: 5%;" :src="system_diagram_src" alt="System Diagram">
-                <input v-if="lt_re600_screen_mode" v-for="dtf in dtfs" :style="`top: ${dtf.top_offsets[lt_re600_screen_mode]}px; left: ${dtf.left_offsets[lt_re600_screen_mode]}px;`" class="dt_tf" type="text" :value="lt_re600_meters[dtf.dtf_name]" readonly>
+                <LT_RE600_Meter v-for="m in meters" :meter_params="m" />
             </TabPanel>
             <TabPanel header="Chart 1" :pt="tabpanel_pt">
-                <span>Chart 1</span>
+                <LT_RE600_Chart :x_msg_type="26" x_title="M5_Freq [Celsius]" :y_msg_type="9" y_title="M1_P [W]" line_color="#FF9800" />
             </TabPanel>
             <TabPanel header="Chart 2" :pt="tabpanel_pt">
-                <span>Chart 2</span>
+                <LT_RE600_Chart :x_msg_type="1" x_title="M1_V12 [V]" :y_msg_type="9" y_title="M1_P [W]" line_color="#DD2C00" />
             </TabPanel>
         </TabView>
     </div>
 </template>
 
 <style scoped>
-.dt_tf {
-    position: absolute;
-    width: v-bind(dtf_width);
-    color: var(--font-color);
-    border: none;
-    background-color: var(--light-bg-color);
-    /* background-color: transparent; */
-    font-size: v-bind(dtf_font_size);
-    font-weight: bold;
-    padding: 4px;
-    border: 1px solid var(--accent-color);
-    border-radius: 2px;
-    cursor: default;
-}
-
-.dt_tf:focus {
-    outline: none;
-}
-
 #expand_btn {
     position: absolute;
     right: 0px;
@@ -291,5 +190,6 @@ onMounted(() => {
     background-color: var(--light-bg-color);
     border-radius: 4px;
     z-index: 2;
+    border: v-bind(lt_re600_control_panel_border);
 }
 </style>

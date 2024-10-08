@@ -8,6 +8,8 @@ from test_drivers import (
     ltd_driver_lt_ht004,
 
     ltd_driver_lt_to202,
+
+    ltd_driver_lt_re600,
 )
 from rlcompleter import Completer
 
@@ -16,6 +18,8 @@ lt_ht113_vspi = VSPI(device_driver=ltd_driver_lt_ht113)
 lt_ht004_vspi = VSPI(device_driver=ltd_driver_lt_ht004)
 
 lt_to202_vspi = VSPI(device_driver=ltd_driver_lt_to202)
+
+lt_re600_vspi = VSPI(device_driver=ltd_driver_lt_re600)
 
 
 if __name__ == '__main__':
