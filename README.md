@@ -114,7 +114,7 @@ $ socat -dd TCP-LISTEN:6543,reuseaddr,fork FILE:/dev/ttyS91,raw,echo=0
 - Object in **e2e/_vspi/test_vspis.py** can be used in your E2E testing scripts or using emulator terminal
 - To start the emulator terminal, Run this command
 ```bash
-$ python e2e/_vspi/test_drivers.py
+$ python e2e/_vspi/test_vspis.py
 ```
 - This command will spawn a python shell and populate its context with a list of VSPI objects that facilitate device interactions
 
