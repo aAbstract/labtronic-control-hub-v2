@@ -61,22 +61,85 @@ python scripts/run_chx_module.py <chx_module_name>
 # Wind Energy Training System: lt_re600
 ```
 
-## Main Screen
-<p align="center">
-    <img src="data/screenshot_1.png" alt="Screenshot_1" />
-</p>
+## E2E Testing - Docs
+**Project Setup**  
+- E2E testing is implemented using **Python + Selenium**
+- E2E testing project is located at **e2e** folder
+- The testing project entrypoint is **e2e/e2e_main.py**
+```bash
+$ python e2e/e2e_main.py --help
+```
+```bash
+usage: e2e_main [-h] [--module MODULE] [--user-story USER_STORY]
 
-## Data Panel
-<p align="center">
-    <img src="data/screenshot_2.png" alt="Screenshot_2" />
-</p>
+LabTronic E2E Testing Program
 
-## Device Manual Panel
-<p align="center">
-    <img src="data/screenshot_3.png" alt="Screenshot_3" />
-</p>
+options:
+  -h, --help            show this help message and exit
+  --module MODULE, -m MODULE
+                        E2E Test Module
+  --user-story USER_STORY, -us USER_STORY
+                        E2E Test User Story
 
-## Data Tool
-<p align="center">
-    <img src="data/screenshot_4.png" alt="Screenshot_4" />
-</p>
+example: python e2e/e2e_main.py -m us_control_switch_plug -us us_control_switch_card_body
+```
+- LabTronic E2E testing project consists of E2E modules
+- E2E module is each file with this path pattern e2e/us_*.py
+- Eeach E2E module contains user stories functions
+```python
+# user story function signature
+def us_*(driver: webdriver.Chrome) -> int:
+    if SUCCESS: return 0
+    elif: return NON_ZERO_RC
+
+# example
+def us_check_chx_device_state(driver: webdriver.Chrome) -> int:
+    pass
+```
+
+**Device Emulator**  
+- To emulate a device connected to a serial port on a linux system use these two commands
+```bash
+# create two connected pesudo terminals `/dev/ttyS90` and `/dev/ttyS91`
+$ sudo socat -dd pty,raw,echo=0,link=/dev/ttyS90,mode=777 pty,raw,echo=0,link=/dev/ttyS91,mode=777
+```
+```bash
+# connect the `/dev/ttyS91` pesudo terminal to a TCP socket on address 127.0.0.1:6543
+$ socat -dd TCP-LISTEN:6543,reuseaddr,fork FILE:/dev/ttyS91,raw,echo=0
+```
+- Now an emulator program can connect to this address `127.0.0.1:6543` and communicate with the software as a usb device
+- To interact with the software using the simulation port, Each device has a specific protocol
+- These protocols are implemented in **e2e/_vspi/test_drivers.py**
+- These protocols are wrapped in a TCP socket connection in **e2e/_vspi/test_vspis.py**
+- Object in **e2e/_vspi/test_vspis.py** can be used in your E2E testing scripts or using emulator terminal
+- To start the emulator terminal, Run this command
+```bash
+$ python e2e/_vspi/test_drivers.py
+```
+- This command will spawn a python shell and populate its context with a list of VSPI objects that facilitate device interactions
+
+**Utils**  
+- **e2e/e2e_utils.py** contains some utility functions to help in E2E testing
+- For Example:
+    - js_click: perform touch independent mouse click in Selenium
+    - elog, ilog: used to print logs
+
+## E2E Testing - Running
+1. Configure the targeted CHX module using **scripts/run_chx_module.py** script
+2. Run the software in debug mode using **.vscode/launch.json** config script
+3. This command will run all E2E modules
+```bash
+python e2e/e2e_main.py
+```
+4. To run single E2E module use this command
+```bash
+$ python e2e/e2e_main.py -m <module_name>
+
+# example: python e2e/e2e_main.py -m us_control_switch_plug
+```
+5. To run single user story function use this command
+```bash
+$ python e2e/e2e_main.py -m <module_name> -us <func_name>
+
+# example: python e2e/e2e_main.py -m us_control_switch_plug -us us_control_switch_card_body
+```

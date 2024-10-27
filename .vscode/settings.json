@@ -3,5 +3,13 @@
         "pytest"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "deno.enablePaths": [
+        "tstest"
+    ],
+    "deno.testing.args": [
+        "--unstable-sloppy-imports",
+        "--allow-read",
+        "--no-check"
+    ]
 }

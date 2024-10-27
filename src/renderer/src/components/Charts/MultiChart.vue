@@ -12,7 +12,7 @@ import { electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
 
 // @ts-ignore
-const CHART_POINTS_LIMIT = 100;
+const CHART_POINTS_LIMIT = 32;
 let points_data: Record<number, PlotSeries> = {};
 let points_changed: boolean = false;
 const device_model = inject('device_model');

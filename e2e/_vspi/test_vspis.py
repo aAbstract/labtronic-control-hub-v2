@@ -1,9 +1,14 @@
+# autopep8: off
+import os
+import sys
 import code
 import readline
-from vspi import (
+from rlcompleter import Completer
+sys.path.append(os.getcwd())
+from e2e._vspi.vspi import (
     VSPI,
 )
-from test_drivers import (
+from e2e._vspi.test_drivers import (
     ltd_driver_lt_ht113,
     ltd_driver_lt_ht004,
 
@@ -11,7 +16,7 @@ from test_drivers import (
 
     ltd_driver_lt_re600,
 )
-from rlcompleter import Completer
+# autopep8: on
 
 
 lt_ht113_vspi = VSPI(device_driver=ltd_driver_lt_ht113)

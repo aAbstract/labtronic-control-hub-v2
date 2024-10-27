@@ -2,20 +2,49 @@
 
 import { ref, onMounted, inject } from 'vue';
 import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
 
 import { subscribe } from '@common/mediator';
 import { get_base_url } from '@renderer/lib/lt_cdn_api';
 import { CHXCloudSettings } from '@common/models';
 import { electron_renderer_send, compute_tooltip_pt, electron_renderer_invoke } from '@renderer/lib/util';
 
+enum AIAgentState {
+    STOPPED = 0,
+    RUNNING = 1,
+};
+
 const panel_pos = ref('-50vw');
 const cdn_server = ref('Loading...');
 const device_model = inject('device_model') as string;
 const device_model_img = ref('');
+const device_about = ref('Device Description...');
+const device_weight = ref('00.0kg');
+const device_dimensions = ref('0.00m x 0.00m x 0.00m');
+const device_level = ref('BASIC');
+const ai_agent_state = ref<AIAgentState>(AIAgentState.STOPPED);
+const toast_service = useToast(); // TODO:
+const latest_kdb_update = ref('XXXX-XX-XX XX:XX:XX');
+const __aigscm: Record<AIAgentState, string> = {
+    [AIAgentState.STOPPED]: '#FFAB00',
+    [AIAgentState.RUNNING]: '#64DD17',
+};
+const __aigstm: Record<AIAgentState, string> = {
+    [AIAgentState.STOPPED]: 'STOPPED',
+    [AIAgentState.RUNNING]: 'RUNNING',
+};
 
 function save_chx_settings() {
     const _chx_settings: CHXCloudSettings = { labtronic_cdn_base_url: cdn_server.value };
     electron_renderer_send('save_chx_settings', { _chx_settings });
+}
+
+function start_ltai_service() {
+    electron_renderer_send('start_ltai_service', {});
+}
+
+function stop_ltai_service() {
+    electron_renderer_send('stop_ltai_service', {});
 }
 
 onMounted(() => {
@@ -36,6 +65,23 @@ onMounted(() => {
             return;
         device_model_img.value = base64_src;
     });
+
+    electron_renderer_invoke<Record<string, string>>('load_device_metadata', { device_model }).then(metadata => {
+        if (!metadata)
+            return;
+        device_about.value = metadata.about_device;
+        device_weight.value = metadata.weight;
+        device_dimensions.value = metadata.dimensions;
+        device_level.value = metadata.level;
+    });
+
+    window.electron?.ipcRenderer.on('ltai_agent_started', () => {
+
+    });
+
+    window.electron?.ipcRenderer.on('ltai_agent_stopped', () => {
+
+    });
 });
 
 </script>
@@ -51,6 +97,29 @@ onMounted(() => {
                 <span>LabTronic CDN Server</span>
                 <input type="text" v-model="cdn_server">
             </div>
+        </div>
+        <div class="sp_section">
+            <h1>AI SETTINGS</h1>
+            <div class="controls_row">
+                <span>Agent Status</span>
+                <div class="sp_tag" :style="`color: ${__aigscm[ai_agent_state]}; border: 2px solid ${__aigscm[ai_agent_state]};`">
+                    <span style="font-size: 14px;">{{ __aigstm[ai_agent_state] }}</span>
+                </div>
+            </div>
+            <div class="controls_row">
+                <span>KnowledgeDB Version</span>
+                <input type="text" :value="latest_kdb_update" readonly>
+            </div>
+            <div class="controls_row">
+                <span>Agent Actions</span>
+                <div style="display: flex; flex-direction: row; justify-content: flex-start;">
+                    <Button class="ai_action_agent_btn" icon="pi pi-sort-up" severity="info" v-tooltip.top="{ value: 'START AGENT', pt: compute_tooltip_pt('top') }" @click="start_ltai_service()" rounded outlined />
+                    <Button class="ai_action_agent_btn" icon="pi pi-stop" severity="info" v-tooltip.top="{ value: 'STOP AGENT', pt: compute_tooltip_pt('top') }" @click="stop_ltai_service()" rounded outlined />
+                    <Button class="ai_action_agent_btn" icon="pi pi-check-circle" severity="info" v-tooltip.top="{ value: 'CHECK AGENT', pt: compute_tooltip_pt('top') }" @click="start_ltai_service()" rounded outlined />
+                    <Button class="ai_action_agent_btn" icon="pi pi-database" severity="info" v-tooltip.top="{ value: 'UPDATE KnowledgeDB', pt: compute_tooltip_pt('top') }" @click="start_ltai_service()" rounded outlined />
+                </div>
+            </div>
+
         </div>
         <div class="sp_section">
             <h1>REMOTE CONTROL SETTINGS</h1>
@@ -72,23 +141,11 @@ onMounted(() => {
             <div id="device_info_cont">
                 <img id="device_img" :src="device_model_img" alt="Device Solid Model">
                 <div id="device_info_text">
-                    <p>
-                        Thermal tunnel is a device for measuring thermal conduction and convention,
-                        It is designed to demonstrate the phenomena of natural (free) and forced convection.
-                    </p>
+                    <p>{{ device_about }}</p>
                     <div id="device_info_tags">
-                        <div>
-                            <span>Weight:</span>
-                            <span>35kg</span>
-                        </div>
-                        <div>
-                            <span>Dimensions:</span>
-                            <span>0.8m x 0.5m x 0.65m</span>
-                        </div>
-                        <div>
-                            <span>Level:</span>
-                            <span>ADVANCED</span>
-                        </div>
+                        <div><span>Weight:</span><span>{{ device_weight }}</span></div>
+                        <div><span>Dimensions:</span><span>{{ device_dimensions }}</span></div>
+                        <div><span>Level:</span><span>{{ device_level }}</span></div>
                     </div>
                 </div>
             </div>
@@ -119,6 +176,21 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.ai_action_agent_btn {
+    width: 36px;
+    height: 36px;
+    margin-right: 16px;
+}
+
+.sp_tag {
+    font-family: "Lucida Console", "Courier New", monospace;
+    padding: 4px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    width: 120px;
+    text-align: center;
+}
+
 #about_software_cont {
     font-size: 14px;
 }

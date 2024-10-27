@@ -261,6 +261,7 @@ onBeforeMount(() => {
 
 #readings_grid {
     background-color: var(--light-bg-color);
+    border: 1px solid var(--empty-gauge-color);
     border-radius: 4px;
     padding: 8px;
     width: calc(100% - 8px);

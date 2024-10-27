@@ -2,9 +2,10 @@ import time
 import socket
 import serial
 from enum import Enum
-from ltd_driver import (
+from e2e._vspi.ltd_driver import (
     LtdDriver,
     DeviceMsg,
+    MsgTypeConfig
 )
 
 
@@ -40,6 +41,7 @@ class VSPI:
         vspi_comm_mode: VSPICommMode = VSPICommMode.NETWORK,
     ):
         self.device_driver = device_driver
+        self.device_cfg2 = device_driver.driver_msg_type_config_map.get(0, MsgTypeConfig(cfg2=0)).cfg2
         self.control_feedback_map = control_feedback_map
         self.vspi_mode = vspi_comm_mode
         self.vspi_socket_addr = (vspi_socket_host, vspi_socket_port)

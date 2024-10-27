@@ -1,11 +1,15 @@
+# autopep8: off
+import os
 import sys
 import json
 import glob
 import argparse
-from e2e_utils import *
 from selenium import webdriver
 from importlib import import_module
 from selenium.webdriver.chrome.service import Service
+sys.path.append(os.getcwd())
+from e2e.e2e_utils import *
+# autopep8: on
 
 
 def create_chrome_test_session() -> webdriver.Chrome:

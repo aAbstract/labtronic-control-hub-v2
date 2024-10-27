@@ -5,7 +5,8 @@ import icon from '../../resources/icon.png?asset'
 
 import { init_fsio } from './fsio';
 import { init_system_settings } from './system_settings';
-import { init_lt_re600_serial_adapter } from './device_drivers/lt_re600';
+import { init_ltai } from './ltai';
+import { init_lt_ht113_serial_adapter } from './device_drivers/lt_ht113';
 
 const BASE_HRES = 1280;
 const BASE_VRES = 720;
@@ -40,7 +41,8 @@ function createWindow(): void {
   // init routine
   init_fsio(mainWindow);
   init_system_settings(mainWindow);
-  ipcMain.on('load_device_driver', () => init_lt_re600_serial_adapter(mainWindow));
+  init_ltai(mainWindow);
+  ipcMain.on('load_device_driver', () => init_lt_ht113_serial_adapter(mainWindow));
   ipcMain.on('exit', () => process.exit(0));
 }
 
@@ -53,6 +55,8 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  app.commandLine.appendSwitch('disable-site-isolation-trials');
 })
 
 app.on('window-all-closed', () => {

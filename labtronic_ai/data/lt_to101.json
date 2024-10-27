@@ -1,0 +1,363 @@
+{
+    "sections": [
+        {
+            "queries": [
+                "What is the purpose of the LT-TO101 unit?",
+                "How does the LT-TO101 unit verify the state equation for ideal gases?"
+            ],
+            "text": "The LT-TO101 unit is designed to verify the state equation for ideal gases and to demonstrate Boyle's law and Gay-Lussac law.",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How does the LT-TO101 unit demonstrate gas laws?"
+            ],
+            "text": "It illustrates the relationship between volume and pressure changes in an enclosed gas, as described by Boyle's law (experiment 1), and the relationship between pressure and temperature changes, as explained by Gay-Lussac's law (experiment 2).",
+            "page": 3
+        },
+        {
+            "queries": [
+                "What experiments are included in the LT-TO101 unit?"
+            ],
+            "text": "Boyle's law (experiment 1) and Gay-Lussac's law (experiment 2).",
+            "page": 3
+        },
+        {
+            "queries": [
+                "Which laws are demonstrated by the LT-TO101 unit?",
+                "Which physical laws related to gases are demonstrated by the LT-TO101 unit?"
+            ],
+            "text": "Boyle's law and Gay-Lussac's law",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How does the LT-TO101 unit explain Boyle's law?"
+            ],
+            "text": "It illustrates the relationship between volume and pressure changes in an enclosed gas, as described by Boyle's law",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How does the LT-TO101 unit illustrate Gay-Lussac's law?"
+            ],
+            "text": "It illustrates the relationship between pressure and temperature changes, as explained by Gay-Lussac's law",
+            "page": 3
+        },
+        {
+            "queries": [
+                "What law demonstrate the relationship between volume and pressure?"
+            ],
+            "text": "Boyle's law",
+            "page": 3
+        },
+        {
+            "queries": [
+                "What law demonstrate the relationship between pressure and temperature?"
+            ],
+            "text": "Gay-Lussac's law",
+            "page": 3
+        },
+        {
+            "queries": [
+                "What gas is used in the experiments with the LT-TO101 unit?"
+            ],
+            "text": "Air",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How is air manipulated in the LT-TO101 experiments?"
+            ],
+            "text": "It is compressed or expanded inside a transparent acrylic vessel.",
+            "page": 3
+        },
+        {
+            "queries": [
+                "What role does hydraulic oil play in the LT-TO101 experiments?"
+            ],
+            "text": "Hydraulic oil acts like a piston, increasing or decreasing the volume of the enclosed gas",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How does the LT-TO101 unit maintain isothermal conditions during the experiment?"
+            ],
+            "text": "The experiment is conducted slowly enough to ensure isothermal conditions.",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How does the LT-TO101 unit simulate compression and expansion of gases?"
+            ],
+            "text": "The LT-TO101 unit simulates compression and expansion of gases using air as the experimental gas inside a transparent acrylic vessel. In one of the vessels, hydraulic oil acts as a piston, which increases or decreases the volume of the enclosed gas.",
+            "page": 3
+        },
+        {
+            "queries": [
+                "How does the LT-TO101 unit test the state equation of gases?",
+                "How are pressure changes measured in the LT-TO101 experiments?",
+                "What is the purpose of heating air in the fixed-volume chamber of the LT-TO101 unit?"
+            ],
+            "text": "In the other chamber, air at a fixed volume is heated to test the state equation, allowing the corresponding pressure changes to be measured.",
+            "page": 3
+        },
+        {
+            "queries": [
+                "What does Experiment 1 (Boyle's Law) demonstrate?",
+                "What is Boyle's Law?"
+            ],
+            "text": "Boyle's Law states that when an ideal gas is compressed at a fixed temperature, its pressure increases as its volume decreases, and vice versa. The relationship is given by the equation P × V = constant.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What is the relationship between pressure and volume in Boyle's Law?"
+            ],
+            "text": "The product of pressure and volume is constant, and the two parameters are inversely proportional to each other.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "Under what conditions does Boyle's Law hold?",
+                "What factors must remain unchanged for Boyle's Law to apply?"
+            ],
+            "text": "Boyle's law holds only if the amount of gas and temperature remain unchanged. The experiment must be performed slowly enough to maintain isothermal conditions.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What are real gases and ideal gases?",
+                "How do real gases behave compared to ideal gases?"
+            ],
+            "text": "Under normal conditions, gases like air, hydrogen, and noble gases act as ideal gases. In contrast, gases like chlorine and carbon dioxide behave as real gases, while propane and butane act as vapors.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What does Experiment 2 (Gay-Lussac's Law) demonstrate?",
+                "What is Gay-Lussac's Law?"
+            ],
+            "text": "Gay-Lussac's Law describes the relationship between pressure and temperature for a fixed volume of gas, expressed as P/T = constant.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What does Experiment 1 (Boyle's Law) demonstrate?",
+                "What is Boyle's Law?",
+                "How does changing volume affect pressure in Boyle's Law?",
+                "What happens to pressure when the volume of an ideal gas is decreased?",
+                "Which equation represents Boyle's Law?"
+            ],
+            "text": "Boyle's Law states that when an ideal gas is compressed at a fixed temperature, its pressure increases as its volume decreases, and vice versa. The relationship is given by the equation P × V = constant.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What is the relationship between pressure and volume in Boyle's Law?",
+                "How are pressure and volume related according to Boyle's Law?",
+                "What does it mean for pressure and volume to be inversely proportional?"
+            ],
+            "text": "The product of pressure and volume is constant, and the two parameters are inversely proportional to each other.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "Under what conditions does Boyle's Law hold?",
+                "What factors must remain unchanged for Boyle's Law to apply?",
+                "Why must the experiment be performed slowly in Boyle's Law?"
+            ],
+            "text": "Boyle's law holds only if the amount of gas and temperature remain unchanged. The experiment must be performed slowly enough to maintain isothermal conditions.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What are real gases and ideal gases?",
+                "How do real gases behave compared to ideal gases?",
+                "Which gases act as ideal gases under normal conditions?",
+                "What types of gases are considered real gases?"
+            ],
+            "text": "Under normal conditions, gases like air, hydrogen, and noble gases act as ideal gases. In contrast, gases like chlorine and carbon dioxide behave as real gases, while propane and butane act as vapors.",
+            "page": 7
+        },
+        {
+            "queries": [
+                "What does Experiment 2 (Gay-Lussac's Law) demonstrate?",
+                "What is Gay-Lussac's Law?",
+                "How does temperature affect pressure in Gay-Lussac's Law?",
+                "What happens to pressure when the temperature of a fixed volume gas increases?"
+            ],
+            "text": "Gay-Lussac's Law describes the relationship between pressure and temperature for a fixed volume of gas, expressed as P/T = constant.",
+            "page": 7
+        }
+    ],
+    "discussion": [
+        {
+            "question_type": "RADIO",
+            "question_text": "What is the primary purpose of the LT-TO101 unit?",
+            "options": [
+                "To measure temperature changes in gases",
+                "To verify the state equation for ideal gases and demonstrate Boyle's law and Gay-Lussac's law",
+                "To demonstrate the properties of liquids"
+            ],
+            "question_answer": 1,
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "RADIO",
+            "question_text": "Which gas is used in the experiments with the LT-TO101 unit?",
+            "options": [
+                "Helium",
+                "Oxygen",
+                "Air"
+            ],
+            "question_answer": 2,
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "RADIO",
+            "question_text": "What does Boyle's law state?",
+            "options": [
+                "Pressure is directly proportional to volume",
+                "Pressure is inversely proportional to volume at constant temperature",
+                "AiVolume is constant when temperature changesr"
+            ],
+            "question_answer": 1,
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "RADIO",
+            "question_text": "What happens to the pressure of an ideal gas when its volume is decreased at constant temperature?",
+            "options": [
+                "Pressure decreases",
+                "Pressure remains constant",
+                "Pressure increases"
+            ],
+            "question_answer": 2,
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "RADIO",
+            "question_text": "What is the relationship described by Gay-Lussac's Law?",
+            "options": [
+                "Pressure and volume are inversely proportional",
+                "Pressure and temperature are directly proportional at constant volume",
+                "Volume and temperature are inversely proportional"
+            ],
+            "question_answer": 1,
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "RADIO",
+            "question_text": "Which equation represents Boyle's Law?",
+            "options": [
+                "P / T = constant",
+                "P x V = constant",
+                "V / T = constant"
+            ],
+            "question_answer": 1,
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "What is the main function of the LT-TO101 unit?",
+            "question_answer": "The LT-TO101 unit is designed to verify the state equation for ideal gases and to demonstrate Boyle's law and Gay-Lussac's law.",
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "What type of gas is primarily used in the experiments with the LT-TO101 unit?",
+            "question_answer": "Air is used as the experimental gas.",
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "How does the LT-TO101 unit illustrate Boyle's law?",
+            "question_answer": "It illustrates the relationship between volume and pressure changes in an enclosed gas, showing that pressure increases when volume decreases at constant temperature.",
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "What role does hydraulic oil play in the LT-TO101 experiments?",
+            "question_answer": "Hydraulic oil acts like a piston, increasing or decreasing the volume of the enclosed gas.",
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "What does Boyle's law state about the relationship between pressure and volume?",
+            "question_answer": "Boyle's law states that for a fixed amount of gas at constant temperature, the product of pressure and volume is constant, meaning they are inversely proportional.",
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "What is required to maintain isothermal conditions during the experiments?",
+            "question_answer": "The experiment must be conducted slowly enough to prevent heat generation from compression, ensuring constant temperature.",
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "PARAGRAPH",
+            "question_text": "What is Gay-Lussac's Law?",
+            "question_answer": "Gay-Lussac's Law describes the relationship between pressure and temperature for a fixed volume of gas, stating that P/T = constant.",
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "NUMERIC",
+            "question_text": "A gas occupies a volume of 2.0 L at a pressure of 1.0 atm. What will be the new pressure if the volume is decreased to 1.0 L, assuming the temperature remains constant?",
+            "question_answer": "2.0 [atm]",
+            "hint": [
+                "$$ P1 x V1 = P2 x V2 $$"
+            ],
+            "refs": [
+                3
+            ]
+        },
+        {
+            "question_type": "NUMERIC",
+            "question_text": "If an ideal gas has a pressure of 3.0 atm at a temperature of 300 K, what will be its pressure at 600 K, assuming the volume remains constant?",
+            "question_answer": "6.0 [atm]",
+            "hint": [
+                "$$ P1 / T1 = P2 / T2 $$"
+            ],
+            "refs": [
+                7
+            ]
+        },
+        {
+            "question_type": "NUMERIC",
+            "question_text": "A gas has an initial pressure of 2.0 atm, an initial volume of 5.0 L, and an initial temperature of 300 K. If the gas is compressed to a volume of 3.0 L and heated to a temperature of 450 K, what will be the new pressure of the gas?",
+            "question_answer": "5.0 [atm]",
+            "hint": [
+                "$$ \frac{P1 \times V1}{T1} = \frac{P2 \times V2}{T2} $$"
+            ],
+            "refs": [
+                7
+            ]
+        }
+    ]
+}

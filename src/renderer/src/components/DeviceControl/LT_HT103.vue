@@ -430,6 +430,7 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     background-color: var(--light-bg-color);
+    border: 1px solid var(--empty-gauge-color);
     border-radius: 4px;
     padding: 8px;
 }

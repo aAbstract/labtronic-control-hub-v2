@@ -188,6 +188,7 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     background-color: var(--light-bg-color);
+    border: 1px solid var(--empty-gauge-color);
     border-radius: 4px;
     z-index: 2;
     border: v-bind(lt_re600_control_panel_border);

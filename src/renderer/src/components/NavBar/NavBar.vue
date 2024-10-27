@@ -9,6 +9,7 @@ import SettingsIcon from '@renderer/components/icons/Settings.vue';
 import CalculatorMoney from '@renderer/components/icons/CalculatorMoney.vue';
 import BookOpenCover from '@renderer/components/icons/BookOpenCover.vue';
 import PhotoCapture from '@renderer/components/icons/PhotoCapture.vue';
+import ChatbotSpeechBubble from '@renderer/components/icons/ChatbotSpeechBubble.vue';
 import CircleXmark from '@renderer/components/icons/CircleXmark.vue';
 import { post_event, subscribe } from '@common/mediator';
 import { toggle_screenshot_mode, screenshot_mode } from '@renderer/lib/screenshot';
@@ -35,9 +36,12 @@ class NavMenuItem {
 const toast_service = useToast();
 const menu_items: NavMenuItem[] = [
     new NavMenuItem('DEVICE TERMINAL', SquareTerminalIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'control_panel', 'LEFT'),
-    new NavMenuItem('SETTINGS', SettingsIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'settings_panel', 'LEFT'),
     new NavMenuItem('DATA TOOL', CalculatorMoney, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'data_tool', 'RIGHT'),
-    new NavMenuItem('DEVICE MANUAL', BookOpenCover, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'device_manual_panel', 'RIGHT'),
+    new NavMenuItem('DEVICE MANUAL', BookOpenCover, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'device_pdf_panel', 'RIGHT'),
+    new NavMenuItem('LABTRONIC AI', ChatbotSpeechBubble, function (this: NavMenuItem) {
+        this.is_active.value = !this.is_active.value;
+        post_event('toggle_ltai_panel', {});
+    }),
     new NavMenuItem('SCREENSHOT', PhotoCapture, function (this: NavMenuItem) {
         toggle_screenshot_mode();
         const mode_str_repr = screenshot_mode() ? 'ON' : 'OFF';
@@ -45,6 +49,7 @@ const menu_items: NavMenuItem[] = [
         toast_service.add({ severity: 'info', summary: `Screenshot ${mode_str_repr}`, detail: mode_msg, life: 3000 });
         this.is_active.value = screenshot_mode();
     }),
+    new NavMenuItem('SETTINGS', SettingsIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'settings_panel', 'LEFT'),
 ];
 const exit_menu_item = new NavMenuItem('EXIT', CircleXmark, function (this: NavMenuItem) { post_event('nav_bar_exit', {}) });
 

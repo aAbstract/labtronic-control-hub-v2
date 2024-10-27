@@ -11,15 +11,17 @@ import DeviceStatePanel from '@renderer/components/DeviceStatePanel/DeviceStateP
 import DeviceModelPanel from '@renderer/components/DeviceModelPanel/DeviceModelPanel.vue';
 import DataTool from '@renderer/components/DataTool/DataTool.vue';
 import SettingsPanel from '@renderer/components/SettingsPanel.vue';
-import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
+// import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
+import DevicePDFPanel from '@renderer/components/DevicePDFPanel.vue';
 import Alert from '@renderer/components/Alert.vue';
+import LTAIPanel from './components/LTAIPanel.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { CHXCloudSettings, MsgTypeConfig, _ToastMessageOptions } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
-import LT_RE600 from '@renderer/components/DeviceControl/LT_RE600.vue';
+import LT_HT113 from '@renderer/components/DeviceControl/LT_HT113.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -29,7 +31,7 @@ const APP_THEME = {
   '--accent-color': '#29B2F8',
   '--empty-gauge-color': '#2D3A4B',
 };
-const DEVICE_MODEL = 'LT-RE600';
+const DEVICE_MODEL = 'LT-HT113';
 const toast_service = useToast();
 const spring_display = ref<string>('block');
 
@@ -74,10 +76,11 @@ onBeforeMount(() => {
     <div id="main_panel">
       <NavBar />
       <div id="left_panel_cont">
+        <LTAIPanel style="position: absolute;" />
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_RE600 />
+          <LT_HT113 />
           <div class="ui_spring"></div>
         </div>
         <TerminalPanel />
@@ -86,7 +89,7 @@ onBeforeMount(() => {
       <div id="right_panel_cont">
         <DeviceStatePanel />
         <DataTool />
-        <DeviceManualPanel />
+        <DevicePDFPanel />
       </div>
     </div>
   </div>

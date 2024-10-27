@@ -1,5 +1,5 @@
 import { ipcMain, BrowserWindow } from "electron";
-import fs from 'fs';
+import fs from 'node:fs';
 import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result, CHXSeries, CHXEquation, CHXScript } from "../common/models";
 
 export const CHX_SETTINGS_FILENAME = 'chx_settings.json';

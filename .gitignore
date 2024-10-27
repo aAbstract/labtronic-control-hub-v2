@@ -8,3 +8,6 @@ out
 data/*.csv
 data/*.db
 temp/eda.ipynb
+labtronic_ai/venv
+labtronic_ai/all-MiniLM-L6-v2
+labtronic_ai/all_mlm_l6.pkl

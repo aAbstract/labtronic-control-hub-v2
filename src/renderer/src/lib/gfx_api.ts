@@ -7,7 +7,7 @@ const FONT = `bold ${FONT_SIZE}px Arial`;
 
 const ANIMATION_PERIOD = 100;
 const CLEAR_DELAY = ANIMATION_PERIOD * 10;
-const MOUSE_DEBUG = true;
+const MOUSE_DEBUG = false;
 
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;

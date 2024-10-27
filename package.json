@@ -18,8 +18,7 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux",
-    "test": "jest"
+    "build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
@@ -36,7 +35,6 @@
     "@electron-toolkit/eslint-config-ts": "^1.0.1",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@rushstack/eslint-patch": "^1.7.1",
-    "@types/jest": "^29.5.12",
     "@types/node": "^18.19.9",
     "@types/papaparse": "^5.3.14",
     "@vitejs/plugin-vue": "^5.0.3",
@@ -47,12 +45,10 @@
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-vue": "^9.20.1",
-    "jest": "^29.7.0",
     "prettier": "^3.2.4",
-    "ts-jest": "^29.1.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vue": "^3.4.15",
-    "vue-tsc": "^1.8.27"
+    "vue-tsc": "^2.1.6"
   }
 }

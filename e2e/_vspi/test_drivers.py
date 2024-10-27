@@ -1,4 +1,4 @@
-from ltd_driver import (
+from e2e._vspi.ltd_driver import (
     LtdDriver,
     MsgTypeConfig,
     DATA_TYPE_UINT,

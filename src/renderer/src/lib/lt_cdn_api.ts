@@ -12,7 +12,7 @@ export function set_base_url(new_url: string) {
     labtronic_cdn_base_url = new_url;
 }
 
-export function inject_source_csp(url: string) {
+export function inject_source_csp(_url: string) {
     // allow renderer process to access LabTronic CDN network resources
     const cdn_meta_csp = document.createElement('meta');
     cdn_meta_csp.setAttribute('http-equiv', 'Content-Security-Policy');
@@ -20,8 +20,10 @@ export function inject_source_csp(url: string) {
         `default-src 'self'`,
         "script-src 'self'",
         "style-src 'self' 'unsafe-inline'",
-        `connect-src 'self' ${url}`,
-        `img-src 'self' ${url} data:`,
+        // `connect-src 'self' ${url}`,
+        // `img-src 'self' ${url} data:`,
+        "img-src 'self' data:",
+        "frame-src 'self' data:",
     ];
     cdn_meta_csp.setAttribute('content', csp_items.join(';'));
     document.head.appendChild(cdn_meta_csp);
@@ -55,7 +57,7 @@ export async function get_fake_manual(_manual_id: string): Promise<_Result> {
     return { ok: json_res };
 }
 
-export async function get_manual(device_model: string): Promise<_Result> {
+export async function get_manual(_device_model: string): Promise<_Result> {
     // TODO-LATER: optimize this function
     // const device_id_res = await make_fetch_request('/capi/manuals/get-device-id', { method: 'POST', body: JSON.stringify({ device_model }) });
     // if (device_id_res.err)

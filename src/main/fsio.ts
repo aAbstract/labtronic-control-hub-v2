@@ -2,7 +2,7 @@ import { ipcMain, Rectangle } from "electron";
 import { dialog, BrowserWindow, SaveDialogOptions, OpenDialogOptions } from "electron";
 import { DmtbRow, Result } from "../common/models";
 import pcsv from 'papaparse';
-import fs from 'fs';
+import fs from 'node:fs';
 
 // @ts-ignore
 function _export_device_data(main_window: BrowserWindow, device_data: DmtbRow[]) {
@@ -99,9 +99,31 @@ function load_device_asset(asset_path: string): string {
     return `data:image/${img_ext};base64,${base64_buffer}`;
 }
 
+function load_device_pdf(device_model: string): string {
+    const _device_model = device_model.toLowerCase().replace('-', '_');
+    const file_path = `device_data/${_device_model}/${_device_model}.pdf`;
+    const pdf_bin = fs.readFileSync(file_path);
+    const base64_buffer = Buffer.from(pdf_bin).toString('base64');
+    return `data:application/pdf;base64,${base64_buffer}`;
+}
+
+function load_device_metadata(device_model: string): Record<string, string> {
+    const _device_model = device_model.toLowerCase().replace('-', '_');
+    const _file_path = `device_data/${_device_model}/${_device_model}.json`;
+    const metadata_str = fs.readFileSync(_file_path, { encoding: 'utf8' });
+    const metdadata_record = JSON.parse(metadata_str);
+    return metdadata_record;
+}
+
 export function init_fsio(main_window: BrowserWindow) {
     ipcMain.on('import_device_data', () => import_device_data(main_window));
     ipcMain.on('export_device_data', (_, data) => export_device_data(main_window, data.device_data));
     ipcMain.on('save_screenshot', (_, data) => save_screenshot(main_window, data.comp_rect));
     ipcMain.handle('load_devie_asset', (_, data) => load_device_asset(data.asset_path));
+    ipcMain.handle('load_devie_pdf', (_, data) => load_device_pdf(data.device_model));
+    ipcMain.handle('load_device_metadata', (_, data) => load_device_metadata(data.device_model));
+    // setTimeout(() => {
+    //     console.log('onfind');
+    //     main_window.webContents.findInPage('unit is design');
+    // }, 5000);
 }
