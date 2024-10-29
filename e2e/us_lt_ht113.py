@@ -209,6 +209,21 @@ def simulate_reduce_time(driver: webdriver.Chrome) -> int:
      # grap the settings buttons => all elements in the last div elemnt in the data tool header
     settings_button = try_get_elems(driver , '#data_tool_header>div:nth-of-type(2)>button')[-1]
     js_click(driver,settings_button)
+    
+    
+    
+def us_simulate_reduce_time(driver: webdriver.Chrome) -> int:
+    # this function checks if the graph displayed is correct 
+
+    func_id = MODULE_ID + '.us_view_graph'
+    _is_device_connected = is_device_connected(driver)
+    if not _is_device_connected:
+        elog(func_id, 'Device is not Connected')
+        return 1
+    
+     # grap the settings buttons => all elements in the last div elemnt in the data tool header
+    settings_button = try_get_elems(driver , '#data_tool_header>div:nth-of-type(2)>button')[-1]
+    js_click(driver,settings_button)
 
 
 
