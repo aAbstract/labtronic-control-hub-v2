@@ -73,9 +73,9 @@ class VSPI:
     def write_packet(self, packet: bytes):
         self.vspi_socket.send(packet)
 
-    def write_msg(self, msg_type: int, msg_value: int):
+    def write_msg(self, msg_type: int, msg_value: int, sn: int = 0):
         self.device_driver.driver_msg_type_config_map[msg_type].cfg2 = self.device_cfg2
-        packet = self.device_driver.encode_packet(0, msg_type, msg_value).ok
+        packet = self.device_driver.encode_packet(sn, msg_type, msg_value).ok
         if self.debug:
             print(' '.join([f"{hex(x).replace('0x', '').upper():0>2}" for x in packet]))
         if self.vspi_mode == VSPICommMode.NETWORK:

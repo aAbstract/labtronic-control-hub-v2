@@ -119,16 +119,16 @@ onBeforeMount(() => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         msg_values_cache[msg_type] = device_msg.msg_value.toFixed(1);
-        // update_device_state_panel();
+        update_device_state_panel();
         cache_changed = true;
     });
 
-    setInterval(() => {
-        if (!cache_changed)
-            return;
-        update_device_state_panel();
-        cache_changed = false;
-    }, 1000);
+    // setInterval(() => {
+    //     if (!cache_changed)
+    //         return;
+    //     update_device_state_panel();
+    //     cache_changed = false;
+    // }, 1000);
 });
 
 </script>
