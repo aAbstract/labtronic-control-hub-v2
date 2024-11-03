@@ -41,6 +41,7 @@ function handle_ltai_logs(_logs: string) {
                 life: 3000,
             };
             main_window?.webContents.send('show_system_notif', { notif });
+            main_window?.webContents.send('ltai_agent_started', {});
         }
 
         if (_log.includes('ERROR:'))
@@ -61,6 +62,13 @@ function start_ltai_service() {
         main_window?.webContents.send('add_sys_log', log_msg);
         if (LTAI_DEBUG)
             console.log('[ERROR] [LTAI] Target Python Environment not Found');
+        const notif: _ToastMessageOptions = {
+            severity: 'error',
+            summary: 'LTAI Agent',
+            detail: 'LTAI Agent is not Installed',
+            life: 0,
+        };
+        main_window?.webContents.send('show_system_notif', { notif });
         return;
     }
 
@@ -92,6 +100,7 @@ function start_ltai_service() {
             life: 3000,
         };
         main_window?.webContents.send('show_system_notif', { notif });
+        main_window?.webContents.send('ltai_agent_stopped', {});
         if (LTAI_DEBUG)
             console.log('LTAI Service Stopped');
     });

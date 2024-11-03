@@ -1,11 +1,56 @@
 <script setup lang="ts">
 
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, inject } from 'vue';
 import Button from 'primevue/button';
 
-import { subscribe } from '@common/mediator';
+import { subscribe, post_event } from '@common/mediator';
 
+enum AIAgentResponseState {
+    SUCCESS = 0,
+    LOADING = 1,
+    ERROR = 2,
+    IDLE = 3,
+};
+
+const device_model = inject('device_model') as string;
 const panel_pos = ref('-50vw');
+const agent_response_state = ref(AIAgentResponseState.IDLE);
+const agent_err = ref('');
+const agent_reponse = ref('Loading...');
+const ltai_response_dispay = ref('none');
+const ltai_prompt = ref('');
+
+function submit_ltai_query() {
+    agent_response_state.value = AIAgentResponseState.LOADING;
+    agent_reponse.value = 'Loading...';
+    ltai_response_dispay.value = 'block';
+
+    const opts: RequestInit = {};
+    opts.headers = {};
+    opts.headers['Content-Type'] = 'application/json';
+    opts.method = 'POST';
+    opts.body = JSON.stringify({
+        device_model: device_model.toLowerCase().replace('-', '_'),
+        query: ltai_prompt.value,
+    });
+    fetch('http://127.0.0.1:8091/api/query', opts).then(http_resp => {
+        if (http_resp.status !== 200) {
+            agent_response_state.value = AIAgentResponseState.ERROR;
+            agent_err.value = 'Agent Response Status Code: ' + http_resp.status;
+            ltai_response_dispay.value = 'none';
+            return;
+        }
+        http_resp.json().then(_agent_response => {
+            agent_response_state.value = AIAgentResponseState.SUCCESS;
+            agent_reponse.value = _agent_response;
+            ltai_response_dispay.value = 'block';
+        });
+    }).catch(e => {
+        agent_response_state.value = AIAgentResponseState.ERROR;
+        agent_err.value = 'Agent Error: ' + e;
+        ltai_response_dispay.value = 'none';
+    });
+}
 
 onMounted(() => {
     subscribe('toggle_ltai_panel', 'toggle_ltai_panel_visi', _ => {
@@ -30,21 +75,23 @@ onMounted(() => {
                 <li>Which laws are demonstrated by the LT-TO101 unit?</li>
             </ul>
         </div>
+        <h4 v-if="agent_response_state === AIAgentResponseState.ERROR" style="color: #DD2C00; font-size: 16px; margin: 0px;">{{ agent_err }}</h4>
+        <p id="query_response">{{ agent_reponse }}</p>
         <div id="ltai_prompt">
-            <input type="text">
+            <input type="text" v-model="ltai_prompt">
             <div style="width: 16px;"></div>
-            <Button id="ltai_prompt_submit_btn" icon="pi pi-chevron-right" rounded outlined title="Submit" />
+            <Button id="ltai_prompt_submit_btn" icon="pi pi-chevron-right" rounded outlined title="Submit" @click="submit_ltai_query()" />
         </div>
         <div id="ltai_quick_actions">
-            <div class="ltai_qa_item" title="Explore Device Physics">
+            <div class="ltai_qa_item" title="Explore Device Physics" @click="post_event('update_device_pdf_page', { target_page: 7 })">
                 <i class="pi pi-book"></i>
                 <span>Theory</span>
             </div>
-            <div class="ltai_qa_item" title="Device Safety Precautions">
+            <div class="ltai_qa_item" title="Device Safety Precautions" @click="post_event('update_device_pdf_page', { target_page: 4 })">
                 <i class="pi pi-shield"></i>
                 <span>Safety</span>
             </div>
-            <div class="ltai_qa_item" title="Device Operations Procedure">
+            <div class="ltai_qa_item" title="Device Operations Procedure" @click="post_event('update_device_pdf_page', { target_page: 8 })">
                 <i class="pi pi-cog"></i>
                 <span>Operation</span>
             </div>
@@ -53,13 +100,21 @@ onMounted(() => {
                 <span>Examination</span>
             </div>
         </div>
-        <div id="ltai_output">
-
-        </div>
     </div>
 </template>
 
 <style scoped>
+#query_response {
+    display: v-bind(ltai_response_dispay);
+    color: var(--font-color);
+    width: 100%;
+    height: fit-content;
+    border-top: 2px solid var(--font-color);
+    font-size: 14px;
+    padding-top: 8px;
+    margin-bottom: 0px;
+}
+
 #ltai_prompt_submit_btn {
     width: 40px;
     height: 40px;

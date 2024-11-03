@@ -2,7 +2,6 @@
 
 import { ref, onMounted, inject } from 'vue';
 import Button from 'primevue/button';
-import { useToast } from 'primevue/usetoast';
 
 import { subscribe } from '@common/mediator';
 import { get_base_url } from '@renderer/lib/lt_cdn_api';
@@ -23,7 +22,6 @@ const device_weight = ref('00.0kg');
 const device_dimensions = ref('0.00m x 0.00m x 0.00m');
 const device_level = ref('BASIC');
 const ai_agent_state = ref<AIAgentState>(AIAgentState.STOPPED);
-const toast_service = useToast(); // TODO:
 const latest_kdb_update = ref('XXXX-XX-XX XX:XX:XX');
 const __aigscm: Record<AIAgentState, string> = {
     [AIAgentState.STOPPED]: '#FFAB00',
@@ -45,6 +43,22 @@ function start_ltai_service() {
 
 function stop_ltai_service() {
     electron_renderer_send('stop_ltai_service', {});
+}
+
+function check_ltai_agent() {
+    fetch('http://127.0.0.1:8091/api/test').then(http_resp => {
+        if (http_resp.status !== 200) {
+            ai_agent_state.value = AIAgentState.STOPPED;
+            return;
+        }
+        http_resp.json().then(server_msg => {
+            if (server_msg !== 'LTAI_SERVER_ONLINE') {
+                ai_agent_state.value = AIAgentState.STOPPED;
+                return;
+            }
+            ai_agent_state.value = AIAgentState.RUNNING;
+        });
+    }).catch(_ => ai_agent_state.value = AIAgentState.STOPPED);
 }
 
 onMounted(() => {
@@ -75,13 +89,8 @@ onMounted(() => {
         device_level.value = metadata.level;
     });
 
-    window.electron?.ipcRenderer.on('ltai_agent_started', () => {
-
-    });
-
-    window.electron?.ipcRenderer.on('ltai_agent_stopped', () => {
-
-    });
+    window.electron?.ipcRenderer.on('ltai_agent_started', () => ai_agent_state.value = AIAgentState.RUNNING);
+    window.electron?.ipcRenderer.on('ltai_agent_stopped', () => ai_agent_state.value = AIAgentState.STOPPED);
 });
 
 </script>
@@ -115,8 +124,8 @@ onMounted(() => {
                 <div style="display: flex; flex-direction: row; justify-content: flex-start;">
                     <Button class="ai_action_agent_btn" icon="pi pi-sort-up" severity="info" v-tooltip.top="{ value: 'START AGENT', pt: compute_tooltip_pt('top') }" @click="start_ltai_service()" rounded outlined />
                     <Button class="ai_action_agent_btn" icon="pi pi-stop" severity="info" v-tooltip.top="{ value: 'STOP AGENT', pt: compute_tooltip_pt('top') }" @click="stop_ltai_service()" rounded outlined />
-                    <Button class="ai_action_agent_btn" icon="pi pi-check-circle" severity="info" v-tooltip.top="{ value: 'CHECK AGENT', pt: compute_tooltip_pt('top') }" @click="start_ltai_service()" rounded outlined />
-                    <Button class="ai_action_agent_btn" icon="pi pi-database" severity="info" v-tooltip.top="{ value: 'UPDATE KnowledgeDB', pt: compute_tooltip_pt('top') }" @click="start_ltai_service()" rounded outlined />
+                    <Button class="ai_action_agent_btn" icon="pi pi-check-circle" severity="info" v-tooltip.top="{ value: 'CHECK AGENT', pt: compute_tooltip_pt('top') }" @click="check_ltai_agent()" rounded outlined />
+                    <Button class="ai_action_agent_btn" icon="pi pi-database" severity="info" v-tooltip.top="{ value: 'UPDATE KnowledgeDB', pt: compute_tooltip_pt('top') }" @click="" rounded outlined />
                 </div>
             </div>
 

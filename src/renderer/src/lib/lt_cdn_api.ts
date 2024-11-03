@@ -20,10 +20,11 @@ export function inject_source_csp(_url: string) {
         `default-src 'self'`,
         "script-src 'self'",
         "style-src 'self' 'unsafe-inline'",
-        // `connect-src 'self' ${url}`,
+        "connect-src 'self' 127.0.0.1:8091",
+        // `connect-src 'self' ${_url}`,
         // `img-src 'self' ${url} data:`,
         "img-src 'self' data:",
-        "frame-src 'self' data:",
+        "frame-src 'self' blob:",
     ];
     cdn_meta_csp.setAttribute('content', csp_items.join(';'));
     document.head.appendChild(cdn_meta_csp);
