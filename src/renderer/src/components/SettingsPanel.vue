@@ -146,7 +146,7 @@ onMounted(() => {
             </div>
         </div>
         <div class="sp_section">
-            <h1>DEVICE INFO</h1>
+            <h1>DEVICE INFO</h1>https://www.lab-tronic.com/
             <div id="device_info_cont">
                 <img id="device_img" :src="device_model_img" alt="Device Solid Model">
                 <div id="device_info_text">
@@ -172,7 +172,7 @@ onMounted(() => {
                 </div>
                 <div>
                     <span>Link</span>
-                    <span>https://github.com/aAbstract/labtronic-control-hub-v2</span>
+                    <span>https://www.lab-tronic.com/</span>
                 </div>
                 <div>
                     <span>Maintainer</span>

@@ -5,7 +5,7 @@ import { ref, onMounted, inject } from 'vue';
 import { subscribe } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 
-let pdf_object: Blob = new Blob();
+let pdf_object: Blob | null = null;
 const panel_pos = ref('-60vw');
 const device_model = inject('device_model');
 const err_msg = ref('');
@@ -25,12 +25,14 @@ onMounted(() => {
 
     subscribe('update_device_pdf_page', 'update_device_pdf_page', args => {
         const target_page: number = args.target_page;
-        device_pdf_src.value = URL.createObjectURL(pdf_object) + '#page=' + target_page;
+        device_pdf_src.value = URL.createObjectURL(pdf_object ?? new Blob()) + '#page=' + target_page;
     });
 
     electron_renderer_invoke<string>('load_devie_pdf', { device_model }).then(base64_src => {
-        if (!base64_src)
+        if (!base64_src) {
+            err_msg.value = 'No Manual Found for this Device';
             return;
+        }
         const b64_buffer = base64_src.split(',')[1];
         const pdf_bin = atob(b64_buffer);
         const pdf_bytes = new Uint8Array(pdf_bin.length);
