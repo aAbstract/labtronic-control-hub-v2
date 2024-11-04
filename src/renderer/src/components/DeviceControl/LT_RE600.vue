@@ -158,10 +158,16 @@ onMounted(() => {
                 <LT_RE600_Meter v-for="m in meters" :meter_params="m" />
             </TabPanel>
             <TabPanel header="Chart 1" :pt="tabpanel_pt">
-                <LT_RE600_Chart :x_msg_type="26" x_title="M5_Freq [Celsius]" :y_msg_type="9" y_title="M1_P [W]" line_color="#FF9800" />
+                <LT_RE600_Chart :x_msg_type="26" x_title="ACD_Freq [rpm]" :y_msg_type="9" y_title="TPH_Sys_P [watt]" line_color="#8BC34A" />
             </TabPanel>
             <TabPanel header="Chart 2" :pt="tabpanel_pt">
-                <LT_RE600_Chart :x_msg_type="1" x_title="M1_V12 [V]" :y_msg_type="9" y_title="M1_P [W]" line_color="#DD2C00" />
+                <LT_RE600_Chart :x_msg_type="26" x_title="ACD_Freq [rpm]" :y_msg_type="1" y_title="TPH_V12 [V]" line_color="#DD2C00" />
+            </TabPanel>
+            <TabPanel header="Chart 3" :pt="tabpanel_pt">
+                <LT_RE600_Chart :x_msg_type="26" x_title="ACD_Freq [rpm]" :y_msg_type="23" y_title="DCL_V [V]" line_color="#009688" />
+            </TabPanel>
+            <TabPanel header="Chart 4" :pt="tabpanel_pt">
+                <LT_RE600_Chart :x_msg_type="23" x_title="DCL_V [V]" :y_msg_type="24" y_title="DCL_I [A]" line_color="#00BCD4" />
             </TabPanel>
         </TabView>
     </div>
