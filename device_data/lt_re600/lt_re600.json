@@ -1,6 +1,6 @@
 {
-    "about_device": "The LT-TO101 unit is designed to verify the state equation for ideal gases and to demonstrate Boyle's law and Gay-Lussac law.",
-    "weight": "35kg",
-    "dimensions": "0.8m x 0.5m x 0.65m",
-    "level": "ADVANCED"
+    "about_device": "The LT-REE600 is an off-grid system with storage that generate AC and DC voltages to supply different loads.",
+    "weight": "300kg",
+    "dimensions": "1.26mm x .7mm x 2.07mm (WxDxH)",
+    "level": "INTERMEDIATE"
 }
