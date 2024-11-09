@@ -7,7 +7,6 @@
 #     fc.write(out)
 # print('Model Loaded')
 # embeddings = st_e5.encode(input_texts, normalize_embeddings=True)
-# breakpoint()
 # batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
 # outputs = model(**batch_dict)
 # embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
