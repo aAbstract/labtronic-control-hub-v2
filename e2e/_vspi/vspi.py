@@ -2,6 +2,7 @@ import time
 import socket
 import serial
 from enum import Enum
+from threading import Thread
 from e2e._vspi.ltd_driver import (
     LtdDriver,
     DeviceMsg,
@@ -19,6 +20,7 @@ class VSPI:
     debug: bool = True
     log_tag: str
 
+    device_model: str
     device_driver: LtdDriver
     control_feedback_map: dict
 
@@ -30,8 +32,12 @@ class VSPI:
     vspi_baud_rate: int
     vspi_serial_port: serial.Serial
 
+    control_loop_running: bool = False
+    control_loop_thread: Thread
+
     def __init__(
         self,
+        device_model: str,
         device_driver: LtdDriver,
         control_feedback_map: dict = {},
         vspi_socket_host: str = '127.0.0.1',
@@ -39,7 +45,9 @@ class VSPI:
         vspi_serial_port_name: str = '/dev/ttyACM0',
         vspi_baud_rate: int = 115200,
         vspi_comm_mode: VSPICommMode = VSPICommMode.NETWORK,
+        auto_connect: bool = False,
     ):
+        self.device_model = device_model
         self.device_driver = device_driver
         self.device_cfg2 = device_driver.driver_msg_type_config_map.get(0, MsgTypeConfig(cfg2=0)).cfg2
         self.control_feedback_map = control_feedback_map
@@ -48,27 +56,37 @@ class VSPI:
         self.vspi_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.vspi_serial_port_name = vspi_serial_port_name
         self.vspi_baud_rate = vspi_baud_rate
-        self.log_tag = f"[VSPI-{hex(self.device_driver.protocol_version[0])}-{hex(self.device_driver.protocol_version[1])}]"
+        self.log_tag = f"[VSPI-{self.device_model}]"
+        if auto_connect:
+            self.connect()
+
+    def connect(self):
         print(self.log_tag, 'VSPI Connecting...')
         try:
-            self.connect()
+            if self.vspi_mode == VSPICommMode.NETWORK:
+                self.vspi_socket.connect(self.vspi_socket_addr)
+            elif self.vspi_mode == VSPICommMode.WIRED:
+                self.vspi_serial_port = serial.Serial(port=self.vspi_serial_port_name, baudrate=self.vspi_baud_rate)
             print(self.log_tag, 'VSPI Connecting...OK')
+
         except Exception as e:
             print(self.log_tag, 'VSPI Connecting...ERR')
             if self.debug:
                 print(e)
 
-    def connect(self):
-        if self.vspi_mode == VSPICommMode.NETWORK:
-            self.vspi_socket.connect(self.vspi_socket_addr)
-        elif self.vspi_mode == VSPICommMode.WIRED:
-            self.vspi_serial_port = serial.Serial(port=self.vspi_serial_port_name, baudrate=self.vspi_baud_rate)
-
     def disconnect(self):
-        if self.vspi_mode == VSPICommMode.NETWORK:
-            self.vspi_socket.close()
-        elif self.vspi_mode == VSPICommMode.WIRED:
-            self.vspi_serial_port.close()
+        print(self.log_tag, 'VSPI Disconnecting...')
+        try:
+            if self.vspi_mode == VSPICommMode.NETWORK:
+                self.vspi_socket.close()
+            elif self.vspi_mode == VSPICommMode.WIRED:
+                self.vspi_serial_port.close()
+            print(self.log_tag, 'VSPI Disconnecting...OK')
+
+        except Exception as e:
+            print(self.log_tag, 'VSPI Disconnecting...ERR')
+            if self.debug:
+                print(e)
 
     def write_packet(self, packet: bytes):
         self.vspi_socket.send(packet)
@@ -100,7 +118,6 @@ class VSPI:
         self.write_msg(0, 11)
 
     def _handle_control_packet(self):
-        print(f"Listening for LtdDriver-{self.device_driver.protocol_version} packet...")
         packet = b''
         while True:
             try:
@@ -112,23 +129,37 @@ class VSPI:
                 if packet[0] == self.device_driver.protocol_version[0] and packet[1] == self.device_driver.protocol_version[1]:
                     break
                 else:
-                    print(f"Invalid LtdDriver-{self.device_driver.protocol_version} packet")
+                    print(f"Invalid LtdDriver-{self.device_model} packet")
                     packet = b''
 
         device_msg_res = self.device_driver.decode_packet(packet)
         if device_msg_res.err:
-            print(f"Invalid LtdDriver-{self.device_driver.protocol_version} packet")
+            print(f"Invalid LtdDriver-{self.device_model} packet")
             return
         device_msg: DeviceMsg = device_msg_res.ok
+        # DEVICE_HEART_BEAT
+        if device_msg.config.msg_type == 15:
+            return
+
         if self.debug:
             print('MSG:', device_msg)
+
         if device_msg.config.msg_type in self.control_feedback_map:
             feedback_packet = self.device_driver.encode_packet(0, self.control_feedback_map[device_msg.config.msg_type], device_msg.msg_value).ok
             self.vspi_socket.send(feedback_packet)
 
     def start_feedback_control_loop_sync(self):
-        while True:
-            self._handle_control_packet()
+        if self.control_loop_running:
+            print(f"LtdDriver-{self.device_model} Control Loop Already Running")
+            return
+
+        self.control_loop_running = True
+        print(f"Listening for LtdDriver-{self.device_model} packet...")
+        while self.control_loop_running:
+            try:
+                self._handle_control_packet()
+            except KeyboardInterrupt:
+                self.control_loop_running = False
 
     def _burst_const_msgs(self, offset: int = 20):
         for msg_type in self.device_driver.driver_msg_type_config_map:
@@ -142,3 +173,17 @@ class VSPI:
         while True:
             self._burst_const_msgs()
             time.sleep(0.2)
+
+    def start_feedback_control_loop_async(self):
+        if self.control_loop_running:
+            print(f"LtdDriver-{self.device_model} Control Loop Already Running")
+            return
+
+        self.control_loop_thread = Thread(target=self.start_feedback_control_loop_sync)
+        self.control_loop_thread.start()
+
+    def stop_feedback_control_loop_async(self):
+        print(f"Stopping LtdDriver-{self.device_model} Control Loop...")
+        self.control_loop_running = False
+        self.control_loop_thread.join()
+        print(f"Stopping LtdDriver-{self.device_model} Control Loop...OK")

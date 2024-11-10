@@ -83,7 +83,7 @@ function save_screenshot(main_window: BrowserWindow, comp_rect: Rectangle) {
             return;
         const { filePath } = res;
         main_window.webContents.capturePage(comp_rect).then(cap_img => {
-            fs.writeFile(filePath + '.png', cap_img.toPNG(), (err) => {
+            fs.writeFile(filePath + '.png', cap_img.toPNG() as any, (err) => {
                 const fsio_res: Result<string> = err ? { err: err.message } : { ok: `Screenshot Saved to: ${res.filePath}` };
                 main_window.webContents.send('save_screenshot_res', fsio_res);
             });

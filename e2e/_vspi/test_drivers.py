@@ -7,7 +7,7 @@ from e2e._vspi.ltd_driver import (
 )
 
 
-DRIVER_CONFIG_0x87: list[MsgTypeConfig] = [
+DRIVER_CONFIG_LT_CH000: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=0, msg_name='PISTON_PUMP', data_type=DATA_TYPE_UINT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=1, msg_name='PERISTALTIC_PUMP', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
     MsgTypeConfig(msg_type=2, msg_name='READ_WEIGHT', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
@@ -18,7 +18,7 @@ DRIVER_CONFIG_0x87: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=15, msg_name='WRITE_RESET_SCALE', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
-ltd_driver_0x87 = LtdDriver([0x87, 0x87], DRIVER_CONFIG_0x87)
+ltd_driver_lt_ch000 = LtdDriver([0x87, 0x87], DRIVER_CONFIG_LT_CH000)
 
 
 DRIVER_CONFIG_LT_HT103: list[MsgTypeConfig] = [
@@ -32,6 +32,7 @@ DRIVER_CONFIG_LT_HT103: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=12, msg_name='WRITE_P_HEATER', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=13, msg_name='WRITE_P_PELTIER', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=15, msg_name='DEVICE_HEART_BEAT', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_ht103 = LtdDriver([0x13, 0x13], DRIVER_CONFIG_LT_HT103)
 
