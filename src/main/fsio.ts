@@ -102,17 +102,21 @@ function load_device_asset(asset_path: string): string {
 function load_device_pdf(device_model: string): string {
     const _device_model = device_model.toLowerCase().replace('-', '_');
     const file_path = `device_data/${_device_model}/${_device_model}.pdf`;
-    const pdf_bin = fs.readFileSync(file_path);
-    const base64_buffer = Buffer.from(pdf_bin).toString('base64');
-    return `data:application/pdf;base64,${base64_buffer}`;
+    try {
+        const pdf_bin = fs.readFileSync(file_path);
+        const base64_buffer = Buffer.from(pdf_bin).toString('base64');
+        return `data:application/pdf;base64,${base64_buffer}`;
+    } catch (_) { return '' }
 }
 
 function load_device_metadata(device_model: string): Record<string, string> {
     const _device_model = device_model.toLowerCase().replace('-', '_');
     const _file_path = `device_data/${_device_model}/${_device_model}.json`;
-    const metadata_str = fs.readFileSync(_file_path, { encoding: 'utf8' });
-    const metdadata_record = JSON.parse(metadata_str);
-    return metdadata_record;
+    try {
+        const metadata_str = fs.readFileSync(_file_path, { encoding: 'utf8' });
+        const metdadata_record = JSON.parse(metadata_str);
+        return metdadata_record;
+    } catch (_) { return {} }
 }
 
 export function init_fsio(main_window: BrowserWindow) {
