@@ -4,6 +4,17 @@ import colorama
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+import time
+import json
+from e2e._vspi.vspi import VSPI
+from dataclasses import dataclass
+@dataclass
+class CheckChxDeviceState:
+    key:str
+    key_msg_type:int
+    value:float
+    seq_num:int
+    
 
 
 WDIWV = 0.1  # web driver implicit wait time in seconds
@@ -185,3 +196,78 @@ def test_screenshot(element: WebElement, image_path: str) -> int:
         if encoded_string != comp_as_base64:
             return 1
     return 0
+
+
+
+
+def check_chx_device_state(driver: webdriver.Chrome,device_vspi:VSPI,func_id:str, states_check_arr:list[CheckChxDeviceState]) -> int:
+    '''
+    this function checks the state of any device by:
+        1- checking if states taken are subset of the device state
+        2- take each state and inject a value
+        3- read the value and check if it is consistent with value sent
+    '''
+    chx_device_state = get_chx_device_state(driver)
+    if not chx_device_state:
+        return 1
+    chx_device_state_keys = set(chx_device_state.keys())
+    
+    target_chx_device_state_keys = set()
+    for state in states_check_arr:
+        target_chx_device_state_keys.add(state.key)
+        
+    if  not target_chx_device_state_keys.issubset(chx_device_state_keys):
+        elog(func_id, f"chx_device_state_keys={chx_device_state_keys}, target_chx_device_state_keys={target_chx_device_state_keys}")
+        return 1
+    
+    for state in  states_check_arr:
+        if state.key_msg_type >=0:
+            device_vspi.write_msg(state.key_msg_type,state.value)
+    
+    #   some times the values delay until being updated so ,sleep 5 seconds
+    time.sleep(5)
+    chx_device_state = get_chx_device_state(driver)
+    
+    for state in states_check_arr:
+        if chx_device_state[state.key] != state.value:
+            print(state.key,chx_device_state[state.key] , state.value)
+            return 1
+
+    return 0
+
+
+
+
+def regression(x:list[float],y:list[float]) -> int:
+    '''
+    this function takes two arrays x and y and and performs linear regression to get the slope and intersect
+    '''
+    if not(len(x) == len(y)):
+        raise 'Arrays must be of equal length'
+    # Calculate means of x and y
+    n = len(x)
+    x_mean = sum(x) / n
+    y_mean = sum(y) / n
+
+    # Calculate the slope (gradient)
+    numerator = sum((x[i] - x_mean) * (y[i] - y_mean) for i in range(n))
+    denominator = sum((x[i] - x_mean) ** 2 for i in range(n))
+    slope = numerator / denominator
+
+    # Calculate the intercept
+    intercept = y_mean - slope * x_mean
+    return slope,intercept
+
+
+
+# def edit_json_file(filename:str, new_values:dict)->int:
+#     with open(filename, 'r') as f:
+#         data = json.load(f)
+
+#     # Navigate to the desired key and update its value
+#     for key , value in new_values.items():
+#         data['device_config'][key] = value
+
+#     with open(filename, 'w') as f:
+#         json.dump(data, f, indent=4)
+

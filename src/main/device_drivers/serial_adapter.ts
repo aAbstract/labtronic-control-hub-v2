@@ -62,6 +62,7 @@ export class SerialAdapter {
         }
 
         const device_msg_list: DeviceMsg[] = decode_res.ok as DeviceMsg[];
+        console.log(device_msg_list);
         device_msg_list.forEach(device_msg => {
             if (device_msg.config.msg_type === this.device_error_msg_type) {
                 const error_code = device_msg.msg_value;

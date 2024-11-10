@@ -10,6 +10,9 @@ from e2e._vspi.vspi import (
 )
 from e2e._vspi.test_drivers import (
     ltd_driver_lt_ht113,
+    
+    ltd_driver_lt_ht103,
+    
     ltd_driver_lt_ht004,
 
     ltd_driver_lt_to202,
@@ -20,6 +23,9 @@ from e2e._vspi.test_drivers import (
 
 
 lt_ht113_vspi = VSPI(device_driver=ltd_driver_lt_ht113)
+
+lt_ht103_vspi = VSPI(device_driver=ltd_driver_lt_ht103)
+
 lt_ht004_vspi = VSPI(device_driver=ltd_driver_lt_ht004)
 
 lt_to202_vspi = VSPI(device_driver=ltd_driver_lt_to202)

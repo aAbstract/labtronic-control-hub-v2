@@ -1,7 +1,6 @@
 from selenium import webdriver
 from e2e.e2e_utils import *
 from e2e._vspi.test_vspis import lt_ht113_vspi
-import base64
 import time
 
 MODULE_ID = 'e2e.us_lt_ht113'
@@ -44,6 +43,23 @@ def us_check_chx_device_state(driver: webdriver.Chrome) -> int:
         return 1
 
     return 0
+
+
+
+
+def us_check_chx_device_state2(driver: webdriver.Chrome) -> int:
+    func_id = MODULE_ID + '.us_check_chx_device_state2'
+    _is_device_connected = is_device_connected(driver)
+    if not _is_device_connected:
+        elog(func_id, 'Device is not Connected')
+        return 1
+    
+    t_sam_state=CheckChxDeviceState('T_sam',0,12.5,0)
+    t_amp_state=CheckChxDeviceState('T_amb',1,12.1,0)
+    t_ref_state=CheckChxDeviceState('T_ref',2,1,0)
+    w_flw_state=CheckChxDeviceState('W_flw',3,5.6,0)
+    
+    return check_chx_device_state(driver,lt_ht113_vspi,'us_check_chx_device_state2',[t_sam_state,t_amp_state,t_ref_state,w_flw_state])
 
 def us_view_water_level_switch_state(driver: webdriver.Chrome) -> int:
     # this function checks the water switch value and the notification change
@@ -162,29 +178,35 @@ def us_view_graph(driver: webdriver.Chrome) -> int:
     time.sleep(0.25)
     
     # start recording
-    js_click(driver,constrol_buttons[0])
+    
     
     # click on settingins 
-    #js_click(driver,settings_button)
-    
-    
+    js_click(driver,settings_button)
+    time_sampling_time = try_get_elems(driver , "input[type=number]")[0]
+
+    time_sampling_time.clear() 
+    time_sampling_time.send_keys(10)
+    js_click(driver,settings_button)
+    js_click(driver,constrol_buttons[0])
     #siulate packet streem over time
     for i in range(10):
         lt_ht113_vspi.write_msg(0,i,i)
         lt_ht113_vspi.write_msg(1,10-i,i)
         lt_ht113_vspi.write_msg(2,i/2,i)
         lt_ht113_vspi.write_msg(3,i**5/10000,i)
-        time.sleep(1)
+        time.sleep(0.09)
         
+    
     #testing the screenshots
     graphs = ['lt_ht113_t_sam','lt_ht113_t_amp','lt_ht113_t_ref','lt_ht113_w_flw']
     for i,element in enumerate(canvases):
         # to take screen shoot of the element after making sure it is in view
         driver.execute_script("arguments[0].scrollIntoView();", element)
         # to make copies of the image first then return the comment
-        #element.screenshot(f'./e2e/data/{graphs[i]}.png')
-        #time.sleep(0.1)
+        # element.screenshot(f'./e2e/data/{graphs[i]}.png')
+        # time.sleep(0.1)
         if test_screenshot(element,f'./e2e/data/{graphs[i]}.png'):
+            print(graphs[i])
             return 1
         
     # return to the initial state
@@ -196,35 +218,9 @@ def us_view_graph(driver: webdriver.Chrome) -> int:
     
     return 0
 
-
-def simulate_reduce_time(driver: webdriver.Chrome) -> int:
-    # this function checks if the graph displayed is correct 
-
-    func_id = MODULE_ID + '.us_view_graph'
-    _is_device_connected = is_device_connected(driver)
-    if not _is_device_connected:
-        elog(func_id, 'Device is not Connected')
-        return 1
-    
-     # grap the settings buttons => all elements in the last div elemnt in the data tool header
-    settings_button = try_get_elems(driver , '#data_tool_header>div:nth-of-type(2)>button')[-1]
-    js_click(driver,settings_button)
     
     
     
-def us_simulate_reduce_time(driver: webdriver.Chrome) -> int:
-    # this function checks if the graph displayed is correct 
-
-    func_id = MODULE_ID + '.us_view_graph'
-    _is_device_connected = is_device_connected(driver)
-    if not _is_device_connected:
-        elog(func_id, 'Device is not Connected')
-        return 1
-    
-     # grap the settings buttons => all elements in the last div elemnt in the data tool header
-    settings_button = try_get_elems(driver , '#data_tool_header>div:nth-of-type(2)>button')[-1]
-    js_click(driver,settings_button)
-
 
 
 

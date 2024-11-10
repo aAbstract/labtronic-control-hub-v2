@@ -73,6 +73,7 @@ export class VirtualComputeEngine {
     private vce_safe_compute(): Record<string, number> {
         // create proper scope
         const cycle_context = { ...this.vce_context };
+        console.log('cycle_context',cycle_context)
         nvm.createContext(cycle_context);
 
         // compute values
@@ -94,7 +95,6 @@ export class VirtualComputeEngine {
             };
             this.ipc_handler(`${this.device_model}_device_msg`, { device_msg });
         });
-
         return out_record;
     }
 

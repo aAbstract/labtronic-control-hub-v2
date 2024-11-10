@@ -21,7 +21,7 @@ DRIVER_CONFIG_0x87: list[MsgTypeConfig] = [
 ltd_driver_0x87 = LtdDriver([0x87, 0x87], DRIVER_CONFIG_0x87)
 
 
-DRIVER_CONFIG_0x13: list[MsgTypeConfig] = [
+DRIVER_CONFIG_LT_HT103: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=0, msg_name='READ_T1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=1, msg_name='READ_T2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=2, msg_name='READ_T_amb', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
@@ -33,7 +33,7 @@ DRIVER_CONFIG_0x13: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=13, msg_name='WRITE_P_PELTIER', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
 ]
-ltd_driver_0x13 = LtdDriver([0x13, 0x13], DRIVER_CONFIG_0x13)
+ltd_driver_lt_ht103 = LtdDriver([0x13, 0x13], DRIVER_CONFIG_LT_HT103)
 
 
 DRIVER_CONFIG_LT_HT107: list[MsgTypeConfig] = [
