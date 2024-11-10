@@ -35,14 +35,16 @@ const DEVICE_OP_MODE_CPS_MAP: Record<LT_HT103_DeviceOperationMode, CHXComputedPa
     [LT_HT103_DeviceOperationMode.CALIBRATION]: [
         { param_name: 'Q_L', expr: '$C_f * ($T_h - $T_amb)', msg_type: 16 },
         { param_name: 'Q_Cond', expr: '$P_H - ($C_f * ($T_h - $T_amb))', msg_type: 17 }, // $P_H - $Q_L
-        { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($C_f * ($T_h - $T_amb)))', msg_type: 18 }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
+        // { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($C_f * ($T_h - $T_amb)))', msg_type: 18 }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
+        { param_name: 'Lambda', expr: '(10 * $L * ($P_H - ($C_f * ($T_h - $T_amb)))) / (Math.PI * ($T1 - $T2))', unit: '[W/(m.K)]', msg_type: 18 },
         // conditional compute parameters
         { param_name: 'Delta_T', expr: '$T1 - $T2', msg_type: 19 },
     ],
     [LT_HT103_DeviceOperationMode.EXPERIMENT]: [
         { param_name: 'Q_L', expr: '$Q_L_F1 + $Q_L_F2 * $T_h', msg_type: 16 },
         { param_name: 'Q_Cond', expr: '$P_H - ($Q_L_F1 + $Q_L_F2 * $T_h)', msg_type: 17 },
-        { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($Q_L_F1 + $Q_L_F2 * $T_h))', msg_type: 18 }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
+        // { param_name: 'Lambda', expr: '1E-4 * Math.PI * 1E-3 * $L * ($P_H - ($Q_L_F1 + $Q_L_F2 * $T_h))', msg_type: 18 }, // 1E-4 * Pi * 1E-3 * L * Q_Cond
+        { param_name: 'Lambda', expr: '(10 * $L * ($P_H - ($C_f * ($T_h - $T_amb)))) / (Math.PI * ($T1 - $T2))', unit: '[W/(m.K)]', msg_type: 18 },
         // conditional compute parameters
         { param_name: 'Delta_T', expr: '$T1 - $T2', msg_type: 19 },
     ],

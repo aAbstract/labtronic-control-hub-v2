@@ -149,10 +149,17 @@ class VSPI:
             self.vspi_socket.send(feedback_packet)
 
     def start_feedback_control_loop_sync(self):
+        if self.control_loop_running:
+            print(f"LtdDriver-{self.device_model} Control Loop Already Running")
+            return
+
         self.control_loop_running = True
         print(f"Listening for LtdDriver-{self.device_model} packet...")
         while self.control_loop_running:
-            self._handle_control_packet()
+            try:
+                self._handle_control_packet()
+            except KeyboardInterrupt:
+                self.control_loop_running = False
 
     def _burst_const_msgs(self, offset: int = 20):
         for msg_type in self.device_driver.driver_msg_type_config_map:
