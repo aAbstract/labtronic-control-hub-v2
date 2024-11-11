@@ -1,4 +1,6 @@
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from e2e.e2e_utils import *
 from e2e._vspi.test_vspis import lt_ht103_vspi
 import json
@@ -353,8 +355,6 @@ def us_calibration_routine(driver: webdriver.Chrome) -> int:
                and float(data[8])==ql_arr[i] 
                and float(data[9])==qcond_arr[i] 
                and float(data[11])==t1_arr[i]-t2_arr[i]):
-            print(data[1]==t1_arr[i] , data[2]==t2_arr[i] , data[3]==tamb_arr[i] , data[4]==tc_arr[i] , data[5]==th_arr[i] , data[6]== pheater_arr[i] , data[7]==ppeltier_arr[i] , data[8]==ql_arr[i] , data[9]==qcond_arr[i] , data[11]==t1_arr[i]-t2_arr[i])
-            print(data[1],[1],t1_arr[i] , data[2],t2_arr[i],  data[3],tamb_arr[i] , data[4],tc_arr[i] , data[5],th_arr[i] ,data[6], pheater_arr[i] , data[7],ppeltier_arr[i] , data[8],ql_arr[i] , data[9],qcond_arr[i] , data[11],t1_arr[i]-t2_arr[i])
             return 1
     
     script_button = try_get_elem(driver,'#rec_widget>:last-child>:last-child')
@@ -401,28 +401,236 @@ def us_calibration_routine(driver: webdriver.Chrome) -> int:
     return 0
 
 
-    
-    
 
+def us_pheater_ppeltier_feedback(driver: webdriver.Chrome) -> int:
+    '''
+    task: 18 - 19
+    User can control P_HEATER and P_PELTIER slider or input and monitor the following feedback:
+        - CHX_DEVICE_STATE > P_Heater and P_PELTIER
+        - LT-HT103_CONTROL_PANEL > P_HEATER and P_PELTIER - ACT
+    '''
+    func_id = MODULE_ID + '.us_check_chx_device_state'
+    _is_device_connected = is_device_connected(driver)
+    if not _is_device_connected:
+        elog(func_id, 'Device is not Connected')
+        return 1
+    
+    
+    #   grap the components
+    send_config_buttons = try_get_elem(driver , '.lt_ht103_control_row:last-child>:last-child')
+      
+    p_heater_analog_slider = try_get_elem(driver, '.lt_ht103_control_row:nth-of-type(6)>div>:last-child')
+    p_heater_slider_value = int(driver.execute_script("return arguments[0].getAttribute('aria-valuenow')", p_heater_analog_slider))
+    p_heater_input = try_get_elem(driver, '.lt_ht103_control_row:nth-of-type(6)>input')
+
+    p_peltier_analog_slider = try_get_elem(driver, '.lt_ht103_control_row:nth-of-type(8)>div>:last-child')
+    p_peltier_slider_value = int(driver.execute_script("return arguments[0].getAttribute('aria-valuenow')", p_peltier_analog_slider))
+    p_pltier_input = try_get_elem(driver, '.lt_ht103_control_row:nth-of-type(8)>input')
+        
+    #   these values will be the target values for pheater and p_peltier
+    p_heater_target_value = 10
+    p_peltier_target_value = 20
+    
+    p_heater_input.clear()
+    p_heater_input.send_keys(p_heater_target_value)
+    p_heater_input.send_keys(Keys.ENTER)
+    
+    p_pltier_input.clear()
+    p_pltier_input.send_keys(p_peltier_target_value)
+    p_pltier_input.send_keys(Keys.ENTER)
+    
+    #   send config the values
+    js_click(driver,send_config_buttons)
+    send_config_buttons.click()
+    #   check the values
+    
+    control_labels = try_get_elems(driver,'.lt_ht103_control_lbl')
+    p_heater_act =int(control_labels[0].text.split("ACT: ")[1].split(" ")[0]) 
+    p_peltier_act = int(control_labels[1].text.split("ACT: ")[1].split(" ")[0])
+    
+    chx_device_states = get_chx_device_state(driver)
+    p_heater_chx = int(chx_device_states['P_HEATER'])
+    p_peltier_chx = int(chx_device_states['P_PELTIER'])
+    
+    if p_heater_act != p_heater_target_value or p_heater_chx != p_heater_target_value or p_peltier_act != p_peltier_target_value or p_peltier_chx != p_peltier_target_value:
+        return 1
+    
+    #   these values will be the target values for pheater and p_peltier
+    p_heater_target_value = 15
+    p_peltier_target_value = 25
+    
+        
+    #   check sliding for p_heater components
+    p_heater_actions = ActionChains(driver)
+    p_heater_actions.click_and_hold(p_heater_analog_slider).perform()
+    while p_heater_slider_value != p_heater_target_value:
+        # Move p_heater_slider by a small amount
+        if p_heater_slider_value<p_heater_target_value:
+          p_heater_actions.drag_and_drop_by_offset(p_heater_analog_slider, 7, 0).perform()
+        if p_heater_slider_value>p_heater_target_value:
+          p_heater_actions.drag_and_drop_by_offset(p_heater_analog_slider, 0, 7).perform()
+        p_heater_slider_value = int(driver.execute_script("return arguments[0].getAttribute('aria-valuenow')", p_heater_analog_slider))
+      
+    #   check sliding for p_peltier components
+    p_peltier_actions = ActionChains(driver)
+    p_peltier_actions.click_and_hold(p_peltier_analog_slider).perform()
+    while p_peltier_slider_value !=p_peltier_target_value:
+   
+       # Move p_heater_peltier by a small amount
+        if p_peltier_slider_value<p_peltier_target_value:
+          p_peltier_actions.drag_and_drop_by_offset(p_peltier_analog_slider, 7, 0).perform()
+        if p_peltier_slider_value>p_peltier_target_value:
+          p_peltier_actions.drag_and_drop_by_offset(p_peltier_analog_slider, 0, 7).perform()
+        p_peltier_slider_value = int(driver.execute_script("return arguments[0].getAttribute('aria-valuenow')", p_peltier_analog_slider))
+      
+    #   send config the values
+    js_click(driver,send_config_buttons)
+    send_config_buttons.click()
+    
+    #   check the values
+    
+    control_labels = try_get_elems(driver,'.lt_ht103_control_lbl')
+    p_heater_act =int(control_labels[0].text.split("ACT: ")[1].split(" ")[0]) 
+    p_peltier_act = int(control_labels[1].text.split("ACT: ")[1].split(" ")[0])
+    
+    chx_device_states = get_chx_device_state(driver)
+    p_heater_chx = int(chx_device_states['P_HEATER'])
+    p_peltier_chx = int(chx_device_states['P_PELTIER'])
+    
+    if p_heater_act != p_heater_target_value or p_heater_chx != p_heater_target_value or p_peltier_act != p_peltier_target_value or p_peltier_chx != p_peltier_target_value:
+        return 1
+    
+    return 0
+        
+    
+    
+    
+def us_power_off(driver: webdriver.Chrome) -> int:
+    '''
+    task: 20
+    User can send shutdown signal to the device to cut electrical power
+    '''
+    func_id = MODULE_ID + '.us_check_chx_device_state'
+    _is_device_connected = is_device_connected(driver)
+    if not _is_device_connected:
+        elog(func_id, 'Device is not Connected')
+        return 1
+    
+    #   grap the components
+    power_off_buttons = try_get_elem(driver , '.lt_ht103_control_row:last-child>:first-child')
+    save_config_buttons = try_get_elem(driver , '.lt_ht103_control_row:last-child>:last-child')
+      
+      
+      
+    p_heater_input = try_get_elem(driver, '.lt_ht103_control_row:nth-of-type(6)>input')
+    p_pltier_input = try_get_elem(driver, '.lt_ht103_control_row:nth-of-type(8)>input')
+        
+    #   these values will be the target values for pheater and p_peltier
+    p_heater_target_value = random.randint(1,20)
+    p_peltier_target_value = random.randint(1,20)
+    
+    p_heater_input.clear()
+    p_heater_input.send_keys(p_heater_target_value)
+    p_heater_input.send_keys(Keys.ENTER)
+    
+    #time.sleep(0.1)
+    
+    p_pltier_input.clear()
+    p_pltier_input.send_keys(p_peltier_target_value)
+    p_pltier_input.send_keys(Keys.ENTER)
+    
+    #   send config the values
+    save_config_buttons.click()
+    
+    save_config_buttons.click()
+    
+    # js_click(driver,save_config_buttons)
+    #   check the values
+    
+    control_labels = try_get_elems(driver,'.lt_ht103_control_lbl')
+    p_heater_act =int(control_labels[0].text.split("ACT: ")[1].split(" ")[0]) 
+    p_peltier_act = int(control_labels[1].text.split("ACT: ")[1].split(" ")[0])
+    
+    chx_device_states = get_chx_device_state(driver)
+    p_heater_chx = int(chx_device_states['P_HEATER'])
+    p_peltier_chx = int(chx_device_states['P_PELTIER'])
+    
+    if p_heater_act != p_heater_target_value or p_heater_chx != p_heater_target_value or p_peltier_act != p_peltier_target_value or p_peltier_chx != p_peltier_target_value:
+        return 1
+    
+    js_click(driver,power_off_buttons)
+    
+    chx_device_states = get_chx_device_state(driver)
+    p_heater_chx = int(chx_device_states['P_HEATER'])
+    p_peltier_chx = int(chx_device_states['P_PELTIER'])
+    p_heater_act =int(control_labels[0].text.split("ACT: ")[1].split(" ")[0]) 
+    p_peltier_act = int(control_labels[1].text.split("ACT: ")[1].split(" ")[0])
+    
+    if p_heater_act != 0 or p_heater_chx != 0 or p_peltier_act != 0 or p_peltier_chx != 0:
+        return 1
+    
+    return 0     
+        
+        
+        
+        
 def us_tare_th(driver: webdriver.Chrome) -> int:
+    '''
+    task: 21
+        User can tare heater temprature
+    '''
+    #   the idea of this task is to test tare heat temperature, 
+    #   taring temperature heat is done in order to make both ambient temperature and heat temperature equal to each other
+    #   when appling certain difference between the ambient and heat, this difference then saved at the time of clicking 'tare'
+    #   this difference then used to adjust the hate temperatue making all readings after taring shifted by the difference
+    #   diff = t_amb - t_h
+    #   t_h = t_h + diff
+    
+    
     func_id = MODULE_ID + '.us_tare_th'
     _is_device_connected = is_device_connected(driver)
     if not _is_device_connected:
         elog(func_id, 'Device is not Connected')
         return 1
+    tare_button = try_get_elems(driver , '.lt_ht103_control_row:last-child>*')[1]
 
-    for j in range(10):
-        i=j+5
-        lt_ht103_vspi.write_msg(0,i)
-        lt_ht103_vspi.write_msg(1,i)
-        lt_ht103_vspi.write_msg(2,i)
-        lt_ht103_vspi.write_msg(3,i)
-        lt_ht103_vspi.write_msg(4,i)
-        
-        lt_ht103_vspi.write_msg(5,i)
-        lt_ht103_vspi.write_msg(6,i)
-
+    
+    diff = 0
+    for i in range(10):
+        t_amb_value = random.randint(1,10)
+        t_h_value = random.randint(1,10)
+        lt_ht103_vspi.write_msg(2,t_amb_value)
+        lt_ht103_vspi.write_msg(4,t_h_value)
         time.sleep(1)
+        chx_device_state = get_chx_device_state(driver)
+        t_h_chx_value = chx_device_state['T_h']
+        t_amb_chx_value = chx_device_state['T_amb']
+        
+        if t_h_chx_value != (diff + t_h_value) or  t_amb_chx_value != (t_amb_value):
+            return 1
+        
+        js_click(driver,tare_button)
+        diff += t_amb_chx_value - t_h_chx_value 
+        
+    
+    
+    t_amb_value = 0
+    t_h_value = 0
+    lt_ht103_vspi.write_msg(2,t_amb_value)
+    lt_ht103_vspi.write_msg(4,t_h_value)
+    time.sleep(1)
+    chx_device_state = get_chx_device_state(driver)
+    t_h_chx_value = chx_device_state['T_h']
+    t_amb_chx_value = chx_device_state['T_amb']
+    
+    if t_h_chx_value != (diff + t_h_value) or  t_amb_chx_value != (t_amb_value):
+        return 1
+    
+    js_click(driver,tare_button)
+    diff += t_amb_chx_value - t_h_chx_value 
         
 
     return 0
+
+    
+    
