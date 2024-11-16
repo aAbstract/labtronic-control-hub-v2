@@ -163,8 +163,7 @@ class VSPI:
 
     def _burst_const_msgs(self, offset: int = 20):
         for msg_type in self.device_driver.driver_msg_type_config_map:
-            # ignore device error packet
-            if msg_type == 14:
+            if not self.device_driver.driver_msg_type_config_map[msg_type].msg_name.startswith('READ_'):
                 continue
             msg_value = offset + (msg_type + 1) * 10
             self.write_msg(msg_type, msg_value)

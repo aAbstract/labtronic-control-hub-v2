@@ -2,6 +2,7 @@
 
 import { ref, onMounted, shallowRef, inject } from 'vue';
 import Dialog from 'primevue/dialog';
+import Checkbox from 'primevue/checkbox';
 
 import { MsgTypeConfig } from '@common/models';
 import { subscribe } from '@common/mediator';
@@ -15,16 +16,23 @@ interface TableHeader {
 
 const device_model = inject('device_model');
 const dialog_visible = ref(false);
+const auto_scroll = ref(true);
 const table_headers = shallowRef<TableHeader[]>();
-let data_points_cache: DataPointType[] = [];
 const data_points = shallowRef<DataPointType[]>();
 const dialog_pt = {
     header: { style: 'padding: 12px 16px;' },
     content: { style: 'padding: 0px 16px;' },
+    footer: { style: 'padding: 8px 16px; direction: ltr; display: flex; justify-content: flex-start;' },
+};
+const checkbox_pt: any = {
+    box: { style: 'background-color: var(--dark-bg-color); border-color: var(--empty-gauge-color);' },
+    icon: { style: 'color: var(--font-color);' },
 };
 
+let data_points_cache: DataPointType[] = [];
+
 function scroll_table_down() {
-    if (!dialog_visible.value)
+    if (!dialog_visible.value || !auto_scroll.value)
         return;
     const data_preview_cont = document.querySelector('#data_preview_cont') as HTMLElement;
     data_preview_cont.scrollTop = data_preview_cont.scrollHeight;
@@ -70,7 +78,7 @@ onMounted(() => {
     <Dialog style="font-family: Cairo, sans-serif;" v-model:visible="dialog_visible" header="Data Preview" :style="{ width: '44%' }" :pt="dialog_pt">
         <div id="data_preview_cont">
             <!-- table header -->
-            <div class="data_point_row" style="border-bottom: 2px solid var(--font-color); padding-bottom: 8px;">
+            <div class="data_point_row" id="data_preview_table_header">
                 <span v-for="header in table_headers" style="width: 100px;">{{ header.header_name }}</span>
             </div>
 
@@ -80,10 +88,32 @@ onMounted(() => {
             </div>
             <div style="height: 16px;"></div>
         </div>
+        <template #footer>
+            <div id="data_preview_footer">
+                <Checkbox v-model="auto_scroll" :pt="checkbox_pt" binary />
+                <div style="width: 8px;"></div>
+                <span style="color: var(--font-color);">Auto Scroll</span>
+            </div>
+        </template>
     </Dialog>
 </template>
 
 <style scoped>
+#data_preview_footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#data_preview_table_header {
+    position: sticky;
+    top: 0px;
+    padding: 8px 0px;
+    border-bottom: 2px solid var(--font-color);
+    background-color: var(--dark-bg-color);
+}
+
 .data_point_row {
     min-width: 100%;
     width: fit-content;
@@ -100,12 +130,12 @@ onMounted(() => {
     background-color: var(--dark-bg-color);
     color: var(--font-color);
     padding: 8px;
+    padding-top: 0px;
     border-radius: 4px;
     font-size: 12px;
     font-family: "Lucida Console", "Courier New", monospace;
     font-weight: bold;
     overflow-x: scroll;
     overflow-y: scroll;
-    margin-bottom: 16px;
 }
 </style>

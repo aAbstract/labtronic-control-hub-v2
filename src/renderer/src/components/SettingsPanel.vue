@@ -146,7 +146,7 @@ onMounted(() => {
             </div>
         </div>
         <div class="sp_section">
-            <h1>DEVICE INFO</h1>https://www.lab-tronic.com/
+            <h1>DEVICE INFO</h1>
             <div id="device_info_cont">
                 <img id="device_img" :src="device_model_img" alt="Device Solid Model">
                 <div id="device_info_text">

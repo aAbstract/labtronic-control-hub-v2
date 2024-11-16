@@ -89,7 +89,7 @@ onMounted(() => {
             </div>
             <div class="lt_ch000_control_form_row">
                 <div style="flex-grow: 1;"></div>
-                <Button :pt="{ label: { style: 'font-weight: normal;' } }" class="lt_ch000_control_icon_btn" label="CALIBRATE SCALE" icon="pi pi-refresh" outlined @click="reset_scale_btn_click()" />
+                <Button :pt="{ label: { style: 'font-weight: normal;' } }" class="lt_ch000_control_icon_btn" label="CALIBRATE SCALE" icon="pi pi-sliders-v" outlined @click="reset_scale_btn_click()" />
                 <div style="width: 8px;"></div>
             </div>
         </div>
@@ -126,12 +126,13 @@ onMounted(() => {
 }
 
 #pisp_indc {
+    font-family: "Lucida Console", "Courier New", monospace;
     width: 50px;
     color: var(--font-color);
     margin: 0px 8px;
     border: none;
     background-color: var(--dark-bg-color);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     padding: 4px;
     border-radius: 4px;
