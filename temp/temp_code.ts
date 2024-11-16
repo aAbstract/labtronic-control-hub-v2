@@ -134,3 +134,11 @@
 //         color: 'red',
 //     },
 // },
+
+// load VCE module with auto HMR
+// lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, [], mw_ipc_handler, DEVICE_MODEL);
+// subscribe('chx_cps_change', `${DEVICE_MODEL}_chx_cps_change`, args => {
+//     const _chx_cps: CHXComputedParam[] = args._chx_cps;
+//     lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, _chx_cps, mw_ipc_handler, DEVICE_MODEL);
+//     main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
+// });

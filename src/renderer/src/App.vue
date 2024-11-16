@@ -21,7 +21,7 @@ import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
-import LT_HT103 from '@renderer/components/DeviceControl/LT_HT103.vue';
+import LT_CH000 from '@renderer/components/DeviceControl/LT_CH000.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -31,7 +31,7 @@ const APP_THEME = {
   '--accent-color': '#29B2F8',
   '--empty-gauge-color': '#2D3A4B',
 };
-const DEVICE_MODEL = 'LT-HT103';
+const DEVICE_MODEL = 'LT-CH000';
 const toast_service = useToast();
 const spring_display = ref<string>('block');
 
@@ -80,7 +80,7 @@ onBeforeMount(() => {
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_HT103 />
+          <LT_CH000 />
           <div class="ui_spring"></div>
         </div>
         <TerminalPanel />
