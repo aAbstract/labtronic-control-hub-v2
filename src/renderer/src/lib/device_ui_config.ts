@@ -228,6 +228,19 @@ const LT_RE600_DUIC = new DeviceUIConfig(
     'LT-RE600',
 );
 
+export const LT_EV574_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('B_V', '#9C27B0'), // READ_B_V
+        1: new ChartParams('B_C', '#00BCD4'), // READ_B_C
+        2: new ChartParams('B_P', '#009688'), // READ_B_P
+        3: new ChartParams('W_S', '#2196F3'), // READ_W_S
+        4: new ChartParams('M_P', '#DD2C00'), // READ_M_P
+    },
+    'LT-EV574',
+);
+
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
 
@@ -240,4 +253,7 @@ export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-TO202': LT_TO202_DUIC,
 
     'LT-RE600': LT_RE600_DUIC,
+
+    'LT-EV574': LT_EV574_DUIC,
 };
+
