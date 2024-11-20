@@ -5,13 +5,14 @@ import sys
 
 CHX_MODULES = [
     'lt_ch000',
+    'lt_ht004',
     'lt_ht103',
     'lt_ht107',
     'lt_ht113',
-    'lt_ht004',
     'lt_to101',
     'lt_to202',
     'lt_re600',
+    'lt_ev574',
 ]
 
 

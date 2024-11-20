@@ -126,8 +126,4 @@ export function init_fsio(main_window: BrowserWindow) {
     ipcMain.handle('load_devie_asset', (_, data) => load_device_asset(data.asset_path));
     ipcMain.handle('load_devie_pdf', (_, data) => load_device_pdf(data.device_model));
     ipcMain.handle('load_device_metadata', (_, data) => load_device_metadata(data.device_model));
-    // setTimeout(() => {
-    //     console.log('onfind');
-    //     main_window.webContents.findInPage('unit is design');
-    // }, 5000);
 }

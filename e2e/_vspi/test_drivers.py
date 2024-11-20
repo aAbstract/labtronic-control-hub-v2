@@ -104,3 +104,17 @@ ltd_driver_lt_to202 = LtdDriver([0x32, 0x42], DRIVER_CONFIG_LT_TO202)
 
 
 ltd_driver_lt_re600 = LtdDriver([0x99, 0x99], [])
+
+
+DRIVER_CONFIG_LT_EV574: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_B_V', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_B_C', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_B_P', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_W_S', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=4, msg_name='READ_M_P', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=5, msg_name='CONTROL_BUTTONS', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=12, msg_name='WRITE_CONTROL_BUTTONS', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=15, msg_name='DEVICE_HEART_BEAT', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
+]
+ltd_driver_lt_ev574 = LtdDriver([0x10, 0xA0], DRIVER_CONFIG_LT_EV574)
