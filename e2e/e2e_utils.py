@@ -3,7 +3,16 @@ import colorama
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-
+import time
+from e2e._vspi.vspi import VSPI
+from dataclasses import dataclass
+@dataclass
+class CheckChxDeviceState:
+    key:str
+    key_msg_type:int
+    value:float
+    seq_num:int
+    
 
 WDIWV = 0.1  # web driver implicit wait time in seconds
 
@@ -174,3 +183,40 @@ def get_chx_device_state(driver: webdriver.Chrome) -> dict | None:
         elog(func_id, 'CHX Device State not Found')
         return None
     return {x.text.split(': ')[0]: float(x.text.split(': ')[1]) for x in device_readings}
+
+
+
+def check_chx_device_state(driver: webdriver.Chrome,device_vspi:VSPI,func_id:str, states_check_arr:list[CheckChxDeviceState]) -> int:
+    '''
+    this function checks the state of any device by:
+        1- checking if states taken are subset of the device state
+        2- take each state and inject a value
+        3- read the value and check if it is consistent with value sent
+    '''
+    chx_device_state = get_chx_device_state(driver)
+    if not chx_device_state:
+        return 1
+    chx_device_state_keys = set(chx_device_state.keys())
+    
+    target_chx_device_state_keys = set()
+    for state in states_check_arr:
+        target_chx_device_state_keys.add(state.key)
+        
+    if  not target_chx_device_state_keys.issubset(chx_device_state_keys):
+        elog(func_id, f"chx_device_state_keys={chx_device_state_keys}, target_chx_device_state_keys={target_chx_device_state_keys}")
+        return 1
+    
+    for state in  states_check_arr:
+        if state.key_msg_type >=0:
+            device_vspi.write_msg(state.key_msg_type,state.value)
+    
+    #   some times the values delay until being updated so ,sleep 5 seconds
+    time.sleep(5)
+    chx_device_state = get_chx_device_state(driver)
+    
+    for state in states_check_arr:
+        if chx_device_state[state.key] != state.value:
+            print(state.key,chx_device_state[state.key] , state.value)
+            return 1
+
+    return 0

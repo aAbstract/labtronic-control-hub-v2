@@ -1,6 +1,6 @@
 from selenium import webdriver
 from e2e.e2e_utils import *
-from e2e._vspi.test_vspis import lt_ht113_vspi
+from e2e._vspi.test_vspis import lt_ev574_vspi
 from selenium.webdriver.common.by import By
 import time
 
@@ -17,6 +17,22 @@ def _us_connect_to_device(driver: webdriver.Chrome) -> int:
         return rc
 
     return 0
+
+
+def us_check_chx_device_state(driver: webdriver.Chrome) -> int:
+    func_id = MODULE_ID + '.us_check_chx_device_state'
+    _is_device_connected = is_device_connected(driver)
+    if not _is_device_connected:
+        elog(func_id, 'Device is not Connected')
+        return 1
+    
+    B_V_state=CheckChxDeviceState('B_V',0,12,0)
+    B_C_state=CheckChxDeviceState('B_C',1,13,0)
+    B_P_state=CheckChxDeviceState('B_P',2,4,0)
+    W_S_state=CheckChxDeviceState('W_S',3,5,0)
+    M_P_state=CheckChxDeviceState('M_P',4,6,0)
+    
+    return check_chx_device_state(driver,lt_ev574_vspi,func_id,[B_V_state,B_C_state,B_P_state,W_S_state,M_P_state])
 
 
 def calculate_buttons_state(states: list[bool]) -> int:
