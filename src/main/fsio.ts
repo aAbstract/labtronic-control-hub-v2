@@ -78,11 +78,11 @@ function save_screenshot(main_window: BrowserWindow, comp_rect: Rectangle) {
         ],
     };
 
-    dialog.showSaveDialog(main_window, options).then(res => {
-        if (res.canceled || !res.filePath)
-            return;
-        const { filePath } = res;
-        main_window.webContents.capturePage(comp_rect).then(cap_img => {
+    main_window.webContents.capturePage(comp_rect).then(cap_img => {
+        dialog.showSaveDialog(main_window, options).then(res => {
+            if (res.canceled || !res.filePath)
+                return;
+            const { filePath } = res;
             fs.writeFile(filePath + '.png', cap_img.toPNG() as any, (err) => {
                 const fsio_res: Result<string> = err ? { err: err.message } : { ok: `Screenshot Saved to: ${res.filePath}` };
                 main_window.webContents.send('save_screenshot_res', fsio_res);

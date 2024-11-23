@@ -169,14 +169,9 @@ const LT_EV574_VCE_CONFIG: VceParamConfig[] = [
 ];
 const DEVICE_SERIES: CHXSeries[] = [
     {
-        series_name: 'time - B_V',
+        series_name: 'time - M_P',
         x_param: -1,
-        y_param: 0,
-    },
-    {
-        series_name: 'time - B_C',
-        x_param: -1,
-        y_param: 1,
+        y_param: 4,
     },
     {
         series_name: 'time - B_P',
@@ -184,15 +179,10 @@ const DEVICE_SERIES: CHXSeries[] = [
         y_param: 2,
     },
     {
-        series_name: 'time - W_S',
+        series_name: 'time - B_C',
         x_param: -1,
-        y_param: 3,
+        y_param: 1,
     },
-    {
-        series_name: 'time - M_P',
-        x_param: -1,
-        y_param: 4,
-    }
 ];
 
 let serial_adapter: SerialAdapter | null = null;

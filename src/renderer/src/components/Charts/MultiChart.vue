@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { inject, onMounted, shallowRef, ref } from 'vue';
-import { ChartOptions, ChartData } from 'chart.js';
+import { ChartOptions, ChartData, Plugin, Chart as _Chart } from 'chart.js';
 import Chart from 'primevue/chart';
 
 import { ChartParams, DeviceUIConfig } from '@renderer/lib/device_ui_config';
@@ -21,6 +21,20 @@ const dt_ms = Math.round((1 / props.fps) * 1000);
 const chart_opts = shallowRef({});
 const chart_data = shallowRef<ChartData>();
 const msg_type_state_map = ref<Record<number, boolean>>({});
+
+let _sn = 0;
+const accent_color = document.documentElement.style.getPropertyValue('--accent-color');
+const sn_plugin: Plugin = {
+    id: 'sn_plugin',
+    afterRender(chart: _Chart, _1, _2) {
+        const ctx = chart.ctx;
+        if (!ctx)
+            return;
+        ctx.fillStyle = accent_color;
+        ctx.font = 'bold 12px "Lucida Console", "Courier New", monospace';
+        ctx.fillText(`SN: ${_sn}`, chart.width - 100, 12);
+    },
+};
 
 function create_chart_options(font_color: string, grid_color: string, y_min: number, y_max: number): ChartOptions {
     return {
@@ -87,6 +101,7 @@ onMounted(() => {
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: DeviceMsg = data.device_msg;
+        _sn = device_msg.seq_number;
         const { msg_type } = device_msg.config;
         if (msg_type in points_data) {
             points_data[msg_type].x.push(device_msg.seq_number);
@@ -122,5 +137,5 @@ onMounted(() => {
 </script>
 
 <template>
-    <Chart type="line" :data="chart_data" :options="chart_opts" />
+    <Chart type="line" :data="chart_data" :options="chart_opts" :plugins="[sn_plugin]" />
 </template>

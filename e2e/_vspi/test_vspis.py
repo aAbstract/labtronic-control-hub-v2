@@ -33,7 +33,7 @@ lt_to202_vspi = VSPI(device_model='LT-TO202', device_driver=ltd_driver_lt_to202)
 
 lt_re600_vspi = VSPI(device_model='LT-RE600', device_driver=ltd_driver_lt_re600)
 
-lt_ev574_vspi = VSPI(device_model='LT-EV574', device_driver=ltd_driver_lt_ev574, control_feedback_map={12: 5})
+lt_ev574_vspi = VSPI(device_model='LT-EV574', device_driver=ltd_driver_lt_ev574, control_feedback_map={12: 5}, auto_connect=True)
 
 
 if __name__ == '__main__':

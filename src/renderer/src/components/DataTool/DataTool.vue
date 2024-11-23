@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, inject, computed, shallowRef, Ref } from 'vue';
+import { ref, onMounted, inject, computed, shallowRef, Ref, onBeforeMount } from 'vue';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
 import OverlayPanel from 'primevue/overlaypanel';
@@ -37,7 +37,7 @@ let complete_data_point_keys: string[] = [];
 const msg_type_name_map: Record<string, string> = { 'time_ms': 'time_ms' };
 const device_model = inject('device_model');
 const panel_pos = ref('-60vw');
-const sampling_dt = ref(1000);
+const sampling_dt = ref(1000); // 1s
 const chx_series = shallowRef<CHXSeries[]>();
 const chx_eqs = shallowRef<CHXEquation[]>();
 const chx_scripts = shallowRef<CHXScript[]>();
@@ -48,6 +48,7 @@ const play_btn_color = computed(() => recording_state.value === RecordingState.R
 const pause_btn_color = computed(() => recording_state.value === RecordingState.PAUSED ? '#FFAB00' : 'var(--accent-color)');
 const toast_service = useToast();
 const chx_advanced_mode = ref(false);
+const lock_sampling_dt = ref(false);
 const field_set_pt = {
     root: { style: 'padding: 0px; width: 100%; background-color: transparent; border-radius: 4px; border-color: var(--empty-gauge-color);' },
     legend: { style: 'padding: 0px 0px 0px 8px; font-size: 14px; background-color: transparent; border: none; color: var(--font-color); font-family: Cairo, sans-serif; font-size: 14px; font-weight: bold;' },
@@ -62,7 +63,7 @@ const checkbox_pt: any = {
 };
 const export_variables_state = ref<Record<string, boolean>>({ 'time_ms': true });
 const chx_series_chart_settings_op_refs: Record<string, Ref> = {};
-const chx_series_chart_settings_y_min_max: Ref<Record<string, [number, number]>> = ref({});
+const chx_series_chart_settings_y_min_max: Ref<Record<string, [string, string]>> = ref({});
 
 function show_series_config_dialog() {
     post_event('show_series_config_dialog', {});
@@ -149,6 +150,7 @@ function set_recording_state(_recording_state: RecordingState) {
 function stop_data_recording() {
     set_recording_state(RecordingState.STOPPED);
     reset_recording_state();
+    post_event('reset_recording_state', {});
 }
 
 function pause_data_recording() {
@@ -214,12 +216,23 @@ function show_chx_series_chart_settings_overlay_panel(_event: MouseEvent, chx_se
 }
 
 function set_chx_series_chart_y_min_max(chx_series_name: string) {
-    const y_min = chx_series_chart_settings_y_min_max.value[chx_series_name][0];
-    const y_max = chx_series_chart_settings_y_min_max.value[chx_series_name][1];
+    const y_min = Number(chx_series_chart_settings_y_min_max.value[chx_series_name][0]);
+    const y_max = Number(chx_series_chart_settings_y_min_max.value[chx_series_name][1]);
     if (isNaN(y_min) || isNaN(y_max))
         return;
     post_event('update_chx_series_chart_y_min_max', { y_min, y_max, chx_series_name });
+    chx_series_chart_settings_op_refs[chx_series_name].value[0].hide();
 }
+
+function sampling_dt_focused() {
+    if (!lock_sampling_dt.value)
+        return;
+    toast_service.add({ severity: 'warn', summary: 'Locked', detail: 'Custom Sampling Rate is Disabled for This Device', life: 3000 });
+}
+
+onBeforeMount(() => {
+    subscribe('lock_sampling_dt', 'lock_sampling_dt', () => lock_sampling_dt.value = true);
+});
 
 onMounted(() => {
     subscribe('toggle_data_tool', 'toggle_data_tool_visi', _ => {
@@ -240,7 +253,7 @@ onMounted(() => {
             stop_data_recording();
             _chx_series.forEach(x => {
                 chx_series_chart_settings_op_refs[x.series_name] = ref();
-                chx_series_chart_settings_y_min_max.value[x.series_name] = [0, 10];
+                chx_series_chart_settings_y_min_max.value[x.series_name] = ['0', '10'];
             });
         });
     });
@@ -359,7 +372,7 @@ onMounted(() => {
                     <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                         <div style="width: 200px; display: flex; flex-direction: row; justify-content: flex-start;">
                             <span style="font-size: 14px; margin-right: 8px;">Sampling Time [ms]:</span>
-                            <input class="dt_tf" type="number" v-model="sampling_dt">
+                            <input class="dt_tf" type="number" v-model="sampling_dt" :readonly="lock_sampling_dt" @focus="sampling_dt_focused()">
                         </div>
                         <div style="height: 8px;"></div>
                         <div>
@@ -371,16 +384,6 @@ onMounted(() => {
                             <div v-for="dp_key in complete_data_point_keys" style="margin-bottom: 4px;">
                                 <Checkbox style="margin-right: 8px;" binary :pt="checkbox_pt" v-model="export_variables_state[dp_key]" />
                                 <span style="font-size: 14px;">{{ msg_type_name_map[dp_key] }}</span>
-                            </div>
-                        </div>
-                        <div style="height: 8px;"></div>
-                        <div>
-                            <span style="font-size: 16px;">Charts Settings</span>
-                            <div style="width: 200px; display: flex; flex-direction: row; justify-content: flex-start;">
-                                <span style="font-size: 14px; margin-right: 8px;">Y Range</span>
-                                <input class="dt_tf" type="number">
-                                <span style="flex-grow: 1; text-align: center;"> - </span>
-                                <input class="dt_tf" type="number">
                             </div>
                         </div>
                     </div>
@@ -425,9 +428,9 @@ onMounted(() => {
                     <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                         <div style="width: fit-content;">
                             <span style="font-size: 14px; margin-right: 8px; width: 125px;">{{ `${s.series_name} Chart Y Range` }}</span>
-                            <input class="dt_tf" type="number" v-model="chx_series_chart_settings_y_min_max[s.series_name][0]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)">
+                            <input class="dt_tf" v-model="chx_series_chart_settings_y_min_max[s.series_name][0]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)" @focus="chx_series_chart_settings_y_min_max[s.series_name][0] = ''">
                             <span style="flex-grow: 1; text-align: center;"> - </span>
-                            <input class="dt_tf" type="number" v-model="chx_series_chart_settings_y_min_max[s.series_name][1]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)">
+                            <input class="dt_tf" v-model="chx_series_chart_settings_y_min_max[s.series_name][1]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)" @focus="chx_series_chart_settings_y_min_max[s.series_name][1] = ''">
                         </div>
                     </div>
                 </OverlayPanel>

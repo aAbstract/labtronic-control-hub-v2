@@ -161,16 +161,18 @@ class VSPI:
             except KeyboardInterrupt:
                 self.control_loop_running = False
 
-    def _burst_const_msgs(self, offset: int = 20):
+    def _burst_const_msgs(self, offset: int = 20, sn: int = 0):
         for msg_type in self.device_driver.driver_msg_type_config_map:
             if not self.device_driver.driver_msg_type_config_map[msg_type].msg_name.startswith('READ_'):
                 continue
             msg_value = offset + (msg_type + 1) * 10
-            self.write_msg(msg_type, msg_value)
+            self.write_msg(msg_type, msg_value, sn=sn)
 
     def stream_const_sequence_sync(self):
+        c = 0
         while True:
-            self._burst_const_msgs()
+            self._burst_const_msgs(sn=c)
+            c += 1
             time.sleep(0.2)
 
     def start_feedback_control_loop_async(self):

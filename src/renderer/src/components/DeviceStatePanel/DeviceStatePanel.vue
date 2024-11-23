@@ -49,10 +49,10 @@ const overlay_panel_pt = {
 };
 const single_chart_settings_op = ref();
 const multi_chart_settings_op = ref();
-const single_chart_y_min = ref(0);
-const single_chart_y_max = ref(100);
-const multi_chart_y_min = ref(0);
-const multi_chart_y_max = ref(100);
+const single_chart_y_min = ref('0');
+const single_chart_y_max = ref('100');
+const multi_chart_y_min = ref('0');
+const multi_chart_y_max = ref('100');
 
 function map_chart_height(_key: number): number {
     const _map: Record<number, number> = {
@@ -90,19 +90,21 @@ function show_multi_chart_settings_overlay_panel(_event: MouseEvent) {
 }
 
 function set_single_chart_y_min_max() {
-    const y_min = single_chart_y_min.value;
-    const y_max = single_chart_y_max.value;
+    const y_min = Number(single_chart_y_min.value);
+    const y_max = Number(single_chart_y_max.value);
     if (isNaN(y_min) || isNaN(y_max))
         return;
     post_event('update_single_chart_y_min_max', { y_min, y_max });
+    single_chart_settings_op.value.hide();
 }
 
 function set_multi_chart_y_min_max() {
-    const y_min = multi_chart_y_min.value;
-    const y_max = multi_chart_y_max.value;
+    const y_min = Number(multi_chart_y_min.value);
+    const y_max = Number(multi_chart_y_max.value);
     if (isNaN(y_min) || isNaN(y_max))
         return;
     post_event('update_multi_chart_y_min_max', { y_min, y_max });
+    multi_chart_settings_op.value.hide();
 }
 
 onBeforeMount(() => {
@@ -154,9 +156,9 @@ onBeforeMount(() => {
                 <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                     <div style="width: 280px;">
                         <span style="font-size: 14px; margin-right: 8px; width: 125px;">Single Chart Y Range</span>
-                        <input class="dt_tf" type="number" v-model="single_chart_y_min" @keyup.enter="set_single_chart_y_min_max()">
+                        <input ref="sc_y_min_field" class="dt_tf" v-model="single_chart_y_min" @keyup.enter="set_single_chart_y_min_max()" @focus="single_chart_y_min = ''">
                         <span style="flex-grow: 1; text-align: center;"> - </span>
-                        <input class="dt_tf" type="number" v-model="single_chart_y_max" @keyup.enter="set_single_chart_y_min_max()">
+                        <input ref="sc_y_max_field" class="dt_tf" v-model="single_chart_y_max" @keyup.enter="set_single_chart_y_min_max()" @focus="single_chart_y_max = ''">
                     </div>
                 </div>
             </OverlayPanel>
@@ -168,9 +170,9 @@ onBeforeMount(() => {
                 <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                     <div style="width: 280px;">
                         <span style="font-size: 14px; margin-right: 8px; width: 125px;">Multi Chart Y Range</span>
-                        <input class="dt_tf" type="number" v-model="multi_chart_y_min" @keyup.enter="set_multi_chart_y_min_max()">
+                        <input ref="mc_y_min_field" class="dt_tf" v-model="multi_chart_y_min" @keyup.enter="set_multi_chart_y_min_max()" @focus="multi_chart_y_min = ''">
                         <span style="flex-grow: 1; text-align: center;"> - </span>
-                        <input class="dt_tf" type="number" v-model="multi_chart_y_max" @keyup.enter="set_multi_chart_y_min_max()">
+                        <input ref="mc_y_max_field" class="dt_tf" v-model="multi_chart_y_max" @keyup.enter="set_multi_chart_y_min_max()" @focus="multi_chart_y_max = ''">
                     </div>
                 </div>
             </OverlayPanel>
