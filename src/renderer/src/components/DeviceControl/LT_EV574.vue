@@ -1,9 +1,11 @@
 <script setup lang="ts">
 
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
+
+import { subscribe } from '@common/mediator';
 import { electron_renderer_send } from '@renderer/lib/util';
 
 
@@ -16,6 +18,8 @@ const checkbox_pt: any = {
 };
 const labels = ['Battery Depleted', 'Motor Controller Input Defective', 'AC Power Failure', 'Motor Encoder VCC Disconnected', 'Motor Controller Output Defective', 'Motor Controller Seneor Defective'];
 const states = ref([false, false, false, false, false, false]);
+const cs_enrg = ref(0);
+const rv_enrg = ref(0);
 
 
 function reset() {
@@ -36,10 +40,34 @@ function compute_packet() {
   return '0x' + value.toString(16);
 }
 
+onMounted(() => {
+  subscribe('record_data_point', 'record_data_point_lt_ev574_control_panel', args => {
+    const _data_point: Record<string, number> = args._data_point;
+    const bat_v = _data_point[0];
+    const bat_i = _data_point[1];
+    const bat_pw = bat_v * bat_i;
+    const enrg = bat_pw * 0.00028;
+    if (bat_i >= 0)
+      cs_enrg.value += enrg;
+    else if (bat_i < 0)
+      rv_enrg.value += enrg;
+  });
+});
+
 </script>
 
 <template>
   <div id="lt_ev574_control_main_cont">
+    <div id="energy_stats">
+      <div>
+        <span style="font-weight: bold; margin-right: 8px;">Consumed Energy [Wh]:</span>
+        <span style="font-weight: bold; color: #FFAB00;">{{ cs_enrg.toFixed(2) }}</span>
+      </div>
+      <div>
+        <span style="font-weight: bold; margin-right: 8px;">Recovered Energy [Wh]:</span>
+        <span style="font-weight: bold; color: #64DD17;">{{ rv_enrg.toFixed(2) }}</span>
+      </div>
+    </div>
     <div id="lt_ev574_state_container">
       <div id="lt_ev574_state" v-for="(_, i) in states">
         <Checkbox :pt="checkbox_pt" v-model="states[i]" binary />
@@ -54,6 +82,15 @@ function compute_packet() {
 </template>
 
 <style scoped>
+#energy_stats {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  color: var(--font-color);
+  margin: 8px 0px;
+}
+
 #lt_ev574_actions_container>button {
   height: 30px;
   font-size: 14px;
@@ -101,7 +138,6 @@ function compute_packet() {
   background-color: var(--light-bg-color);
   border: 1px solid var(--empty-gauge-color);
   border-radius: 4px;
-  padding: 8px;
-  padding-block: 24px;
+  padding-bottom: 16px;
 }
 </style>
