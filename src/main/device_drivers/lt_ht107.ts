@@ -325,7 +325,7 @@ function device_mode_switch(new_device_mode: LT_HT107_DeviceMode) {
     main_window?.webContents.send('show_system_notif', { notif });
 }
 
-let device_mode: LT_HT107_DeviceMode = LT_HT107_DeviceMode.RADIAL;
+let device_mode: LT_HT107_DeviceMode = LT_HT107_DeviceMode.LINEAR_1;
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;
 

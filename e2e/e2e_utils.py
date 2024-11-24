@@ -222,10 +222,10 @@ def check_chx_device_state(driver: webdriver.Chrome,device_vspi:VSPI,func_id:str
     
     for state in  states_check_arr:
         if state.key_msg_type >=0:
-            device_vspi.write_msg(state.key_msg_type,state.value)
+            device_vspi.write_msg(state.key_msg_type,state.value,state.seq_num)
     
     #   some times the values delay until being updated so ,sleep 5 seconds
-    time.sleep(5)
+
     chx_device_state = get_chx_device_state(driver)
     
     for state in states_check_arr:
