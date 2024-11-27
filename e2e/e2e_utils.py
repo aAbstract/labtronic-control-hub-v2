@@ -3,7 +3,7 @@ import colorama
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-
+import base64
 
 WDIWV = 0.1  # web driver implicit wait time in seconds
 
@@ -174,3 +174,14 @@ def get_chx_device_state(driver: webdriver.Chrome) -> dict | None:
         elog(func_id, 'CHX Device State not Found')
         return None
     return {x.text.split(': ')[0]: float(x.text.split(': ')[1]) for x in device_readings}
+
+
+def test_screenshot(element: WebElement, image_path: str) -> int:
+    # this function takes element from web and compare it to image saved on the file
+    comp_as_base64 = element.screenshot_as_base64
+    with open(image_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        if encoded_string != comp_as_base64:
+            return 1
+    return 0
+
