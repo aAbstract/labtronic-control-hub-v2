@@ -271,7 +271,7 @@ function device_mode_switch(new_device_mode: LT_TO101_DeviceMode) {
     main_window?.webContents.send('show_system_notif', { notif });
 }
 
-let device_mode: LT_TO101_DeviceMode = LT_TO101_DeviceMode.BOYLE;
+let device_mode: LT_TO101_DeviceMode = LT_TO101_DeviceMode.GLUSS;
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;
 let lt_to101_vce0: VirtualComputeEngine | null = null;
