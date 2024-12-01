@@ -63,13 +63,10 @@ function switch_device_mode() {
 
 function calc_sum() {
     let sum = 0
-    for (let i = 0; i < t_h.value.length; i++) {
-        sum += Number(t_h.value[i])
-    }
     for (let i = 0; i < t_4.value.length; i++) {
         sum += Number(t_4.value[i])
     }
-    return (sum / 11).toFixed(1)
+    return (sum / 6).toFixed(1)
 }
 onMounted(() => {
     post_event('change_device_model_asset', { _asset: 'lt_ht004_plate' });
