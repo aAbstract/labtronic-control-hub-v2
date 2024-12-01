@@ -182,10 +182,23 @@ export enum LT_HT103_DeviceOperationMode {
     EXPERIMENT = 1,
 };
 
+export enum LT_HT004_DeviceOperationMode {
+    PLATE = 0,
+    HEATER = 1,
+    BUNDLE = 2,
+};
+
 export interface LT_HT103_DeviceConfig {
     C_f: number;
     Q_L_F1: number;
     Q_L_F2: number;
+};
+export interface LT_HT004_DeviceConfig {
+    PT1000_In: number;
+    PT1000_Out: number;
+    PT1000_Heater: number;
+    P_Heater: number;
+    AirFlow: number;
 };
 // device models - LT_HT103
 

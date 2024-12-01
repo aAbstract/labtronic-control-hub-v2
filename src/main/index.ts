@@ -6,7 +6,7 @@ import icon from '../../resources/icon.png?asset'
 import { init_fsio } from './fsio';
 import { init_system_settings } from './system_settings';
 import { init_ltai } from './ltai';
-import { init_lt_to202_serial_adapter } from './device_drivers/lt_to202';
+import { init_lt_ht004_serial_adapter } from './device_drivers/lt_ht004';
 
 const BASE_HRES = 1280;
 const BASE_VRES = 720;
@@ -43,7 +43,7 @@ function createWindow(): void {
   init_fsio(mainWindow);
   init_system_settings(mainWindow);
   init_ltai(mainWindow);
-  ipcMain.on('load_device_driver', () => init_lt_to202_serial_adapter(mainWindow));
+  ipcMain.on('load_device_driver', () => init_lt_ht004_serial_adapter(mainWindow));
   ipcMain.on('exit', () => process.exit(0));
 }
 

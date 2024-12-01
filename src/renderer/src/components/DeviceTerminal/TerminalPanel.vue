@@ -44,6 +44,7 @@ onMounted(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
         electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
     });
+    post_event('update_device_model_cont_width', { width: '75%' });
 });
 
 </script>
