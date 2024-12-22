@@ -112,6 +112,13 @@ const LT_TO101_DRIVER_CONFIG: MsgTypeConfig[] = [
         cfg2: 0,
     },
     {
+        msg_type: 9,
+        msg_name: 'READ_TC4',
+        data_type: DataType.FLOAT,
+        size_bytes: 4,
+        cfg2: 0,
+    },
+    {
         msg_type: DEVICE_ERROR_MSG_TYPE,
         msg_name: 'DEVICE_ERROR',
         data_type: DataType.UINT,
@@ -251,7 +258,7 @@ function filter_driver_config(_driver_config: MsgTypeConfig[]): MsgTypeConfig[] 
     }
     else if (device_mode === LT_TO101_DeviceMode.GLUSS) {
         _driver_config.forEach(_conifg => _conifg.cfg2 = 0xA2)
-        return _driver_config.filter(x => new Set([1, 2, 5]).has(x.msg_type));
+        return _driver_config.filter(x => new Set([1, 2, 5, 9]).has(x.msg_type));
     }
     else { return []; }
 }

@@ -200,6 +200,7 @@ const LT_TO101_DUIC = new DeviceUIConfig(
         4: new ChartParams('PR1', '#2196F3'), // READ_PR1
         5: new ChartParams('PR2', '#009688'), // READ_PR2
         6: new ChartParams('PR3', '#9E9E9E'), // READ_PR3
+        9: new ChartParams('TC4', '#795548'), // READ_TC4
 
         // compute parameters
         16: new ChartParams('P_times_V', '#cddc39'), // VCE: P_times_V
