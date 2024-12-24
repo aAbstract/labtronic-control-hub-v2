@@ -213,6 +213,18 @@ const LT_TO101_VCE_CONFIG: VceParamConfig[] = [
         param_type: VceParamType.VCE_VAR,
         desc: 'Pressure 3',
     },
+    {
+        msg_type_config: {
+            msg_type: 9,
+            msg_name: 'READ_TC4',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$TC4',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Thermocouple 4',
+    },
     // VCE_CONST
     {
         msg_type_config: {
