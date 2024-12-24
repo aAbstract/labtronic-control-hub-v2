@@ -114,8 +114,8 @@ function load_device_metadata(device_model: string): Record<string, string> {
     const _file_path = `device_data/${_device_model}/${_device_model}.json`;
     try {
         const metadata_str = fs.readFileSync(_file_path, { encoding: 'utf8' });
-        const metdadata_record = JSON.parse(metadata_str);
-        return metdadata_record;
+        const metadata_record = JSON.parse(metadata_str);
+        return metadata_record;
     } catch (_) { return {} }
 }
 
