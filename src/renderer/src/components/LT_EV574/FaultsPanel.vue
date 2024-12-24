@@ -12,7 +12,7 @@ const device_model = inject('device_model');
 const toast_service = useToast();
 const checkbox_pt: any = {
     root: { style: 'background-color: transparent; width:fit-content;height:fit-content;' },
-    box: { style: 'height: 30px; width:30px; border-color: var(--accent-color); border-radius: 4px;' },
+    box: { style: 'height: 24px; width:24px; border-color: var(--accent-color); border-radius: 4px;' },
     icon: { style: 'display: none;' },
 };
 const labels = ['Battery Depleted', 'Motor Controller Input Defective', 'AC Power Failure', 'Motor Encoder VCC Disconnected', 'Motor Controller Output Defective', 'Motor Controller Seneor Defective'];
@@ -81,8 +81,8 @@ onMounted(() => {
             </div>
         </div>
         <div id="lt_ev574_faults_actions_container">
-            <Button outlined icon="pi pi-power-off" label="Reset" @click="reset" />
-            <Button outlined icon="pi pi-microchip" label="Send Data" @click="send_data" />
+            <Button outlined icon="pi pi-power-off" label="RESET" @click="reset" />
+            <Button outlined icon="pi pi-angle-right" label="SEND" @click="send_data" />
         </div>
     </div>
 </template>
@@ -108,10 +108,10 @@ onMounted(() => {
 }
 
 .lt_ev574_fault_state>p {
-    font-size: 16px;
+    font-size: 14px;
     text-align: center;
     color: var(--accent-color);
-    margin: 0rem;
+    margin: 0px;
 }
 
 #lt_ev574_faults_actions_container {
@@ -123,6 +123,7 @@ onMounted(() => {
 }
 
 #lt_ev574_faults_actions_container>button {
+    width: 150px;
     height: 30px;
     font-size: 14px;
 }
@@ -142,6 +143,5 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding-bottom: 16px;
 }
 </style>

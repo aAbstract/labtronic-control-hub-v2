@@ -21,7 +21,7 @@ import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
-import LT_TO101 from '@renderer/components/DeviceControl/LT_TO101.vue';
+import LT_EV574 from '@renderer/components/DeviceControl/LT_EV574.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -31,7 +31,7 @@ const APP_THEME = {
   '--accent-color': '#29B2F8',
   '--empty-gauge-color': '#2D3A4B',
 };
-const DEVICE_MODEL = 'LT-TO101';
+const DEVICE_MODEL = 'LT-EV574';
 const toast_service = useToast();
 const spring_display = ref<string>('block');
 
@@ -80,7 +80,7 @@ onBeforeMount(() => {
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_TO101 />
+          <LT_EV574 />
           <div class="ui_spring"></div>
         </div>
         <TerminalPanel />
