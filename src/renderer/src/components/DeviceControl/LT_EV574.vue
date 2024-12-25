@@ -2,9 +2,9 @@
 
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
-import Button from 'primevue/button';
 
 import FaultsPanel from '@renderer/components/LT_EV574/FaultsPanel.vue';
+import QuadDiagram from '@renderer/components/LT_EV574/QuadDiagram.vue';
 
 const tabview_pt = {
     root: { style: 'width: 100%; height: 100%; border-radius: 4px; font-family: "Cairo", sans-serif;' },
@@ -19,10 +19,12 @@ const tabpanel_pt = {
 
 <template>
     <div id="lt_ev574_control_main">
-        <Button icon="pi pi-expand" id="expand_btn" title="Toggle Full Screen" rounded text @click="" />
         <TabView :pt="tabview_pt">
             <TabPanel header="Faults Panel" :pt="tabpanel_pt">
                 <FaultsPanel />
+            </TabPanel>
+            <TabPanel header="Quad Diagram" :pt="tabpanel_pt">
+                <QuadDiagram />
             </TabPanel>
         </TabView>
     </div>
