@@ -15,6 +15,8 @@ function createWindow(): void {
     width: process.platform !== 'win32' ? BASE_HRES : BASE_HRES + 16,
     height: process.platform !== 'win32' ? BASE_VRES : BASE_VRES + 32,
     show: false,
+    resizable: false,
+    frame: false,
     autoHideMenuBar: true,
     // fullscreen: true,
     ...(process.platform === 'linux' ? { icon } : {}),
