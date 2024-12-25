@@ -67,7 +67,7 @@ onMounted(() => {
         vce_param_config.value = _vce_param_config;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_CPsDialog', () => {
         electron_renderer_invoke<CHXComputedParam[]>(`${device_model}_get_chx_cps`).then(chx_cps => {
             if (!chx_cps)
                 return;

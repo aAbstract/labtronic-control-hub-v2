@@ -3,7 +3,7 @@
 import { onMounted, inject, ref, computed } from 'vue';
 import Button from 'primevue/button';
 
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { MsgTypeConfig, LT_TO101_DeviceMode, DeviceMsg } from '@common/models';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 
@@ -23,7 +23,7 @@ const heater_state = ref(false);
 const heater_lbl_color = computed(() => heater_state.value ? '#64DD17' : 'var(--font-color)');
 
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', `device_config_ready_${device_model}`, () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
                 return;

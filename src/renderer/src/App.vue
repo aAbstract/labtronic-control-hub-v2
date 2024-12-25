@@ -21,7 +21,7 @@ import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
-import LT_HT107 from '@renderer/components/DeviceControl/LT_HT107.vue';
+import LT_TO101 from '@renderer/components/DeviceControl/LT_TO101.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -31,7 +31,7 @@ const APP_THEME = {
   '--accent-color': '#29B2F8',
   '--empty-gauge-color': '#2D3A4B',
 };
-const DEVICE_MODEL = 'LT-HT107';
+const DEVICE_MODEL = 'LT-TO101';
 const toast_service = useToast();
 const spring_display = ref<string>('block');
 
@@ -61,6 +61,7 @@ onBeforeMount(() => {
   // update ui params for dynamic msg_types like computed parameters
   window.electron?.ipcRenderer.on(`${DEVICE_MODEL}_device_config_ready`, () => {
     electron_renderer_invoke<MsgTypeConfig>(`${DEVICE_MODEL}_get_device_config`).then(device_config => post_event(`${DEVICE_MODEL}_update_ui_params`, { device_config }));
+    post_event('device_config_ready', {});
   });
 
   window.electron?.ipcRenderer.on('show_system_notif', (_, data) => toast_service.add(data.notif));
@@ -80,7 +81,7 @@ onBeforeMount(() => {
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_HT107 />
+          <LT_TO101 />
           <div class="ui_spring"></div>
         </div>
         <TerminalPanel />

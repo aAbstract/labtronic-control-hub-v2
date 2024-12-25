@@ -9,7 +9,7 @@ import { MsgTypeConfig } from '@common/models';
 import SingleChart from '@renderer/components/Charts/SingleChart.vue';
 import MultiChart from '@renderer/components/Charts/MultiChart.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 import { electron_renderer_invoke, clone_object, compute_tooltip_pt } from '@renderer/lib/util';
 // @ts-ignore
@@ -108,7 +108,7 @@ function set_multi_chart_y_min_max() {
 }
 
 onBeforeMount(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_DeviceStatePanel', () => {
         electron_renderer_invoke<any>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
                 return;

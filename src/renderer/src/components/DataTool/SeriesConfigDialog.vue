@@ -55,7 +55,7 @@ onMounted(() => {
         dialog_visible.value = true;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_SeriesConfigDialog', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;
@@ -67,9 +67,7 @@ onMounted(() => {
                 } as DropdownOption<number>;
             });
         });
-    });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
         electron_renderer_invoke<CHXSeries[]>(`${device_model}_get_chx_series`).then(_chx_series => {
             if (!_chx_series)
                 return;

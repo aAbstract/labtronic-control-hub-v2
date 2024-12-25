@@ -9,7 +9,7 @@ import OverlayPanel from 'primevue/overlaypanel';
 
 import { DropdownOption, DeviceMsg, MsgTypeConfig } from '@common/models';
 import { ChartParams } from '@renderer/lib/device_ui_config';
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, compute_tooltip_pt } from '@renderer/lib/util';
 
 const device_model = inject('device_model');
@@ -178,7 +178,7 @@ onMounted(() => {
         }
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', `device_config_ready_${device_model}`, () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
                 return;

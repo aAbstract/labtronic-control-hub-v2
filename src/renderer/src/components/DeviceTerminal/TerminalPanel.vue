@@ -41,7 +41,7 @@ onMounted(() => {
     subscribe('hide_control_panel', 'hide_control_panel', _ => panel_pos.value = '-50vw');
     add_log({ level: 'INFO', msg: 'Type HELP to List Available Commands' });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_TerminalPanel', () => {
         electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
     });
 });

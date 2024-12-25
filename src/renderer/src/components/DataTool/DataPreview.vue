@@ -43,7 +43,7 @@ onMounted(() => {
         dialog_visible.value = true;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_DataPreview', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;

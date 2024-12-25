@@ -245,7 +245,7 @@ onMounted(() => {
 
     subscribe('hide_data_tool', 'hide_data_tool', _ => panel_pos.value = '-60vw');
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_DataTool', () => {
         electron_renderer_invoke<CHXSeries[]>(`${device_model}_get_chx_series`).then(_chx_series => {
             if (!_chx_series)
                 return;
@@ -256,6 +256,29 @@ onMounted(() => {
                 chx_series_chart_settings_y_min_max.value[x.series_name] = ['0', '10'];
             });
         });
+
+        electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
+            if (!device_config)
+                return;
+            const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
+            complete_data_point_keys = [];
+            read_config.forEach(_read_config => {
+                complete_data_point_keys.push(String(_read_config.msg_type));
+                const { msg_type } = _read_config;
+                const msg_name = _read_config.msg_name.replace('READ_', '');
+                msg_type_name_map[msg_type] = msg_name;
+                msg_type_name_map[msg_name] = String(msg_type);
+                export_variables_state.value[msg_type] = true;
+            });
+        });
+
+        electron_renderer_invoke<CHXScript[]>(`${device_model}_get_chx_scripts`).then(_chx_scripts => {
+            if (!_chx_scripts)
+                return;
+            chx_scripts.value = _chx_scripts;
+        });
+
+        electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
     });
 
     electron_renderer_invoke<CHXEquation[]>('get_chx_eqs').then(_chx_eqs => {
@@ -282,31 +305,6 @@ onMounted(() => {
         if (!data_points_cache[seq_number])
             data_points_cache[seq_number] = { seq_number };
         data_points_cache[seq_number][msg_type] = msg_value;
-    });
-
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
-        electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
-            if (!device_config)
-                return;
-            const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
-            complete_data_point_keys = [];
-            read_config.forEach(_read_config => {
-                complete_data_point_keys.push(String(_read_config.msg_type));
-                const { msg_type } = _read_config;
-                const msg_name = _read_config.msg_name.replace('READ_', '');
-                msg_type_name_map[msg_type] = msg_name;
-                msg_type_name_map[msg_name] = String(msg_type);
-                export_variables_state.value[msg_type] = true;
-            });
-        });
-    });
-
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
-        electron_renderer_invoke<CHXScript[]>(`${device_model}_get_chx_scripts`).then(_chx_scripts => {
-            if (!_chx_scripts)
-                return;
-            chx_scripts.value = _chx_scripts;
-        });
     });
 
     window.electron?.ipcRenderer.on('export_device_data_res', (_, data) => {
@@ -344,10 +342,6 @@ onMounted(() => {
             ],
         };
         post_event('show_alert', { dialog_config });
-    });
-
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
-        electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
     });
 });
 

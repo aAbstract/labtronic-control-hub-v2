@@ -79,7 +79,7 @@ onMounted(() => {
     chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, 0, 100);
 
     // auto construct points data cache struct using device driver config
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', 'device_config_ready_MultiChart', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;

@@ -73,7 +73,7 @@ function map_t_heater_color_code(t_heater: number): string {
 onMounted(() => {
     post_event('update_device_model_cont_width', { width: '70%', margin_bottom: '0px' });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
+    subscribe('device_config_ready', `device_config_ready_${device_model}`, () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;
