@@ -4,11 +4,13 @@ import { ref, computed, shallowRef, onMounted, inject } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import { ChartOptions, Plugin, Chart as _Chart, ChartData } from 'chart.js';
 import Chart from 'primevue/chart';
+import Button from 'primevue/button';
+import OverlayPanel from 'primevue/overlaypanel';
 
 import { DropdownOption, DeviceMsg, MsgTypeConfig } from '@common/models';
 import { ChartParams } from '@renderer/lib/device_ui_config';
 import { post_event } from '@common/mediator';
-import { electron_renderer_invoke } from '@renderer/lib/util';
+import { electron_renderer_invoke, compute_tooltip_pt } from '@renderer/lib/util';
 
 const device_model = inject('device_model');
 const heater_power = ref(0);
@@ -20,6 +22,9 @@ const dropdown_pt: any = {
     item: { style: 'background-color: var(--light-bg-color); color: var(--font-color);' },
     trigger: { style: 'width: fit-content; padding-right: 8px;' },
     list: { style: 'padding: 0px;' },
+};
+const overlay_panel_pt = {
+    content: { style: 'padding: 8px;' },
 };
 // @ts-ignore
 let cache_changed = false;
@@ -68,6 +73,26 @@ function sample_select() {
 // dropdowns
 
 // pos_chart
+function create_chart_options(font_color: string, grid_color: string, y_min: number, y_max: number): ChartOptions {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        aspectRatio: 2,
+        animation: false,
+        plugins: {
+            legend: { display: false },
+            epoch_plugin: { display: true },
+        } as any,
+        scales: {
+            x: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: 'Position [mm]', display: true, color: font_color } },
+            y: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: 'Temprature [Celsius]', display: true, color: font_color }, min: y_min, max: y_max },
+        },
+    };
+}
+
+const pos_chart_op = ref();
+const pos_chart_y_min = ref('10');
+const pos_chart_y_max = ref('80');
 const readings = ref<[number, number][]>([]);
 let readings_msg_types = new Set();
 const chart_data = shallowRef<ChartData>({
@@ -87,23 +112,23 @@ const epoch_plugin: Plugin = {
             return;
         ctx.fillStyle = accent_color;
         ctx.font = 'bold 12px "Lucida Console", "Courier New", monospace';
-        ctx.fillText(`EPOCH: ${_epoch}`, chart.width - 100, 12);
+        ctx.fillText(`EPOCH: ${_epoch}`, chart.width - 100, 16);
     },
 };
-const chart_opts = shallowRef<ChartOptions>({
-    responsive: true,
-    maintainAspectRatio: false,
-    aspectRatio: 2,
-    animation: false,
-    plugins: {
-        legend: { display: false },
-        epoch_plugin: { display: true },
-    } as any,
-    scales: {
-        x: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: 'Position [mm]', display: true, color: font_color } },
-        y: { ticks: { color: font_color }, grid: { color: chart_grid_color }, title: { text: 'Temprature [Celsius]', display: true, color: font_color }, min: 25, max: 100 },
-    },
-});
+const chart_opts = shallowRef<ChartOptions>(create_chart_options(font_color, chart_grid_color, Number(pos_chart_y_min.value), Number(pos_chart_y_max.value)));
+
+function set_pos_chart_y_min_max() {
+    const y_min = Number(pos_chart_y_min.value);
+    const y_max = Number(pos_chart_y_max.value);
+    if (isNaN(y_min) || isNaN(y_max))
+        return;
+    pos_chart_op.value.hide();
+    chart_opts.value = create_chart_options(font_color, chart_grid_color, y_min, y_max);
+}
+
+function show_pos_chart_settings_overlay_panel(_event: MouseEvent) {
+    pos_chart_op.value.toggle(_event);
+}
 // post_chart
 
 function map_heater_power_color_code(heater_power: number): string {
@@ -189,11 +214,48 @@ onMounted(() => {
                 <span class="lc_span" :style="`color: ${map_heater_power_color_code(heater_power)};`">{{ `P_HEATER: ${heater_power.toFixed(1)} W` }}</span>
             </div>
         </div>
+        <Button id="pos_chart_settings_btn" icon="pi pi-cog" @click="show_pos_chart_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
+        <OverlayPanel ref="pos_chart_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+            <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
+                <div style="width: fit-content;">
+                    <span style="font-size: 14px; margin-right: 8px; width: 125px;">Position Chart Y Range</span>
+                    <input class="dt_tf" type="number" v-model="pos_chart_y_min" @keyup.enter="set_pos_chart_y_min_max()" @focus="pos_chart_y_min = ''">
+                    <span style="flex-grow: 1; text-align: center;"> - </span>
+                    <input class="dt_tf" type="number" v-model="pos_chart_y_max" @keyup.enter="set_pos_chart_y_min_max()" @focus="pos_chart_y_max = ''">
+                </div>
+            </div>
+        </OverlayPanel>
         <Chart id="pos_chart" type="line" :title="chart_title" :data="chart_data" :options="chart_opts" :plugins="[epoch_plugin]" />
     </div>
 </template>
 
 <style scoped>
+.dt_tf {
+    font-family: "Lucida Console", "Courier New", monospace;
+    width: 60px;
+    color: var(--font-color);
+    border: none;
+    background-color: var(--dark-bg-color);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px;
+}
+
+.dt_tf:focus {
+    outline: none;
+    border: 1px solid var(--accent-color);
+}
+
+#pos_chart_settings_btn {
+    position: absolute;
+    top: 48px;
+    right: 8px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    color: var(--accent-color);
+}
+
 #pos_chart {
     border-radius: 4px;
     border: 1px solid var(--empty-gauge-color);
@@ -227,6 +289,7 @@ onMounted(() => {
 }
 
 #lt_ht107_control_main_cont {
+    position: relative;
     width: 96%;
     height: fit-content;
     display: flex;
