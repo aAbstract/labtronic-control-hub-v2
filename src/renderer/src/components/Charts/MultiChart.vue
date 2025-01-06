@@ -5,7 +5,7 @@ import { ChartOptions, ChartData, Plugin, Chart as _Chart } from 'chart.js';
 import Chart from 'primevue/chart';
 
 import { ChartParams, DeviceUIConfig } from '@renderer/lib/device_ui_config';
-import { PlotSeries, MsgTypeConfig } from '@common/models';
+import { PlotSeries, MsgTypeConfig, CHXChartState } from '@common/models';
 import { subscribe } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 // @ts-ignore
@@ -21,6 +21,12 @@ const dt_ms = Math.round((1 / props.fps) * 1000);
 const chart_opts = shallowRef({});
 const chart_data = shallowRef<ChartData>();
 const msg_type_state_map = ref<Record<number, boolean>>({});
+
+const chart_state = ref(CHXChartState.RECORDING);
+const chart_auto_scale = ref(false);
+
+let _y_min = 0;
+let _y_max = 100;
 
 let _sn = 0;
 const accent_color = document.documentElement.style.getPropertyValue('--accent-color');
@@ -44,7 +50,7 @@ function create_chart_options(font_color: string, grid_color: string, y_min: num
         color: font_color,
         scales: {
             x: { ticks: { color: font_color, display: false }, grid: { color: grid_color } },
-            y: { ticks: { color: font_color }, grid: { color: grid_color }, min: y_min, max: y_max },
+            y: y_min === -1 && y_max === -1 ? { ticks: { color: font_color }, grid: { color: grid_color } } : { ticks: { color: font_color }, grid: { color: grid_color }, min: y_min, max: y_max },
         },
         animation: false,
         plugins: { legend: { display: false } },
@@ -76,7 +82,7 @@ function render_chart() {
 onMounted(() => {
     const chart_font_color = document.documentElement.style.getPropertyValue('--font-color');
     const chart_grid_color = document.documentElement.style.getPropertyValue('--empty-gauge-color');
-    chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, 0, 100);
+    chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, _y_min, _y_max);
 
     // auto construct points data cache struct using device driver config
     window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
@@ -100,6 +106,9 @@ onMounted(() => {
     });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+        if (chart_state.value === CHXChartState.PAUSED)
+            return;
+
         const device_msg: DeviceMsg = data.device_msg;
         _sn = device_msg.seq_number;
         const { msg_type } = device_msg.config;
@@ -130,7 +139,24 @@ onMounted(() => {
     subscribe('update_multi_chart_y_min_max', 'update_multi_chart_y_min_max', args => {
         const y_min: number = args.y_min;
         const y_max: number = args.y_max;
+        _y_min = y_min;
+        _y_max = y_max;
         chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, y_min, y_max);
+    });
+
+    subscribe('set_multi_chart_state', 'set_multi_chart_state', args => {
+        const { chx_chart_state } = args;
+        chart_state.value = chx_chart_state;
+    });
+
+    subscribe('set_multi_chart_auto_scale', 'set_multi_chart_auto_scale', args => {
+        const { chx_chart_auto_scale } = args;
+        chart_auto_scale.value = chx_chart_auto_scale;
+
+        if (chx_chart_auto_scale)
+            chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, -1, -1);
+        else
+            chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, _y_min, _y_max);
     });
 });
 

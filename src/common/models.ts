@@ -224,3 +224,14 @@ export interface LT_RE600_MeterValue {
     msg_name: string;
 };
 // device models - LT_RE600
+
+export enum CHXChartState {
+    RECORDING = 0,
+    PAUSED = 1,
+};
+
+export enum RecordingState {
+    RUNNING = 0,
+    PAUSED = 1,
+    STOPPED = 2,
+};

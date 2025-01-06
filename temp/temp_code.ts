@@ -142,3 +142,12 @@
 //     lt_ch000_vce0 = new VirtualComputeEngine(LT_CH000_VCE_CONFIG, _chx_cps, mw_ipc_handler, DEVICE_MODEL);
 //     main_window?.webContents.send(`${DEVICE_MODEL}_device_config_ready`);
 // });
+
+// new NavMenuItem('Screenshot', PhotoCapture, function (this: NavMenuItem, _event: MouseEvent) {
+//     toggle_screenshot_mode();
+//     const mode_str_repr = screenshot_mode() ? 'ON' : 'OFF';
+//     const mode_msg = screenshot_mode() ? 'Click on a UI Component to Capture Screenshot' : 'Screenshot Mode is Disabled';
+//     toast_service.add({ severity: 'info', summary: `Screenshot ${mode_str_repr}`, detail: mode_msg, life: 3000 });
+//     this.is_active.value = screenshot_mode();
+// }),
+// new NavMenuItem('Settings', SettingsIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'settings_panel', 'LEFT'),

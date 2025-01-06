@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted, inject, computed, shallowRef, Ref, onBeforeMount } from 'vue';
+import { ref, onMounted, inject, computed, shallowRef, Ref, onBeforeMount, watch } from 'vue';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
 import OverlayPanel from 'primevue/overlaypanel';
@@ -12,16 +12,11 @@ import SmallChart from './SmallChart.vue';
 import DeviceEquation from './DeviceEquation.vue';
 import SeriesConfigDialog from './SeriesConfigDialog.vue';
 import DataPreview from './DataPreview.vue';
-import { CHXSeries } from '@common/models';
+import { CHXSeries, RecordingState } from '@common/models';
 import { electron_renderer_invoke, electron_renderer_send, clone_object, add_log, compute_tooltip_pt } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInjectedParam, AlertConfig } from '@common/models';
 
-enum RecordingState {
-    RUNNING = 0,
-    PAUSED = 1,
-    STOPPED = 2,
-};
 type DataPointType = Record<string, number>;
 
 let data_points_cache: Record<string, DataPointType> = {};
@@ -64,6 +59,10 @@ const checkbox_pt: any = {
 const export_variables_state = ref<Record<string, boolean>>({ 'time_ms': true });
 const chx_series_chart_settings_op_refs: Record<string, Ref> = {};
 const chx_series_chart_settings_y_min_max: Ref<Record<string, [string, string]>> = ref({});
+
+watch([recording_state], () => {
+    post_event('set_shadow_recording_state', { recording_state: recording_state.value });
+});
 
 function show_series_config_dialog() {
     post_event('show_series_config_dialog', {});
@@ -230,8 +229,19 @@ function sampling_dt_focused() {
     toast_service.add({ severity: 'warn', summary: 'Locked', detail: 'Custom Sampling Rate is Disabled for This Device', life: 3000 });
 }
 
+function validate_sampling_dt() {
+    sampling_dt.value = Math.round(sampling_dt.value);
+    if (sampling_dt.value <= 0)
+        sampling_dt.value = 1;
+}
+
 onBeforeMount(() => {
     subscribe('lock_sampling_dt', 'lock_sampling_dt', () => lock_sampling_dt.value = true);
+
+    subscribe('set_default_sampling_dt', 'set_default_sampling_dt', args => {
+        const { _sampling_dt } = args;
+        sampling_dt.value = _sampling_dt;
+    });
 });
 
 onMounted(() => {
@@ -349,6 +359,12 @@ onMounted(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_config_ready`, () => {
         electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
     });
+
+    subscribe('data_tool_start_data_recording', 'data_tool_start_data_recording', () => start_data_recording());
+    subscribe('data_tool_pause_data_recording', 'data_tool_pause_data_recording', () => pause_data_recording());
+    subscribe('data_tool_stop_data_recording', 'data_tool_stop_data_recording', () => stop_data_recording());
+    subscribe('data_tool_import_device_data', 'data_tool_import_device_data', () => import_device_data());
+    subscribe('data_tool_export_device_data', 'data_tool_export_device_data', () => export_device_data());
 });
 
 </script>
@@ -372,7 +388,7 @@ onMounted(() => {
                     <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                         <div style="width: 200px; display: flex; flex-direction: row; justify-content: flex-start;">
                             <span style="font-size: 14px; margin-right: 8px;">Sampling Time [ms]:</span>
-                            <input class="dt_tf" type="number" v-model="sampling_dt" :readonly="lock_sampling_dt" @focus="sampling_dt_focused()">
+                            <input class="dt_tf" type="number" v-model="sampling_dt" :readonly="lock_sampling_dt" @focus="sampling_dt_focused()" @keyup.enter="validate_sampling_dt()">
                         </div>
                         <div style="height: 8px;"></div>
                         <div>
@@ -429,7 +445,7 @@ onMounted(() => {
                         <div style="width: fit-content;">
                             <span style="font-size: 14px; margin-right: 8px; width: 125px;">{{ `${s.series_name} Chart Y Range` }}</span>
                             <input class="dt_tf" v-model="chx_series_chart_settings_y_min_max[s.series_name][0]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)" @focus="chx_series_chart_settings_y_min_max[s.series_name][0] = ''">
-                            <span style="flex-grow: 1; text-align: center;"> - </span>
+                            <span style="text-align: center;"> - </span>
                             <input class="dt_tf" v-model="chx_series_chart_settings_y_min_max[s.series_name][1]" @keyup.enter="set_chx_series_chart_y_min_max(s.series_name)" @focus="chx_series_chart_settings_y_min_max[s.series_name][1] = ''">
                         </div>
                     </div>

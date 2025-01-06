@@ -129,7 +129,7 @@ onMounted(() => {
                         <div style="width: fit-content;">
                             <span style="font-size: 14px; margin-right: 8px; width: 125px;">LT-TO202 Chart Y Range</span>
                             <input class="dt_tf" type="number" v-model="lt_to202_chart_y_min" @keyup.enter="set_lt_to202_chart_y_min_max">
-                            <span style="flex-grow: 1; text-align: center;"> - </span>
+                            <span style="text-align: center;"> - </span>
                             <input class="dt_tf" type="number" v-model="lt_to202_chart_y_max" @keyup.enter="set_lt_to202_chart_y_min_max">
                         </div>
                     </div>

@@ -6,7 +6,7 @@ import { add_log, electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceUIConfig } from '@renderer/lib/device_ui_config';
 import * as GfxApi from '@renderer/lib/gfx_api';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
-import { subscribe } from '@common/mediator';
+import { subscribe, post_event } from '@common/mediator';
 
 import Message from 'primevue/message';
 
@@ -95,7 +95,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="main_canvas_cont" v-on="screenshot_handlers">
+    <div id="main_canvas_cont" v-on="screenshot_handlers" @click="post_event('show_device_model_zoom', {})">
         <img v-if="!show_device_model_panel_msg" id="device_img" :src="device_model_labeled_img" alt="Device Solid Model" @load="canvas_setup()">
         <canvas v-if="!show_device_model_panel_msg" id="device_canvas" @click="GfxApi.debug_canvas_click"></canvas>
         <div v-if="show_device_model_panel_msg" id="device_model_panel_msg_cont">
@@ -122,6 +122,7 @@ onMounted(() => {
     margin-bottom: v-bind(device_model_cont_margin_bottom);
     width: v-bind(device_model_cont_width);
     border-radius: 4px;
+    cursor: pointer;
 }
 
 #device_img,

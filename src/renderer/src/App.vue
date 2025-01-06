@@ -9,12 +9,14 @@ import NavBar from '@renderer/components/NavBar/NavBar.vue';
 import TerminalPanel from '@renderer/components/DeviceTerminal/TerminalPanel.vue';
 import DeviceStatePanel from '@renderer/components/DeviceStatePanel/DeviceStatePanel.vue';
 import DeviceModelPanel from '@renderer/components/DeviceModelPanel/DeviceModelPanel.vue';
+import DeviceModelZoom from '@renderer/components/DeviceModelZoom.vue';
 import DataTool from '@renderer/components/DataTool/DataTool.vue';
 import SettingsPanel from '@renderer/components/SettingsPanel.vue';
 // import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
 import DevicePDFPanel from '@renderer/components/DevicePDFPanel.vue';
 import Alert from '@renderer/components/Alert.vue';
-import LTAIPanel from './components/LTAIPanel.vue';
+import LTAIPanel from '@renderer/components/LTAIPanel.vue';
+import ChartToolPanel from '@renderer/components/ChartToolPanel.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { CHXCloudSettings, MsgTypeConfig, _ToastMessageOptions } from '@common/models';
 import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
@@ -61,6 +63,7 @@ onBeforeMount(() => {
   // update ui params for dynamic msg_types like computed parameters
   window.electron?.ipcRenderer.on(`${DEVICE_MODEL}_device_config_ready`, () => {
     electron_renderer_invoke<MsgTypeConfig>(`${DEVICE_MODEL}_get_device_config`).then(device_config => post_event(`${DEVICE_MODEL}_update_ui_params`, { device_config }));
+    post_event('device_config_ready', {});
   });
 
   window.electron?.ipcRenderer.on('show_system_notif', (_, data) => toast_service.add(data.notif));
@@ -77,9 +80,11 @@ onBeforeMount(() => {
       <NavBar />
       <div id="left_panel_cont">
         <LTAIPanel style="position: absolute;" />
+        <ChartToolPanel style="position: absolute;" />
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
+          <DeviceModelZoom />
           <LT_EV574 />
           <div class="ui_spring"></div>
         </div>

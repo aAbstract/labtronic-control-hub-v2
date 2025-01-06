@@ -5,7 +5,7 @@ import { useToast } from 'primevue/usetoast';
 import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
 
-import { subscribe, post_event } from '@common/mediator';
+import { subscribe } from '@common/mediator';
 import { electron_renderer_send } from '@renderer/lib/util';
 
 const device_model = inject('device_model');
@@ -51,8 +51,6 @@ onMounted(() => {
         else if (bat_i < 0)
             rv_enrg.value += enrg;
     });
-
-    post_event('lock_sampling_dt', {});
 
     subscribe('reset_recording_state', 'reset_recording_state_lt_ev574_faults_panel', () => {
         cs_enrg.value = 0;

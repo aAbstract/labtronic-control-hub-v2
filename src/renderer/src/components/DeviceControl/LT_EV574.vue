@@ -1,10 +1,12 @@
 <script setup lang="ts">
 
+import { onMounted } from 'vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 
 import FaultsPanel from '@renderer/components/LT_EV574/FaultsPanel.vue';
 import QuadDiagram from '@renderer/components/LT_EV574/QuadDiagram.vue';
+import { post_event } from '@common/mediator';
 
 const tabview_pt = {
     root: { style: 'width: 100%; height: 100%; border-radius: 4px; font-family: "Cairo", sans-serif;' },
@@ -14,6 +16,20 @@ const tabpanel_pt = {
     headerAction: { style: 'padding: 8px 16px; border-radius: 0px; background-color: transparent; font-size: 14px;' },
     content: { style: 'position: relative;' },
 };
+
+const _msg_type_chart_name_map: Record<number, string> = {
+    [-1]: 'Time [s]',
+    0: 'Battery Voltage [V]',
+    1: 'Battery Current [A]',
+    2: 'Battery Power [W]',
+    3: 'Wheel Speed [rad/s]',
+    4: 'Mechanical Power [W]',
+};
+
+onMounted(() => {
+    post_event('set_chart_msg_type_name_map', { _msg_type_chart_name_map });
+    post_event('set_default_sampling_dt', { _sampling_dt: 1 });
+});
 
 </script>
 
