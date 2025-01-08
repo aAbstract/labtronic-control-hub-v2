@@ -228,6 +228,7 @@ export interface LT_RE600_MeterValue {
 export enum CHXChartState {
     RECORDING = 0,
     PAUSED = 1,
+    STOPPED = 2,
 };
 
 export enum RecordingState {

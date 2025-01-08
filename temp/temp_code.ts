@@ -151,3 +151,30 @@
 //     this.is_active.value = screenshot_mode();
 // }),
 // new NavMenuItem('Settings', SettingsIcon, function (this: NavMenuItem) { toggle_panel(this.panel_name, this.panel_pos) }, 'settings_panel', 'LEFT'),
+
+// if (!data_points_cache[seq_number])
+//     data_points_cache[seq_number] = {};
+
+// const _msg_value = Number(msg_value.toFixed(2));
+// if (msg_type === chart_x_msg_type.value)
+//     data_points_cache[seq_number][0] = _msg_value;
+// if (msg_type === chart_y_msg_type.value)
+//     data_points_cache[seq_number][1] = _msg_value;
+
+// if (chart_x_msg_type.value === -1)
+//     data_points_cache[seq_number][0] = __time_s();
+// if (chart_y_msg_type.value === -1)
+//     data_points_cache[seq_number][1] = __time_s();
+
+
+// watch([chart_y_msg_type_arr], () => {
+//     const _chart_active_color = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(chart_y_msg_type.value)?.borderColor ?? accent_color;
+//     chart_params.borderColor = _chart_active_color;
+// });
+
+// const y_title = msg_type_chart_name_map.value[chart_y_msg_type.value] ?? msg_type_msg_name_map[chart_y_msg_type.value];
+
+// const _data_points = Object.values(data_points_cache).filter(dp => !isNaN(dp[0]) && !isNaN(dp[1])).sort((a, b) => a[0] - b[0]);
+
+// <!-- <div style="flex-grow: 1;"></div> -->
+// <!-- <Dropdown :pt="dropdown_pt" :options="msg_types_opts" optionLabel="label" optionValue="value" placeholder="Chart Y" title="Chart Y" v-model="chart_y_msg_type" @change="set_chart_x_y_msg_type()" /> -->

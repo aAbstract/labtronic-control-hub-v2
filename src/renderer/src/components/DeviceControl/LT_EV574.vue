@@ -7,6 +7,7 @@ import TabPanel from 'primevue/tabpanel';
 import FaultsPanel from '@renderer/components/LT_EV574/FaultsPanel.vue';
 import QuadDiagram from '@renderer/components/LT_EV574/QuadDiagram.vue';
 import { post_event } from '@common/mediator';
+import { screenshot_handlers } from '@renderer/lib/screenshot';
 
 const tabview_pt = {
     root: { style: 'width: 100%; height: 100%; border-radius: 4px; font-family: "Cairo", sans-serif;' },
@@ -34,7 +35,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="lt_ev574_control_main">
+    <div id="lt_ev574_control_main" v-on="screenshot_handlers">
         <TabView :pt="tabview_pt">
             <TabPanel header="Faults Panel" :pt="tabpanel_pt">
                 <FaultsPanel />
