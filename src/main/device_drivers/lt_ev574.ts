@@ -142,6 +142,20 @@ const LT_EV574_VCE_CONFIG: VceParamConfig[] = [
         param_type: VceParamType.VCE_VAR,
         desc: 'Mechanical Power',
     },
+    // VCE_CONST
+    {
+        msg_type_config: {
+            msg_type: 5,
+            msg_name: 'CONTROL_BUTTONS',
+            data_type: DataType.UINT,
+            size_bytes: 1,
+            cfg2: 0,
+        },
+        param_symbol: '$C_BTNS',
+        param_type: VceParamType.VCE_CONST,
+        const_init_value: 0,
+        desc: 'Control Buttons',
+    },
 ];
 const DEVICE_SERIES: CHXSeries[] = [
     {
