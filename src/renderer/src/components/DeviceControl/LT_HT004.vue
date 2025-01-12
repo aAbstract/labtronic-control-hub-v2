@@ -27,9 +27,9 @@ const device_op_mode_opts: DropdownOption<LT_HT004_DeviceOperationMode>[] = [
 ];
 
 const heater_surface_area_opts = [
-    'Area : 108*108 = 0.0116 m^2',
-    'Area : 108*108 + 17*(pi*1.5*84) =  0.0184 m^2',
-    'Area : 108*108 + 18*(84*108) + 18*(4*84) = 0.181 m^2',
+    'Area : 108 * 108 = 0.0116 (m^2)',
+    'Area : 108*108 + 18*(84*108) = 0.17496 (m^2)',
+    'Area : 108 * 108 + 17*(pi*15*84) = 0.0789 (m^2)',
 ];
 const heater_surface_area = ref(heater_surface_area_opts[0]);
 
@@ -141,22 +141,22 @@ function map_t_heater_color_code(t_heater: number): string {
 <template>
     <div ref="target_component_screenshot" id="lt_ht004_control_main_cont" v-on="screenshot_handlers">
         <div class="labeled_control lt_ht004_control_row">
-            <span style="color: rgb(0, 150, 136); font-size: 16px;">AirFlow: {{ msg_values_cache[1] }}</span>
-            <span style="color: rgb(156, 39, 176); font-size: 16px;">PT1000_In: {{ msg_values_cache[2] }}</span>
-            <span style="color: rgb(255, 152, 0); font-size: 16px;">PT1000_Out: {{ msg_values_cache[3] }}</span>
+            <span class="lt_ht004chx_data" style="color: rgb(0, 150, 136);">AirFlow: {{ msg_values_cache[1] }}</span>
+            <span class="lt_ht004chx_data" style="color: rgb(156, 39, 176);">PT1000_In: {{ msg_values_cache[2] }}</span>
+            <span class="lt_ht004chx_data" style="color: rgb(255, 152, 0);">PT1000_Out: {{ msg_values_cache[3] }}</span>
         </div>
         <div class="lt_ht004_control_row">
             <div class="labeled_control">
                 <span>Sample Shape:</span>
                 <Dropdown :pt="dropdown_pt" :options="device_op_mode_opts" optionLabel="label" optionValue="value" placeholder="Device Operation Mode" title="Device Operation Mode" v-model="device_op_mode" @change="switch_device_mode" />
             </div>
-            <span :style="{ 'font-weight': 'bold', 'color': map_t_heater_color_code(Number(msg_values_cache[0])), fontSize: '16px' }">P_Heater: {{ msg_values_cache[0] }}</span>
+            <span class="lt_ht004chx_data"  :style="{ 'font-weight': 'bold', 'color': map_t_heater_color_code(Number(msg_values_cache[0])) }">P_Heater: {{ msg_values_cache[0] }}</span>
         </div>
 
 
         <div class="lt_ht004_control_row">
             <div class="lt_ht004_control_row">
-                <span style="color: var(--font-color); font-size: 16px;">{{ heater_surface_area }}</span>
+                <span  id="lt_ht004_area">{{ heater_surface_area }}</span>
             </div>
         </div>
 
@@ -217,6 +217,13 @@ function map_t_heater_color_code(t_heater: number): string {
 </template>
 
 <style scoped>
+#lt_ht004_area{
+    color: var(--font-color); 
+    font-size: 16px;
+}
+.lt_ht004chx_data{
+font-size: 16px;
+}
 input[type='text'] {
     width: 50px;
 
