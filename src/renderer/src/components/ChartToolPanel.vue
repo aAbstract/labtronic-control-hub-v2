@@ -195,7 +195,7 @@ function __time_s(): number {
 }
 
 function __msg_type_color(msg_type: number): string {
-    return chart_params.value[msg_type].borderColor ?? accent_color;
+    return chart_params.value[msg_type]?.borderColor ?? accent_color;
 }
 
 function render_chart() {
