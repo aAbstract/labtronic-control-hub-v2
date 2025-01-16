@@ -1,0 +1,65 @@
+('2100', b'2100\r61 00 98 3A 00 13 \r\r>'), OK: PIDSUPP_0
+('2101', b'2101\r61 01 83 \r\r>'), ERR: DTC Status
+('2104', b'2104\r61 04 00 \r\r>'), OK: Calculated Load Value ?
+('2105', b'2105\r61 05 49 \r\r>'), OK: Engine Coolant Temprature ?
+('210B', b'210B\r61 0B 64 \r\r>'), OK: Intake Manifold Absolute Pressure ?
+('210C', b'210C\r61 0C 00 00 \r\r>'), OK: Engine RPM
+('210D', b'210D\r61 0D 00 \r\r>'), OK: Vehicle Speed Sensor ?
+('210F', b'210F\r61 0F 00 \r\r>'), OK: Intake Air Temperature ?
+('211C', b'211C\r61 1C 05 \r\r>'), OK: Not OBD Compliant
+('211F', b'211F\r61 1F 00 00 \r\r>'), OK: Time Since Engine Start ?
+
+('2120', b'2120\r61 20 A0 01 A0 01 \r\r>'), OK: PIDSUPP_2
+('2121', b'2121\r61 21 00 00 \r\r>'), OK: Distance Traveled ?
+('2123', b'2123\r61 23 00 00 \r\r>'), OK: Fuel Rail Pressure ?
+('2130', b'2130\r61 30 00 \r\r>'), OK: Number of Warm-UPs ?
+('2131', b'2131\r61 31 00 00 \r\r>'), OK: Distance Since DTCs Clear ?
+('2133', b'2133\r61 33 64 \r\r>'), OK: Barometric Pressure ?
+
+('2140', b'2140\r61 40 40 CC 00 01 \r\r>'), PIDSUPP_4
+('2142', b'2142\r61 42 30 72 \r\r>'), OK: ECU Voltage
+('2149', b'2149\r61 49 28 \r\r>'), OK: Accelerator Pedal Position D
+('214A', b'214A\r61 4A 52 \r\r>'), OK: Accelerator Pedal Position E ?
+('214D', b'214D\r61 4D 00 00 \r\r>'), OK: Time Run by Engine while MIL
+('214E', b'214E\r61 4E 00 1D \r\r>'), OK: Time Since DTCs Clear ?
+
+('2160', b'2160\r61 60 00 00 00 01 \r\r>'), PIDSUPP_6
+
+('2180', b'2180\r61 80 00 00 00 01 \r\r>'), PIDSUPP_8
+
+('21A0', b'21A0\r61 A0 00 08 07 C1 \r\r>'), PIDSUPP_10
+('21AD', b'21AD\r019 \r0: 61 AD 00 00 00 00 \r1: 00 00 00 00 00 00 00 \r2: 00 03 4C 00 00 80 46 \r3: 44 3A 3C 00 00 00 00 \r\r>'), UNK [-]
+('21B6', b'21B6\r00C \r0: 61 B6 83 01 13 00 \r1: 49 64 00 00 00 00 00 \r\r>'), UNK [-]
+('21B7', b'21B7\r009 \r0: 61 B7 05 00 00 00 \r1: 00 00 00 00 00 00 00 \r\r>'), UNK [-]
+
+('21B8', b'21B8\r61 B8 00 00 00 64 \r\r>'), UNK []
+('21B9', b'21B9\r61 B9 30 5E \r\r>'), UNK [2]
+
+('21BA', b'21BA\r008 \r0: 61 BA 28 52 00 00 \r1: 00 1E 00 00 00 00 00 \r\r>'), UNK [-]
+
+('21C0', b'21C0\r61 C0 C0 00 00 0F \r\r>'), PIDSUPP_12
+('21C1', b'21C1\r014 \r0: 61 C1 4B 44 48 32 \r1: 30 30 23 32 4B 44 46 \r2: 54 56 04 01 56 68 02 \r\r>'), UNK [-]
+('21C2', b'21C2\r00D \r0: 61 C2 32 36 42 35 \r1: 30 00 00 03 04 00 10 \r\r>'), UNK [-]
+('21DD', b'21DD\r008 \r0: 61 DD 00 00 00 00 \r1: C6 00 00 00 00 00 00 \r\r>'), UNK [-]
+
+('21DE', b'21DE\r61 DE 28 52 00 \r\r>'), UNK [3]
+
+('21DF', b'21DF\r00B \r0: 61 DF 08 A8 0B B8 \r1: 00 64 00 00 00 00 00 \r\r>'), UNK [-]
+
+('21E0', b'21E0\r61 E0 E4 04 80 00 \r\r>'), PIDSUPP_14
+
+('21E1', b'21E1\r61 E1 03 03 \r\r>'), UNK [2]
+
+('21E2', b'21E2\r61 E2 D2 F3 D9 F3 80 \r\r>'), UNK [5]
+
+('21E3', b'21E3\r61 E3 00 \r\r>'), UNK [1]
+('21E6', b'21E6\r61 E6 00 00 00 \r\r>'), UNK [3]
+('21EE', b'21EE\r61 EE 01 00 \r\r>'), UNK [2]
+
+('21F1', b'21F1\r61 F1 00 76 00 A0 \r\r>'), UNK [4]
+ 
+ 
+supp_codes = '10011000111010010011'
+for i in range(32):
+	if supp_codes[i] == '1':
+		print(f"{(i + 0xA1):02X}")

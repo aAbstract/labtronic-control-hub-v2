@@ -5,9 +5,7 @@ import code
 import readline
 from rlcompleter import Completer
 sys.path.append(os.getcwd())
-from e2e._vspi.vspi import (
-    VSPI,
-)
+from e2e._vspi.vspi import VSPI
 from e2e._vspi.test_drivers import (
     ltd_driver_lt_ch000,
 
