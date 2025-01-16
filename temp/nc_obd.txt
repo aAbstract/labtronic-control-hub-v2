@@ -1,11 +1,7 @@
 ('2100', b'2100\r61 00 98 3A 00 13 \r\r>'), OK: PIDSUPP_0
 ('2101', b'2101\r61 01 83 \r\r>'), ERR: DTC Status
-('2104', b'2104\r61 04 00 \r\r>'), OK: Calculated Load Value ?
-('2105', b'2105\r61 05 49 \r\r>'), OK: Engine Coolant Temprature ?
 ('210B', b'210B\r61 0B 64 \r\r>'), OK: Intake Manifold Absolute Pressure ?
-('210C', b'210C\r61 0C 00 00 \r\r>'), OK: Engine RPM
 ('210D', b'210D\r61 0D 00 \r\r>'), OK: Vehicle Speed Sensor ?
-('210F', b'210F\r61 0F 00 \r\r>'), OK: Intake Air Temperature ?
 ('211C', b'211C\r61 1C 05 \r\r>'), OK: Not OBD Compliant
 ('211F', b'211F\r61 1F 00 00 \r\r>'), OK: Time Since Engine Start ?
 
@@ -17,9 +13,6 @@
 ('2133', b'2133\r61 33 64 \r\r>'), OK: Barometric Pressure ?
 
 ('2140', b'2140\r61 40 40 CC 00 01 \r\r>'), PIDSUPP_4
-('2142', b'2142\r61 42 30 72 \r\r>'), OK: ECU Voltage
-('2149', b'2149\r61 49 28 \r\r>'), OK: Accelerator Pedal Position D
-('214A', b'214A\r61 4A 52 \r\r>'), OK: Accelerator Pedal Position E ?
 ('214D', b'214D\r61 4D 00 00 \r\r>'), OK: Time Run by Engine while MIL
 ('214E', b'214E\r61 4E 00 1D \r\r>'), OK: Time Since DTCs Clear ?
 
@@ -48,13 +41,10 @@
 
 ('21E0', b'21E0\r61 E0 E4 04 80 00 \r\r>'), PIDSUPP_14
 
-('21E1', b'21E1\r61 E1 03 03 \r\r>'), UNK [2]
 
-('21E2', b'21E2\r61 E2 D2 F3 D9 F3 80 \r\r>'), UNK [5]
 
 ('21E3', b'21E3\r61 E3 00 \r\r>'), UNK [1]
 ('21E6', b'21E6\r61 E6 00 00 00 \r\r>'), UNK [3]
-('21EE', b'21EE\r61 EE 01 00 \r\r>'), UNK [2]
 
 ('21F1', b'21F1\r61 F1 00 76 00 A0 \r\r>'), UNK [4]
  
@@ -63,3 +53,17 @@ supp_codes = '10011000111010010011'
 for i in range(32):
 	if supp_codes[i] == '1':
 		print(f"{(i + 0xA1):02X}")
+
+
+('210C', b'210C\r61 0C 00 00 \r\r>'), OK: Engine RPM
+('2142', b'2142\r61 42 30 72 \r\r>'), OK: ECU Voltage
+('210F', b'210F\r61 0F 00 \r\r>'), OK: Intake Air Temperature ?
+('2105', b'2105\r61 05 49 \r\r>'), OK: Engine Coolant Temprature ?
+('2149', b'2149\r61 49 28 \r\r>'), OK: Accelerator Pedal Position D
+('214A', b'214A\r61 4A 52 \r\r>'), OK: Accelerator Pedal Position E ?
+
+('21E2', b'21E2\r61 E2 D2 F3 D9 F3 80 \r\r>'), UNK [5] mass air flow ?
+('21EE', b'21EE\r61 EE 01 00 \r\r>'), UNK [2] Engine Fuel Rate ?
+('21E1', b'21E1\r61 E1 03 03 \r\r>'), UNK [2] Engine Exhaust Flow Rate ?
+
+('2104', b'2104\r61 04 00 \r\r>'), OK: Calculated Load Value ?
