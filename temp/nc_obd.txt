@@ -57,10 +57,13 @@ for i in range(32):
 
 ('210C', b'210C\r61 0C 00 00 \r\r>'), OK: Engine RPM
 ('2142', b'2142\r61 42 30 72 \r\r>'), OK: ECU Voltage
+
 ('210F', b'210F\r61 0F 00 \r\r>'), OK: Intake Air Temperature ?
+
 ('2105', b'2105\r61 05 49 \r\r>'), OK: Engine Coolant Temprature ?
 ('2149', b'2149\r61 49 28 \r\r>'), OK: Accelerator Pedal Position D
 ('214A', b'214A\r61 4A 52 \r\r>'), OK: Accelerator Pedal Position E ?
+
 
 ('21E2', b'21E2\r61 E2 D2 F3 D9 F3 80 \r\r>'), UNK [5] mass air flow ?
 ('21EE', b'21EE\r61 EE 01 00 \r\r>'), UNK [2] Engine Fuel Rate ?
