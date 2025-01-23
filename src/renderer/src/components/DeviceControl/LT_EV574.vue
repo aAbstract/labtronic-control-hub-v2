@@ -6,6 +6,7 @@ import TabPanel from 'primevue/tabpanel';
 
 import FaultsPanel from '@renderer/components/LT_EV574/FaultsPanel.vue';
 import QuadDiagram from '@renderer/components/LT_EV574/QuadDiagram.vue';
+import DeviceModelDetails from '@renderer/components/LT_EV574/DeviceModelDetails.vue';
 import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 
@@ -36,6 +37,7 @@ onMounted(() => {
 
 <template>
     <div id="lt_ev574_control_main" v-on="screenshot_handlers">
+        <DeviceModelDetails />
         <TabView :pt="tabview_pt">
             <TabPanel header="Faults Panel" :pt="tabpanel_pt">
                 <FaultsPanel />

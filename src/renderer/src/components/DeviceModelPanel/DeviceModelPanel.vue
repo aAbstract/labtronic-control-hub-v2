@@ -94,7 +94,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="main_canvas_cont" @click="post_event('show_device_model_zoom', {})">
+    <div id="main_canvas_cont" @click="post_event('show_device_model_details', {})">
         <img v-if="!show_device_model_panel_msg" id="device_img" :src="device_model_labeled_img" alt="Device Solid Model" @load="canvas_setup()">
         <canvas v-if="!show_device_model_panel_msg" id="device_canvas" @click="GfxApi.debug_canvas_click"></canvas>
         <div v-if="show_device_model_panel_msg" id="device_model_panel_msg_cont">

@@ -9,7 +9,6 @@ import NavBar from '@renderer/components/NavBar/NavBar.vue';
 import TerminalPanel from '@renderer/components/DeviceTerminal/TerminalPanel.vue';
 import DeviceStatePanel from '@renderer/components/DeviceStatePanel/DeviceStatePanel.vue';
 import DeviceModelPanel from '@renderer/components/DeviceModelPanel/DeviceModelPanel.vue';
-import DeviceModelZoom from '@renderer/components/DeviceModelZoom.vue';
 import DataTool from '@renderer/components/DataTool/DataTool.vue';
 import SettingsPanel from '@renderer/components/SettingsPanel.vue';
 // import DeviceManualPanel from '@renderer/components/DeviceManualPanel.vue';
@@ -84,7 +83,6 @@ onBeforeMount(() => {
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <DeviceModelZoom />
           <LT_EV574 />
           <div class="ui_spring"></div>
         </div>
