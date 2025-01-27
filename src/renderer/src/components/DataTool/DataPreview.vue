@@ -1,11 +1,12 @@
 <script setup lang="ts">
 
-import { ref, onMounted, shallowRef, inject } from 'vue';
+import { ref, onMounted, shallowRef, inject, computed } from 'vue';
 import Dialog from 'primevue/dialog';
 import Checkbox from 'primevue/checkbox';
+import Button from 'primevue/button';
 
-import { MsgTypeConfig } from '@common/models';
-import { subscribe } from '@common/mediator';
+import { MsgTypeConfig, RecordingState } from '@common/models';
+import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 
 type DataPointType = Record<string, number>;
@@ -31,6 +32,10 @@ const checkbox_pt: any = {
 
 let data_points_cache: DataPointType[] = [];
 
+const shadow_recording_state = ref<RecordingState>(RecordingState.STOPPED);
+const play_btn_color = computed(() => shadow_recording_state.value === RecordingState.RUNNING ? '#64DD17' : 'var(--accent-color)');
+const pause_btn_color = computed(() => shadow_recording_state.value === RecordingState.PAUSED ? '#FFAB00' : 'var(--accent-color)');
+
 function scroll_table_down() {
     if (!dialog_visible.value || !auto_scroll.value)
         return;
@@ -49,7 +54,7 @@ onMounted(() => {
                 return;
             const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
             table_headers.value = [
-                { header_key: 'time_ms', header_name: 'time_s' },
+                { header_key: 'time_ms', header_name: 'time_ms' },
                 ...read_config.map(x => {
                     return {
                         header_key: String(x.msg_type),
@@ -70,6 +75,11 @@ onMounted(() => {
         data_points_cache = [];
         data_points.value = [];
     });
+
+    subscribe('set_shadow_recording_state', 'set_shadow_recording_state_DataPreview', args => {
+        const recording_state = args.recording_state as RecordingState;
+        shadow_recording_state.value = recording_state;
+    });
 });
 
 </script>
@@ -84,7 +94,7 @@ onMounted(() => {
 
             <!-- table body -->
             <div class="data_point_row" v-for="dp in data_points">
-                <span v-for="header in table_headers" style="width: 100px;" :title="header.header_name">{{ header.header_key === 'time_ms' ? (dp[header.header_key] / 1000).toFixed() : dp[header.header_key].toFixed(2) }}</span>
+                <span v-for="header in table_headers" style="width: 100px;" :title="header.header_name">{{ header.header_key === 'time_ms' ? dp[header.header_key].toFixed() : dp[header.header_key].toFixed(2) }}</span>
             </div>
             <div style="height: 16px;"></div>
         </div>
@@ -93,17 +103,31 @@ onMounted(() => {
                 <Checkbox v-model="auto_scroll" :pt="checkbox_pt" binary />
                 <div style="width: 8px;"></div>
                 <span style="color: var(--font-color);">Auto Scroll</span>
+                <div style="flex-grow: 1;"></div>
+                <Button icon="pi pi-play" title="Start Recording" rounded text @click="post_event('data_tool_start_data_recording', {})" :style="`color: ${play_btn_color};`" />
+                <Button icon="pi pi-pause" title="Pause Recording" rounded text @click="post_event('data_tool_pause_data_recording', {})" :style="`color: ${pause_btn_color};`" />
+                <Button icon="pi pi-stop" title="Reset Recording" rounded text @click="post_event('data_tool_stop_data_recording', {})" style="color: #DD2C00;" />
+                <div style="width: 40px;"></div>
+                <div style="flex-grow: 1;"></div>
+                <Button icon="pi pi-file-import" title="Import Data" rounded text @click="post_event('data_tool_import_device_data', {})" />
+                <Button icon="pi pi-file-export" title="Export Data" rounded text @click="post_event('data_tool_export_device_data', {})" />
             </div>
         </template>
     </Dialog>
 </template>
 
 <style scoped>
+#data_preview_footer button {
+    width: 32px;
+    height: 32px;
+}
+
 #data_preview_footer {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+    width: 100%;
 }
 
 #data_preview_table_header {

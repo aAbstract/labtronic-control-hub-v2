@@ -67,7 +67,7 @@ onMounted(() => {
 <template>
     <div id="ltai_panel_cont">
         <div id="ltai_help">
-            <p>LabTronic AI is designed to provide guidance to the operator of this device.</p>
+            <p>Obelisk AI is designed to provide guidance to the operator of this device.</p>
             <h4 style="font-size: 14px; font-weight: normal;">Example Queries:</h4>
             <ul style="font-weight: normal;">
                 <li>What is the purpose of the LT-TO101 unit?</li>

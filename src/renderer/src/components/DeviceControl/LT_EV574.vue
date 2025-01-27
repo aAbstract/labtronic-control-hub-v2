@@ -1,141 +1,67 @@
 <script setup lang="ts">
 
-import { ref, inject, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import Checkbox from 'primevue/checkbox';
-import Button from 'primevue/button';
+import { onMounted } from 'vue';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
 
-import { subscribe, post_event } from '@common/mediator';
-import { electron_renderer_send } from '@renderer/lib/util';
+import FaultsPanel from '@renderer/components/LT_EV574/FaultsPanel.vue';
+import QuadDiagram from '@renderer/components/LT_EV574/QuadDiagram.vue';
+import DeviceModelDetails from '@renderer/components/LT_EV574/DeviceModelDetails.vue';
+import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 
-const device_model = inject('device_model');
-const toast_service = useToast();
-const checkbox_pt: any = {
-    root: { style: 'background-color: transparent; width:fit-content;height:fit-content;' },
-    box: { style: 'height: 30px; width:30px; border-color: var(--accent-color); border-radius: 4px;' },
-    icon: { style: 'display: none;' },
+const tabview_pt = {
+    root: { style: 'width: 100%; height: 100%; border-radius: 4px; font-family: "Cairo", sans-serif;' },
+    panelContainer: { style: 'background-color: transparent; padding: 0px;' },
 };
-const labels = ['Battery Depleted', 'Motor Controller Input Defective', 'AC Power Failure', 'Motor Encoder VCC Disconnected', 'Motor Controller Output Defective', 'Motor Controller Seneor Defective'];
-const states = ref([false, false, false, false, false, false]);
-const cs_enrg = ref(0);
-const rv_enrg = ref(0);
+const tabpanel_pt = {
+    headerAction: { style: 'padding: 8px 16px; border-radius: 0px; background-color: transparent; font-size: 14px;' },
+    content: { style: 'position: relative;' },
+};
 
-
-function reset() {
-    states.value = [false, false, false, false, false, false];
-    send_data();
-}
-function send_data() {
-    const packet_value = compute_packet();
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET CONTROL_BUTTONS ${packet_value}` });
-    toast_service.add({ severity: 'info', summary: 'Data Sent', detail: 'Buttons State Sent', life: 3000 });
-}
-
-function compute_packet() {
-    let value = 0;
-    for (let i = 0; i < states.value.length; i++) {
-        value = states.value[i] ? value + Math.pow(2, i) : value;
-    }
-    return '0x' + value.toString(16);
-}
+const _msg_type_chart_name_map: Record<number, string> = {
+    [-1]: 'Time [s]',
+    0: 'Battery Voltage [V]',
+    1: 'Battery Current [A]',
+    2: 'Battery Power [W]',
+    3: 'Wheel Speed [rad/s]',
+    4: 'Mechanical Power [W]',
+};
 
 onMounted(() => {
-    subscribe('record_data_point', 'record_data_point_lt_ev574_control_panel', args => {
-        const _data_point: Record<string, number> = args._data_point;
-        const bat_v = _data_point[0];
-        const bat_i = _data_point[1];
-        const bat_pw = bat_v * bat_i;
-        const enrg = bat_pw * 0.00028;
-        if (bat_i >= 0)
-            cs_enrg.value += enrg;
-        else if (bat_i < 0)
-            rv_enrg.value += enrg;
-    });
-
-    post_event('lock_sampling_dt', {});
-
-    subscribe('reset_recording_state', 'reset_recording_state_lt_ev574_control_panel', () => {
-        cs_enrg.value = 0;
-        rv_enrg.value = 0;
-    });
+    post_event('set_chart_msg_type_name_map', { _msg_type_chart_name_map });
+    post_event('set_default_sampling_dt', { _sampling_dt: 1 });
 });
 
 </script>
 
 <template>
-    <div id="lt_ev574_control_main_cont" v-on="screenshot_handlers">
-        <div id="energy_stats">
-            <div>
-                <span style="font-weight: bold; margin-right: 8px;">Consumed Energy [Wh]:</span>
-                <span style="font-weight: bold; color: #FFAB00;">{{ cs_enrg.toFixed(2) }}</span>
-            </div>
-            <div>
-                <span style="font-weight: bold; margin-right: 8px;">Recovered Energy [Wh]:</span>
-                <span style="font-weight: bold; color: #64DD17;">{{ rv_enrg.toFixed(2) }}</span>
-            </div>
-        </div>
-        <div id="lt_ev574_state_container">
-            <div id="lt_ev574_state" v-for="(_, i) in states">
-                <Checkbox :pt="checkbox_pt" v-model="states[i]" binary />
-                <p>{{ labels[i] }}</p>
-            </div>
-        </div>
-        <div id="lt_ev574_actions_container">
-            <Button outlined icon="pi pi-power-off" label="Reset" @click="reset" />
-            <Button outlined icon="pi pi-microchip" label="Send Data" @click="send_data" />
-        </div>
+    <div id="lt_ev574_control_main" v-on="screenshot_handlers">
+        <DeviceModelDetails />
+        <TabView :pt="tabview_pt">
+            <TabPanel header="Faults Panel" :pt="tabpanel_pt">
+                <FaultsPanel />
+            </TabPanel>
+            <TabPanel header="Quad Diagram" :pt="tabpanel_pt">
+                <QuadDiagram />
+            </TabPanel>
+        </TabView>
     </div>
 </template>
 
-<style scoped>
-#energy_stats {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    color: var(--font-color);
-    margin: 8px 0px;
-}
-
-#lt_ev574_actions_container>button {
-    height: 30px;
-    font-size: 14px;
-}
-
-#lt_ev574_state {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: fit-content;
-    width: 100%;
-}
-
-#lt_ev574_state>p {
-    font-size: 16px;
-    text-align: center;
+<style lang="css" scoped>
+#expand_btn {
+    position: absolute;
+    right: 0px;
+    top: 0px;
     color: var(--accent-color);
-    margin: 0rem;
+    width: 32px;
+    height: 32px;
+    z-index: 1;
 }
 
-#lt_ev574_actions_container {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: center;
-}
-
-#lt_ev574_state_container {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    width: 100%;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-#lt_ev574_control_main_cont {
+#lt_ev574_control_main {
+    position: relative;
     width: 96%;
     height: fit-content;
     display: flex;

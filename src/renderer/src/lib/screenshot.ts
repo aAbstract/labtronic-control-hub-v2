@@ -1,6 +1,7 @@
 import { electron_renderer_send } from "@renderer/lib/util";
 
 let _screenshot_mode: boolean = false;
+let _last_elem_border_style = 'none';
 export function toggle_screenshot_mode() { _screenshot_mode = !_screenshot_mode; }
 export function screenshot_mode() { return _screenshot_mode; }
 
@@ -10,6 +11,7 @@ export const screenshot_handlers = {
             return;
 
         const target_component = event.target as HTMLElement;
+        _last_elem_border_style = target_component.style.border;
         target_component.style.border = '1px solid var(--accent-color)';
         target_component.style.cursor = 'pointer';
     },
@@ -18,7 +20,7 @@ export const screenshot_handlers = {
             return;
 
         const target_component = event.target as HTMLElement;
-        target_component.style.border = 'none';
+        target_component.style.border = _last_elem_border_style;
         target_component.style.cursor = 'default';
     },
     click(event: MouseEvent) {

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# lt_ev574_v2_270125
+git diff --name-only --staged lt_ev574_v2 | grep -Ev 'src/main/device_drivers/lt_to101.ts|src/main/index.ts|src/renderer/src/components/CPsDialog.vue|src/renderer/src/components/Charts/MultiChart.vue|src/renderer/src/components/Charts/SingleChart.vue|src/renderer/src/components/DataTool/DataPreview.vue|src/renderer/src/components/DataTool/DataTool.vue|src/renderer/src/components/DataTool/RLDataTool.vue|src/renderer/src/components/DataTool/SeriesConfigDialog.vue|src/renderer/src/components/DataTool/SmallChart.vue|src/renderer/src/components/DeviceControl/LT_HT107.vue|src/renderer/src/components/DeviceControl/LT_TO101.vue|src/renderer/src/components/DeviceControl/LT_TO202.vue|src/renderer/src/components/DeviceStatePanel/DeviceStatePanel.vue|src/renderer/src/components/DeviceTerminal/TerminalPanel.vue'

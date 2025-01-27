@@ -103,10 +103,15 @@ function render_chart() {
     chart_data.value = new_chart_data;
 }
 
+function __time_s(time_ms: number): number {
+    const time_s = time_ms / 1000;
+    return Number(time_s.toFixed(1));
+}
+
 onMounted(() => {
     subscribe('record_data_point', `record_data_point_${props.chart_idx}`, args => {
         const _data_point: Record<string, number> = args._data_point;
-        const _x = Number(props.x_param === -1 ? (_data_point['time_ms'] / 1000).toFixed() : _data_point[props.x_param].toFixed(2));
+        const _x = Number(props.x_param === -1 ? __time_s(_data_point['time_ms']) : _data_point[props.x_param].toFixed(2));
         const _y = Number(_data_point[props.y_param].toFixed(2));
         chart_data.value.labels?.push(_x);
         chart_data.value.datasets[0].data.push(_y);

@@ -1,5 +1,6 @@
 import time
 import socket
+import random
 import serial
 from enum import Enum
 from threading import Thread
@@ -168,12 +169,30 @@ class VSPI:
             msg_value = offset + (msg_type + 1) * 10
             self.write_msg(msg_type, msg_value, sn=sn)
 
+    def _burst_rand_msgs(self, sn: int = 0):
+        for msg_type in self.device_driver.driver_msg_type_config_map:
+            if not self.device_driver.driver_msg_type_config_map[msg_type].msg_name.startswith('READ_'):
+                continue
+            msg_value = random.uniform(1, 10)
+            self.write_msg(msg_type, msg_value, sn=sn)
+
     def stream_const_sequence_sync(self):
         c = 0
         while True:
             self._burst_const_msgs(sn=c)
             c += 1
             time.sleep(0.2)
+
+    def stream_rand_sequence_sync(self):
+        c = 0
+        while True:
+            self._burst_rand_msgs(sn=c)
+            c += 1
+            time.sleep(0.2)
+
+    def burst_sequence(self, sequence: list[tuple[int, int | float]], sn: int = 0):
+        for msg_type, msg_value in sequence:
+            self.write_msg(msg_type, msg_value, sn)
 
     def start_feedback_control_loop_async(self):
         if self.control_loop_running:

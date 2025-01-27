@@ -5,7 +5,7 @@ import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
 import OverlayPanel from 'primevue/overlaypanel';
 
-import { MsgTypeConfig } from '@common/models';
+import { MsgTypeConfig, CHXChartState } from '@common/models';
 import SingleChart from '@renderer/components/Charts/SingleChart.vue';
 import MultiChart from '@renderer/components/Charts/MultiChart.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
@@ -47,12 +47,38 @@ const checkbox_pt: any = {
 const overlay_panel_pt = {
     content: { style: 'padding: 8px;' },
 };
+
+const __btn_wh_props = {
+    width: '32px',
+    height: '32px',
+};
+
 const single_chart_settings_op = ref();
-const multi_chart_settings_op = ref();
 const single_chart_y_min = ref('0');
 const single_chart_y_max = ref('100');
+const single_chart_state = ref(CHXChartState.RECORDING);
+const single_chart_auto_scale = ref(false);
+
 const multi_chart_y_min = ref('0');
 const multi_chart_y_max = ref('100');
+const multi_chart_settings_op = ref();
+const multi_chart_state = ref(CHXChartState.RECORDING);
+const multi_chart_auto_scale = ref(false);
+
+enum DeviceStatePanelChart {
+    SINGLE = 0,
+    MULTI = 1,
+};
+function set_chart_state(_chart: DeviceStatePanelChart, _state: CHXChartState) {
+    if (_chart === DeviceStatePanelChart.SINGLE) {
+        single_chart_state.value = _state;
+        post_event('set_single_chart_state', { chx_chart_state: _state });
+    }
+    else if (_chart === DeviceStatePanelChart.MULTI) {
+        multi_chart_state.value = _state;
+        post_event('set_multi_chart_state', { chx_chart_state: _state });
+    }
+}
 
 function map_chart_height(_key: number): number {
     const _map: Record<number, number> = {
@@ -155,10 +181,23 @@ onBeforeMount(() => {
             <OverlayPanel ref="single_chart_settings_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
                 <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                     <div style="width: 280px;">
-                        <span style="font-size: 14px; margin-right: 8px; width: 125px;">Single Chart Y Range</span>
+                        <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Single Chart Y Range</span>
                         <input ref="sc_y_min_field" class="dt_tf" v-model="single_chart_y_min" @keyup.enter="set_single_chart_y_min_max()" @focus="single_chart_y_min = ''">
-                        <span style="flex-grow: 1; text-align: center;"> - </span>
+                        <span style="text-align: center;"> - </span>
                         <input ref="sc_y_max_field" class="dt_tf" v-model="single_chart_y_max" @keyup.enter="set_single_chart_y_min_max()" @focus="single_chart_y_max = ''">
+                    </div>
+                    <div style="height: 16px;"></div>
+                    <div style="display: flex; width: 280px;">
+                        <div style="display: flex; justify-content: flex-start; align-items: center;">
+                            <Checkbox v-model="single_chart_auto_scale" :pt="checkbox_pt" binary @change="post_event('set_single_chart_auto_scale', { chx_chart_auto_scale: single_chart_auto_scale })" />
+                            <div style="width: 8px;"></div>
+                            <span style="font-size: 14px; margin-bottom: 2px;">Auto Scale</span>
+                        </div>
+                        <div style="flex-grow: 1;"></div>
+                        <div>
+                            <Button icon="pi pi-play" @click="set_chart_state(DeviceStatePanelChart.SINGLE, CHXChartState.RECORDING)" text :style="{ color: single_chart_state === CHXChartState.RECORDING ? '#64DD17' : '', ...__btn_wh_props }" />
+                            <Button icon="pi pi-pause" @click="set_chart_state(DeviceStatePanelChart.SINGLE, CHXChartState.PAUSED)" text :style="{ color: single_chart_state === CHXChartState.PAUSED ? '#FFAB00' : '', ...__btn_wh_props }" />
+                        </div>
                     </div>
                 </div>
             </OverlayPanel>
@@ -169,10 +208,23 @@ onBeforeMount(() => {
             <OverlayPanel ref="multi_chart_settings_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
                 <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                     <div style="width: 280px;">
-                        <span style="font-size: 14px; margin-right: 8px; width: 125px;">Multi Chart Y Range</span>
+                        <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Multi Chart Y Range</span>
                         <input ref="mc_y_min_field" class="dt_tf" v-model="multi_chart_y_min" @keyup.enter="set_multi_chart_y_min_max()" @focus="multi_chart_y_min = ''">
-                        <span style="flex-grow: 1; text-align: center;"> - </span>
+                        <span style="text-align: center;"> - </span>
                         <input ref="mc_y_max_field" class="dt_tf" v-model="multi_chart_y_max" @keyup.enter="set_multi_chart_y_min_max()" @focus="multi_chart_y_max = ''">
+                    </div>
+                    <div style="height: 16px;"></div>
+                    <div style="display: flex; width: 280px;">
+                        <div style="display: flex; justify-content: flex-start; align-items: center;">
+                            <Checkbox v-model="multi_chart_auto_scale" :pt="checkbox_pt" binary @change="post_event('set_multi_chart_auto_scale', { chx_chart_auto_scale: multi_chart_auto_scale })" />
+                            <div style="width: 8px;"></div>
+                            <span style="font-size: 14px; margin-bottom: 2px;">Auto Scale</span>
+                        </div>
+                        <div style="flex-grow: 1;"></div>
+                        <div>
+                            <Button icon="pi pi-play" @click="set_chart_state(DeviceStatePanelChart.MULTI, CHXChartState.RECORDING)" text :style="{ color: multi_chart_state === CHXChartState.RECORDING ? '#64DD17' : '', ...__btn_wh_props }" />
+                            <Button icon="pi pi-pause" @click="set_chart_state(DeviceStatePanelChart.MULTI, CHXChartState.PAUSED)" text :style="{ color: multi_chart_state === CHXChartState.PAUSED ? '#FFAB00' : '', ...__btn_wh_props }" />
+                        </div>
                     </div>
                 </div>
             </OverlayPanel>
