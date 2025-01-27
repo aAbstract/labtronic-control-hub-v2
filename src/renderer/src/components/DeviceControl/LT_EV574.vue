@@ -25,11 +25,12 @@ const _msg_type_chart_name_map: Record<number, string> = {
     2: 'Battery Power [W]',
     3: 'Wheel Speed [rad/s]',
     4: 'Mechanical Power [W]',
+    16: 'Mechanical Torque [N.m]',
 };
 
 onMounted(() => {
     post_event('set_chart_msg_type_name_map', { _msg_type_chart_name_map });
-    post_event('set_default_sampling_dt', { _sampling_dt: 1 });
+    post_event('set_default_sampling_dt', { _sampling_dt: 50 });
 });
 
 </script>

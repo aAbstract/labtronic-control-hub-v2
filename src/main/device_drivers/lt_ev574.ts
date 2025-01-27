@@ -157,21 +157,55 @@ const LT_EV574_VCE_CONFIG: VceParamConfig[] = [
         desc: 'Control Buttons',
     },
 ];
+
+// const DEVICE_SERIES: CHXSeries[] = [
+//     {
+//         series_name: 'time [s] - M_P [W]',
+//         x_param: -1,
+//         y_param: 4,
+//     },
+//     {
+//         series_name: 'time [s] - B_P [W]',
+//         x_param: -1,
+//         y_param: 2,
+//     },
+//     {
+//         series_name: 'time [s] - B_C [A]',
+//         x_param: -1,
+//         y_param: 1,
+//     },
+// ];
+
 const DEVICE_SERIES: CHXSeries[] = [
+    {
+        series_name: 'time [s] - B_V [V]',
+        x_param: -1,
+        y_param: 0,
+    },
+    {
+        series_name: 'time [s] - B_C [C]',
+        x_param: -1,
+        y_param: 1,
+    },
+    {
+        series_name: 'time [s] - B_P [P]',
+        x_param: -1,
+        y_param: 2,
+    },
+    {
+        series_name: 'time [s] - W_S [rpm]',
+        x_param: -1,
+        y_param: 3,
+    },
     {
         series_name: 'time [s] - M_P [W]',
         x_param: -1,
         y_param: 4,
     },
     {
-        series_name: 'time [s] - B_P [W]',
+        series_name: 'time [s] - M_T [s]',
         x_param: -1,
-        y_param: 2,
-    },
-    {
-        series_name: 'time [s] - B_C [A]',
-        x_param: -1,
-        y_param: 1,
+        y_param: 16,
     },
 ];
 const DEVICE_CPS: CHXComputedParam[] = [

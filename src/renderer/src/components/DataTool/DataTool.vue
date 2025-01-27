@@ -231,8 +231,8 @@ function sampling_dt_focused() {
 
 function validate_sampling_dt() {
     sampling_dt.value = Math.round(sampling_dt.value);
-    if (sampling_dt.value <= 0)
-        sampling_dt.value = 1;
+    if (sampling_dt.value <= 50)
+        sampling_dt.value = 50;
 }
 
 onBeforeMount(() => {
