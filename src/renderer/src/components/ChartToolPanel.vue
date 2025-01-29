@@ -86,11 +86,15 @@ function on_chart_click(chart_event: ChartEvent) {
     const x_idx = _chart.scales.x.getValueForPixel(chart_event.x as number) as number;
     const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
 
-    const x_msg_type = chart_x_msg_type.value;
-    const _x_val = chart_data.value.labels[x_idx] as number;
-    if (isNaN(_x_val))
+    // const x_msg_type = chart_x_msg_type.value;
+    // const _x_val = chart_data.value.labels[x_idx] as number;
+    // if (isNaN(_x_val))
+    //     return;
+    if (sorted_cache.length === 0)
         return;
-    const data_point = Object.values(data_points_cache).find(dp => dp[x_msg_type] === _x_val) ?? {};
+    
+    // const data_point = Object.values(data_points_cache).find(dp => dp[x_msg_type] === _x_val) ?? {};
+    const data_point = sorted_cache[x_idx];
     const _cursor_info: Record<number, number> = {};
     Object.keys(data_point).forEach(msg_type => _cursor_info[msg_type] = data_point[msg_type]);
     chart_cursor_info_values.value = _cursor_info;
@@ -198,9 +202,11 @@ function __msg_type_color(msg_type: number): string {
     return chart_params.value[msg_type]?.borderColor ?? accent_color;
 }
 
+let sorted_cache: DataPointType[] = [];
 function render_chart() {
     const __x = chart_x_msg_type.value;
     const _data_points = Object.values(data_points_cache).filter(dp => !isNaN(dp[__x])).sort((a, b) => a[__x] - b[__x]);
+    sorted_cache = _data_points;
     const x_series = _data_points.map(x => x[__x]);
     const _datasets: ChartParams[] = [];
     chart_y_msg_type_arr.value.forEach(__y => {
