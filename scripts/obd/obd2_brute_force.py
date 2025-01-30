@@ -49,7 +49,7 @@ def scan_commands():
     return commands
 
 
-def maf_scan():
+def rt_service_scan():
     commands = []
 
     for param in range(2**8):
@@ -59,16 +59,61 @@ def maf_scan():
         if not success:
             continue
 
-        obd2_res_parts = res.decode().split()
-        if obd2_res_parts[:3] == ['7E8', '04', '61', _param]:
+        obd2_res_parts = res.decode().split(' \r')[0].split()
+        if obd2_res_parts[:4] == ['7E8', '04', '61', _param]:
             data_payload = obd2_res_parts[-2:]
             byte_a = int(data_payload[0], 16)
             byte_b = int(data_payload[1], 16)
             param_val = (byte_a * 256 + byte_b) * 1E-2
-            commands.append((pid_code, res, param_val))
+            print('Found Parm:', _param)
+            commands.append((pid_code, param_val))
+
+    return commands
+
+
+def rt_7e8_04_scan() -> str:
+    out_str = ''
+    pid_codes = ['211F', '2121', '2123', '2131', '2142', '214D', '214E', '21B9', '21E1', '21EE', '2110']
+    for pid_code in pid_codes:
+        success, res = check_pid_code(pid_code)
+        if not success:
+            print('Code Error:', pid_code)
+            continue
+        obd2_res_parts = res.decode().split(' \r')[0].split()
+        data_payload = obd2_res_parts[-2:]
+        byte_a = int(data_payload[0], 16)
+        byte_b = int(data_payload[1], 16)
+        param_val = (byte_a * 256 + byte_b) * 1E-2
+        param_val_2 = 256 + byte_a + byte_b
+        out_str += f"{pid_code} -> {param_val}, {param_val_2}\n"
+    return out_str
+
+
+def obd2_port_init():
+    print('Init OBD2 Port...')
+    serial_port.write('ATZ\r'.encode())
+    res = serial_port.read_until(b'>')
+    assert b'ELM327 v1.5' in res
+
+    init_commands = [
+        'ATE0',
+        'ATH1',
+    ]
+
+    for icmd in init_commands:
+        print('OBD2 Config:', icmd)
+        serial_port.write((icmd + '\r').encode())
+        res = serial_port.read_until(b'>')
+        assert b'OK' in res
+
+    print('Init OBD2 Port...OK')
 
 
 if __name__ == '__main__':
+    obd2_port_init()
+
+    s1 = rt_7e8_04_scan()
+
     readline.set_completer(Completer().complete)
     readline.parse_and_bind("tab: complete")
     code.interact(local=locals())
