@@ -1,4 +1,7 @@
+import code
 import serial
+import readline
+from rlcompleter import Completer
 
 
 serial_port_name: str = '/dev/ttyUSB0'
@@ -46,6 +49,26 @@ def scan_commands():
     return commands
 
 
+def maf_scan():
+    commands = []
+
+    for param in range(2**8):
+        _param = f"{param:02X}"
+        pid_code = f"21{_param} 1"
+        success, res = check_pid_code(pid_code)
+        if not success:
+            continue
+
+        obd2_res_parts = res.decode().split()
+        if obd2_res_parts[:3] == ['7E8', '04', '61', _param]:
+            data_payload = obd2_res_parts[-2:]
+            byte_a = int(data_payload[0], 16)
+            byte_b = int(data_payload[1], 16)
+            param_val = (byte_a * 256 + byte_b) * 1E-2
+            commands.append((pid_code, res, param_val))
+
+
 if __name__ == '__main__':
-    commands = scan_commands()
-    breakpoint()
+    readline.set_completer(Completer().complete)
+    readline.parse_and_bind("tab: complete")
+    code.interact(local=locals())
