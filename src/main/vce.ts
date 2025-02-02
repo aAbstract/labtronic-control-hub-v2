@@ -46,7 +46,8 @@ export class VirtualComputeEngine {
         });
 
         this.cps_config = _cps_config;
-        this.cps_script = _cps_config.filter(_config => _config.expr !== null).map(_config => `${_config.param_name}=${_config.expr}`).join(';');
+        debugger;
+        this.cps_script = _cps_config.filter(_config => _config.expr !== undefined).map(_config => `${_config.param_name}=${_config.expr}`).join(';');
         _cps_config.forEach((_config, index) => {
             const msg_type = _config.msg_type ?? (16 + this.vce_instance_id * 10 + index); // create out of hardware addressing bounds
             this.cps_expr_map[msg_type] = _config.expr + (_config.unit ?? '');

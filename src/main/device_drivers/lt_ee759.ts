@@ -109,10 +109,17 @@ function energy_trapz(sn: number, power: number) {
 
     last_p = power;
     last_t = current_t;
-    debug_last_wh = e_wh;
 
-    if (__DEBUG)
+    // debug: print delta energy over time
+    if (__DEBUG) {
+        if (debug_last_wh === 0) {
+            debug_last_wh = e_wh;
+            return;
+        }
+
         console.log(`[DEBUG-${DEVICE_MODEL}] Energy Diff [Wh]: ${e_wh - debug_last_wh}`);
+        debug_last_wh = e_wh;
+    }
 }
 
 function mw_ipc_handler(channel: string, data: any) {
@@ -142,7 +149,7 @@ export function init_lt_ee759_serial_adapter(_main_window: BrowserWindow) {
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, (_, data) => {
         const { port_name } = data;
-        serial_adapter = new SerialAdapter(port_name, new LtdDriver([0xA0, 0x00A], LT_EE759_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
+        serial_adapter = new SerialAdapter(port_name, new LtdDriver([0xA0, 0x0A], LT_EE759_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         serial_adapter.connect();
     });
 

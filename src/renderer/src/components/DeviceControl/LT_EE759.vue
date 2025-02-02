@@ -28,15 +28,16 @@ onMounted(() => {
         <div class="lt_ee759_control_row">
             <span style="font-weight: bold; color: var(--font-color); font-size: 16px;">Battery Characteristics Trainer</span>
             <div style="flex-grow: 1;"></div>
-            <Button style="height: 30px; width: fit-content; font-size: 12px;" label="CHART TOOL" icon="pi pi-calculator" outlined @click="post_event('toggle_panel', { panel_name: 'chart_tool_panel', panel_pos: 'LEFT' })" />
+            <Button style="height: 30px; width: 150px; font-size: 12px;" label="CHART TOOL" icon="pi pi-calculator" outlined @click="post_event('toggle_panel', { panel_name: 'chart_tool_panel', panel_pos: 'LEFT' })" />
         </div>
+        <div style="height: 16px;"></div>
         <div class="lt_ee759_control_row">
             <div id="energy_field">
-                <span style="display: inline-block; margin-right: 8px;">Energy [Wh]: </span>
+                <span style="display: inline-block; margin-right: 8px;">Energy [Wh]:</span>
                 <span>{{ energy_wh }}</span>
             </div>
-            <!-- TODO -->
-            <Button style="height: 30px; width: fit-content; font-size: 12px;" label="Reset" icon="pi pi-refresh" outlined @click="post_event('toggle_panel', { panel_name: 'chart_tool_panel', panel_pos: 'LEFT' })" />
+            <div style="flex-grow: 1;"></div>
+            <Button style="height: 30px; width: 150px; font-size: 12px;" label="Reset Energy" icon="pi pi-refresh" outlined @click="electron_renderer_send(`${device_model}__reset_energy`, {})" />
         </div>
     </div>
 </template>

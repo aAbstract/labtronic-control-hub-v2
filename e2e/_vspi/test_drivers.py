@@ -119,3 +119,9 @@ DRIVER_CONFIG_LT_EV574: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=15, msg_name='DEVICE_HEART_BEAT', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_ev574 = LtdDriver([0x10, 0xA0], DRIVER_CONFIG_LT_EV574)
+
+DRIVER_CONFIG_LT_EE579: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_V', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_I', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+]
+ltd_driver_lt_ee579 = LtdDriver([0xA0, 0x0A], DRIVER_CONFIG_LT_EE579)
