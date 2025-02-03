@@ -37,7 +37,7 @@ onMounted(() => {
                 <span>{{ energy_wh }}</span>
             </div>
             <div style="flex-grow: 1;"></div>
-            <Button style="height: 30px; width: 150px; font-size: 12px;" label="Reset Energy" icon="pi pi-refresh" outlined @click="electron_renderer_send(`${device_model}__reset_energy`, {})" />
+            <Button style="height: 30px; width: 150px; font-size: 12px;" label="Reset Energy" icon="pi pi-refresh" outlined @click="electron_renderer_send(`${device_model}_reset_energy`, {})" />
         </div>
     </div>
 </template>

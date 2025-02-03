@@ -85,7 +85,7 @@ let last_t = 0;
 let last_p = 0;
 let e_wh = 0; // energy in Wh
 let debug_last_wh = 0;
-const __DEBUG = true;
+const __DEBUG = false;
 function energy_trapz(sn: number, power: number) {
     // calculate energy using trapezoidal numerical integration
     if (last_t === 0) {
