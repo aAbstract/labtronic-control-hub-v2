@@ -73,7 +73,7 @@ def rt_service_scan():
 
 def rt_7e8_04_scan() -> str:
     out_str = ''
-    pid_codes = ['211F', '2121', '2123', '2131', '2142', '214D', '214E', '21B9', '21E1', '21EE', '2110']
+    pid_codes = ['211F', '2121', '2131', '2142', '214D', '214E', '21B9', '21E1', '21EE']
     for pid_code in pid_codes:
         success, res = check_pid_code(pid_code)
         if not success:
@@ -84,8 +84,8 @@ def rt_7e8_04_scan() -> str:
         byte_a = int(data_payload[0], 16)
         byte_b = int(data_payload[1], 16)
         param_val = (byte_a * 256 + byte_b) * 1E-2
-        param_val_2 = 256 + byte_a + byte_b
-        out_str += f"{pid_code} -> {param_val}, {param_val_2}\n"
+        param_val_2 = (byte_a * 256 + byte_b) * 10
+        out_str += f"{pid_code} -> MAF: {param_val}, FRP: {param_val_2}\n"
     return out_str
 
 
@@ -109,10 +109,18 @@ def obd2_port_init():
     print('Init OBD2 Port...OK')
 
 
+def start_obd2_term():
+    while True:
+        obd2_cmd = input('cmd> ')
+        obd2_packet = obd2_cmd.encode() + b' 1\r'
+        serial_port.write(obd2_packet)
+        res = serial_port.read_until(b'>')
+        print(res)
+
+
 if __name__ == '__main__':
     obd2_port_init()
-
-    s1 = rt_7e8_04_scan()
+    start_obd2_term()
 
     readline.set_completer(Completer().complete)
     readline.parse_and_bind("tab: complete")
