@@ -29,19 +29,19 @@ onMounted(() => {
 
 <template>
     <Dialog style="font-family: Cairo, sans-serif;" :header="`${device_model} Device Model`" v-model:visible="dialog_visible" :pt="dialog_pt">
-        <div id="device_model_zoom">
-            <img :src="img_src" alt="Device Solid Model Zoom">
+        <div id="device_model_details">
+            <img :src="img_src" alt="Device Solid Model Details">
         </div>
     </Dialog>
 </template>
 
 <style lang="css" scoped>
-#device_model_zoom img {
+#device_model_details img {
     border-radius: 4px;
     border: 1px solid var(--empty-gauge-color);
 }
 
-#device_model_zoom {
+#device_model_details {
     display: flex;
     justify-content: center;
     align-items: center;
