@@ -1,0 +1,23 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Use this to stub out methods that will throw when invoked.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { unimplemented } from "@std/assert";
+ *
+ * unimplemented(); // Throws
+ * ```
+ *
+ * @param msg Optional message to include in the error.
+ * @returns Never returns, always throws.
+ */
+export function unimplemented(msg?: string): never {
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  throw new AssertionError(`Unimplemented${msgSuffix}`);
+}
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","x-goog-generation":"1727173874947359","content-type":"text/typescript","x-goog-storage-class":"STANDARD","server":"UploadServer","content-length":"621","x-goog-hash":"crc32c=tWkQNA==,md5=fVSMnjuCcRMxky16097UTQ==","via":"1.1 google","last-modified":"Tue, 24 Sep 2024 10:31:14 GMT","x-robots-tag":"noindex","date":"Sun, 09 Feb 2025 13:22:34 GMT","etag":"\"7d548c9e3b82711331932d7ad3ded44d\"","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-goog-stored-content-length":"621","x-jsr-cache-id":"MRS-fea0badd","access-control-allow-origin":"*","access-control-expose-headers":"*","x-goog-metageneration":"1","x-goog-stored-content-encoding":"identity","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","expires":"Mon, 09 Feb 2026 13:22:34 GMT","x-jsr-cache-status":"miss","cross-origin-resource-policy":"cross-origin","cache-control":"public, max-age=31536000, immutable","x-guploader-uploadid":"AHMx-iGGjFI78m7CWNK46_A-bxJe7nF-cfAR-DjDpUrMvUAJaQmZ4JORMW-prhjJYyIOzngyVON_oh0"},"url":"https://jsr.io/@std/assert/1.0.6/unimplemented.ts","time":1739107354}

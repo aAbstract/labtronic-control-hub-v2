@@ -1,0 +1,20 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+/** Ways that lines in a diff can be different. */
+export type DiffType = "removed" | "common" | "added";
+
+/**
+ * Represents the result of a diff operation.
+ *
+ * @typeParam T The type of the value in the diff result.
+ */
+export interface DiffResult<T> {
+  /** The type of the diff. */
+  type: DiffType;
+  /** The value of the diff. */
+  value: T;
+  /** The details of the diff. */
+  details?: DiffResult<T>[];
+}
+
+// denoCacheMetadata={"headers":{"x-jsr-cache-status":"miss","etag":"\"5d2b62417748bed1bbd1288a7d3893bc\"","expires":"Mon, 09 Feb 2026 13:22:34 GMT","x-content-type-options":"nosniff","x-goog-hash":"crc32c=TIHOsQ==,md5=XStiQXdIvtG70SiKfTiTvA==","accept-ranges":"bytes","x-goog-stored-content-encoding":"identity","content-type":"text/typescript","x-goog-stored-content-length":"489","content-length":"489","access-control-allow-origin":"*","server":"UploadServer","last-modified":"Tue, 24 Sep 2024 10:31:08 GMT","x-guploader-uploadid":"AHMx-iGeNtUWP3AUev225_4h8zsj5i9Udy_0eaVhXzdZXGTUkAMhkmIlSFvh38A_0L3dLwcagceJ2ZM","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","cache-control":"public, max-age=31536000, immutable","x-robots-tag":"noindex","date":"Sun, 09 Feb 2025 13:22:34 GMT","x-goog-generation":"1727173868402145","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","access-control-expose-headers":"*","via":"1.1 google","cross-origin-resource-policy":"cross-origin","x-goog-storage-class":"STANDARD","x-jsr-cache-id":"MRS-fea0badd","x-goog-metageneration":"1"},"url":"https://jsr.io/@std/internal/1.0.4/types.ts","time":1739107354}

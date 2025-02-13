@@ -236,3 +236,28 @@ export enum RecordingState {
     PAUSED = 1,
     STOPPED = 2,
 };
+
+
+
+// device models - LT_AT000
+export enum LT_AT000_ScreenMode {
+    W1280 = 1,
+    W1920 = 2,
+};
+
+
+
+export interface OBDCONFIG {
+    name: string,
+    command: string, //id
+    msg_type: number
+    response_size: number,
+    min: number,
+    max: number,
+    unit: string,
+    equation_weights: {
+        a: number,
+        b: number,
+        abs: number
+    }
+}

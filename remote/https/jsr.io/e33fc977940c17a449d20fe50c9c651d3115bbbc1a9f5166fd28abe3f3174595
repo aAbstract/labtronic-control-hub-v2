@@ -1,0 +1,25 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion, error will be thrown if `expr` does not have truthy value.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assert } from "@std/assert";
+ *
+ * assert("hello".includes("ello")); // Doesn't throw
+ * assert("hello".includes("world")); // Throws
+ * ```
+ *
+ * @param expr The expression to test.
+ * @param msg The optional message to display if the assertion fails.
+ */
+export function assert(expr: unknown, msg = ""): asserts expr {
+  if (!expr) {
+    throw new AssertionError(msg);
+  }
+}
+
+// denoCacheMetadata={"headers":{"access-control-allow-origin":"*","etag":"\"1e017ec375150bc052583d08cc274e18\"","content-length":"680","x-content-type-options":"nosniff","x-goog-hash":"crc32c=4aIHgg==,md5=HgF+w3UVC8BSWD0IzCdOGA==","content-type":"text/typescript","server":"UploadServer","expires":"Mon, 09 Feb 2026 13:22:34 GMT","x-guploader-uploadid":"AHMx-iE31DawtBQ2_DzO6_Kcu5fKAHTBIVkSil6KGmB-DjShYuJgN_Kq_Fuj1ZI3BOfVod7n","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","date":"Sun, 09 Feb 2025 13:22:34 GMT","x-goog-metageneration":"1","x-goog-generation":"1727173874947122","x-jsr-cache-id":"MRS-fea0badd","x-robots-tag":"noindex","access-control-expose-headers":"*","last-modified":"Tue, 24 Sep 2024 10:31:14 GMT","x-goog-storage-class":"STANDARD","x-goog-stored-content-length":"680","cross-origin-resource-policy":"cross-origin","cache-control":"public, max-age=31536000, immutable","x-goog-stored-content-encoding":"identity","accept-ranges":"bytes","x-jsr-cache-status":"miss","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","via":"1.1 google"},"url":"https://jsr.io/@std/assert/1.0.6/assert.ts","time":1739107354}

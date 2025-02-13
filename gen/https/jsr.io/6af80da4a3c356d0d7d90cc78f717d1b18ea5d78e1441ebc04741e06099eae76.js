@@ -1,0 +1,44 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { AssertionError } from "./assertion_error.ts";
+/**
+ * Make an assertion that `obj` is an instance of `type`.
+ * If not then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertInstanceOf } from "@std/assert";
+ *
+ * assertInstanceOf(new Date(), Date); // Doesn't throw
+ * assertInstanceOf(new Date(), Number); // Throws
+ * ```
+ *
+ * @typeParam T The expected type of the object.
+ * @param actual The object to check.
+ * @param expectedType The expected class constructor.
+ * @param msg The optional message to display if the assertion fails.
+ */ export function assertInstanceOf(actual, expectedType, msg = "") {
+  if (actual instanceof expectedType) return;
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  const expectedTypeStr = expectedType.name;
+  let actualTypeStr = "";
+  if (actual === null) {
+    actualTypeStr = "null";
+  } else if (actual === undefined) {
+    actualTypeStr = "undefined";
+  } else if (typeof actual === "object") {
+    actualTypeStr = actual.constructor?.name ?? "Object";
+  } else {
+    actualTypeStr = typeof actual;
+  }
+  if (expectedTypeStr === actualTypeStr) {
+    msg = `Expected object to be an instance of "${expectedTypeStr}"${msgSuffix}`;
+  } else if (actualTypeStr === "function") {
+    msg = `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object${msgSuffix}`;
+  } else {
+    msg = `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}"${msgSuffix}`;
+  }
+  throw new AssertionError(msg);
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImh0dHBzOi8vanNyLmlvL0BzdGQvYXNzZXJ0LzEuMC42L2luc3RhbmNlX29mLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIENvcHlyaWdodCAyMDE4LTIwMjQgdGhlIERlbm8gYXV0aG9ycy4gQWxsIHJpZ2h0cyByZXNlcnZlZC4gTUlUIGxpY2Vuc2UuXG4vLyBUaGlzIG1vZHVsZSBpcyBicm93c2VyIGNvbXBhdGlibGUuXG5pbXBvcnQgeyBBc3NlcnRpb25FcnJvciB9IGZyb20gXCIuL2Fzc2VydGlvbl9lcnJvci50c1wiO1xuXG4vKiogQW55IGNvbnN0cnVjdG9yICovXG4vLyBkZW5vLWxpbnQtaWdub3JlIG5vLWV4cGxpY2l0LWFueVxuZXhwb3J0IHR5cGUgQW55Q29uc3RydWN0b3IgPSBuZXcgKC4uLmFyZ3M6IGFueVtdKSA9PiBhbnk7XG4vKiogR2V0cyBjb25zdHJ1Y3RvciB0eXBlICovXG5leHBvcnQgdHlwZSBHZXRDb25zdHJ1Y3RvclR5cGU8VCBleHRlbmRzIEFueUNvbnN0cnVjdG9yPiA9IEluc3RhbmNlVHlwZTxUPjtcblxuLyoqXG4gKiBNYWtlIGFuIGFzc2VydGlvbiB0aGF0IGBvYmpgIGlzIGFuIGluc3RhbmNlIG9mIGB0eXBlYC5cbiAqIElmIG5vdCB0aGVuIHRocm93LlxuICpcbiAqIEBleGFtcGxlIFVzYWdlXG4gKiBgYGB0cyBpZ25vcmVcbiAqIGltcG9ydCB7IGFzc2VydEluc3RhbmNlT2YgfSBmcm9tIFwiQHN0ZC9hc3NlcnRcIjtcbiAqXG4gKiBhc3NlcnRJbnN0YW5jZU9mKG5ldyBEYXRlKCksIERhdGUpOyAvLyBEb2Vzbid0IHRocm93XG4gKiBhc3NlcnRJbnN0YW5jZU9mKG5ldyBEYXRlKCksIE51bWJlcik7IC8vIFRocm93c1xuICogYGBgXG4gKlxuICogQHR5cGVQYXJhbSBUIFRoZSBleHBlY3RlZCB0eXBlIG9mIHRoZSBvYmplY3QuXG4gKiBAcGFyYW0gYWN0dWFsIFRoZSBvYmplY3QgdG8gY2hlY2suXG4gKiBAcGFyYW0gZXhwZWN0ZWRUeXBlIFRoZSBleHBlY3RlZCBjbGFzcyBjb25zdHJ1Y3Rvci5cbiAqIEBwYXJhbSBtc2cgVGhlIG9wdGlvbmFsIG1lc3NhZ2UgdG8gZGlzcGxheSBpZiB0aGUgYXNzZXJ0aW9uIGZhaWxzLlxuICovXG5leHBvcnQgZnVuY3Rpb24gYXNzZXJ0SW5zdGFuY2VPZjxcbiAgLy8gZGVuby1saW50LWlnbm9yZSBuby1leHBsaWNpdC1hbnlcbiAgVCBleHRlbmRzIGFic3RyYWN0IG5ldyAoLi4uYXJnczogYW55W10pID0+IGFueSxcbj4oXG4gIGFjdHVhbDogdW5rbm93bixcbiAgZXhwZWN0ZWRUeXBlOiBULFxuICBtc2cgPSBcIlwiLFxuKTogYXNzZXJ0cyBhY3R1YWwgaXMgSW5zdGFuY2VUeXBlPFQ+IHtcbiAgaWYgKGFjdHVhbCBpbnN0YW5jZW9mIGV4cGVjdGVkVHlwZSkgcmV0dXJuO1xuXG4gIGNvbnN0IG1zZ1N1ZmZpeCA9IG1zZyA/IGA6ICR7bXNnfWAgOiBcIi5cIjtcbiAgY29uc3QgZXhwZWN0ZWRUeXBlU3RyID0gZXhwZWN0ZWRUeXBlLm5hbWU7XG5cbiAgbGV0IGFjdHVhbFR5cGVTdHIgPSBcIlwiO1xuICBpZiAoYWN0dWFsID09PSBudWxsKSB7XG4gICAgYWN0dWFsVHlwZVN0ciA9IFwibnVsbFwiO1xuICB9IGVsc2UgaWYgKGFjdHVhbCA9PT0gdW5kZWZpbmVkKSB7XG4gICAgYWN0dWFsVHlwZVN0ciA9IFwidW5kZWZpbmVkXCI7XG4gIH0gZWxzZSBpZiAodHlwZW9mIGFjdHVhbCA9PT0gXCJvYmplY3RcIikge1xuICAgIGFjdHVhbFR5cGVTdHIgPSBhY3R1YWwuY29uc3RydWN0b3I/Lm5hbWUgPz8gXCJPYmplY3RcIjtcbiAgfSBlbHNlIHtcbiAgICBhY3R1YWxUeXBlU3RyID0gdHlwZW9mIGFjdHVhbDtcbiAgfVxuXG4gIGlmIChleHBlY3RlZFR5cGVTdHIgPT09IGFjdHVhbFR5cGVTdHIpIHtcbiAgICBtc2cgPVxuICAgICAgYEV4cGVjdGVkIG9iamVjdCB0byBiZSBhbiBpbnN0YW5jZSBvZiBcIiR7ZXhwZWN0ZWRUeXBlU3RyfVwiJHttc2dTdWZmaXh9YDtcbiAgfSBlbHNlIGlmIChhY3R1YWxUeXBlU3RyID09PSBcImZ1bmN0aW9uXCIpIHtcbiAgICBtc2cgPVxuICAgICAgYEV4cGVjdGVkIG9iamVjdCB0byBiZSBhbiBpbnN0YW5jZSBvZiBcIiR7ZXhwZWN0ZWRUeXBlU3RyfVwiIGJ1dCB3YXMgbm90IGFuIGluc3RhbmNlZCBvYmplY3Qke21zZ1N1ZmZpeH1gO1xuICB9IGVsc2Uge1xuICAgIG1zZyA9XG4gICAgICBgRXhwZWN0ZWQgb2JqZWN0IHRvIGJlIGFuIGluc3RhbmNlIG9mIFwiJHtleHBlY3RlZFR5cGVTdHJ9XCIgYnV0IHdhcyBcIiR7YWN0dWFsVHlwZVN0cn1cIiR7bXNnU3VmZml4fWA7XG4gIH1cblxuICB0aHJvdyBuZXcgQXNzZXJ0aW9uRXJyb3IobXNnKTtcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSwwRUFBMEU7QUFDMUUscUNBQXFDO0FBQ3JDLFNBQVMsY0FBYyxRQUFRLHVCQUF1QjtBQVF0RDs7Ozs7Ozs7Ozs7Ozs7OztDQWdCQyxHQUNELE9BQU8sU0FBUyxpQkFJZCxNQUFlLEVBQ2YsWUFBZSxFQUNmLE1BQU0sRUFBRTtFQUVSLElBQUksa0JBQWtCLGNBQWM7RUFFcEMsTUFBTSxZQUFZLE1BQU0sQ0FBQyxFQUFFLEVBQUUsSUFBSSxDQUFDLEdBQUc7RUFDckMsTUFBTSxrQkFBa0IsYUFBYSxJQUFJO0VBRXpDLElBQUksZ0JBQWdCO0VBQ3BCLElBQUksV0FBVyxNQUFNO0lBQ25CLGdCQUFnQjtFQUNsQixPQUFPLElBQUksV0FBVyxXQUFXO0lBQy9CLGdCQUFnQjtFQUNsQixPQUFPLElBQUksT0FBTyxXQUFXLFVBQVU7SUFDckMsZ0JBQWdCLE9BQU8sV0FBVyxFQUFFLFFBQVE7RUFDOUMsT0FBTztJQUNMLGdCQUFnQixPQUFPO0VBQ3pCO0VBRUEsSUFBSSxvQkFBb0IsZUFBZTtJQUNyQyxNQUNFLENBQUMsc0NBQXNDLEVBQUUsZ0JBQWdCLENBQUMsRUFBRSxVQUFVLENBQUM7RUFDM0UsT0FBTyxJQUFJLGtCQUFrQixZQUFZO0lBQ3ZDLE1BQ0UsQ0FBQyxzQ0FBc0MsRUFBRSxnQkFBZ0IsaUNBQWlDLEVBQUUsVUFBVSxDQUFDO0VBQzNHLE9BQU87SUFDTCxNQUNFLENBQUMsc0NBQXNDLEVBQUUsZ0JBQWdCLFdBQVcsRUFBRSxjQUFjLENBQUMsRUFBRSxVQUFVLENBQUM7RUFDdEc7RUFFQSxNQUFNLElBQUksZUFBZTtBQUMzQiJ9
+// denoCacheMetadata=14868385634116903757,11106144456294824696

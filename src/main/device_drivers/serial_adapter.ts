@@ -50,7 +50,9 @@ export class SerialAdapter {
         this.stream_parser.on('data', this.on_data);
     }
 
+
     private on_data(data: number[]) {
+        
         if (data[0] !== this.device_driver.protocol_version[0] || data[1] !== this.device_driver.protocol_version[1])
             return;
 

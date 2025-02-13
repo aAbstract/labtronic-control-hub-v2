@@ -1,0 +1,154 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
+function isKeyedCollection(x: unknown): x is KeyedCollection {
+  return x instanceof Set || x instanceof Map;
+}
+
+function constructorsEqual(a: object, b: object) {
+  return a.constructor === b.constructor ||
+    a.constructor === Object && !b.constructor ||
+    !a.constructor && b.constructor === Object;
+}
+
+/**
+ * Deep equality comparison used in assertions.
+ *
+ * @param c The actual value
+ * @param d The expected value
+ * @returns `true` if the values are deeply equal, `false` otherwise
+ *
+ * @example Usage
+ * ```ts
+ * import { equal } from "@std/assert/equal";
+ *
+ * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
+ * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
+ * ```
+ */
+export function equal(c: unknown, d: unknown): boolean {
+  const seen = new Map();
+  return (function compare(a: unknown, b: unknown): boolean {
+    // Have to render RegExp & Date for string comparison
+    // unless it's mistreated as object
+    if (
+      a &&
+      b &&
+      ((a instanceof RegExp && b instanceof RegExp) ||
+        (a instanceof URL && b instanceof URL))
+    ) {
+      return String(a) === String(b);
+    }
+    if (a instanceof Date && b instanceof Date) {
+      const aTime = a.getTime();
+      const bTime = b.getTime();
+      // Check for NaN equality manually since NaN is not
+      // equal to itself.
+      if (Number.isNaN(aTime) && Number.isNaN(bTime)) {
+        return true;
+      }
+      return aTime === bTime;
+    }
+    if (typeof a === "number" && typeof b === "number") {
+      return Number.isNaN(a) && Number.isNaN(b) || a === b;
+    }
+    if (Object.is(a, b)) {
+      return true;
+    }
+    if (a && typeof a === "object" && b && typeof b === "object") {
+      if (a && b && !constructorsEqual(a, b)) {
+        return false;
+      }
+      if (a instanceof WeakMap || b instanceof WeakMap) {
+        if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
+        throw new TypeError("cannot compare WeakMap instances");
+      }
+      if (a instanceof WeakSet || b instanceof WeakSet) {
+        if (!(a instanceof WeakSet && b instanceof WeakSet)) return false;
+        throw new TypeError("cannot compare WeakSet instances");
+      }
+      if (a instanceof WeakRef || b instanceof WeakRef) {
+        if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
+        return compare(a.deref(), b.deref());
+      }
+      if (seen.get(a) === b) {
+        return true;
+      }
+      if (Object.keys(a).length !== Object.keys(b).length) {
+        return false;
+      }
+      seen.set(a, b);
+      if (isKeyedCollection(a) && isKeyedCollection(b)) {
+        if (a.size !== b.size) {
+          return false;
+        }
+
+        const aKeys = [...a.keys()];
+        const primitiveKeysFastPath = aKeys.every((k) => {
+          return typeof k === "string" ||
+            typeof k === "number" ||
+            typeof k === "boolean" ||
+            typeof k === "bigint" ||
+            typeof k === "symbol" ||
+            k == null;
+        });
+        if (primitiveKeysFastPath) {
+          if (a instanceof Set) {
+            return a.symmetricDifference(b).size === 0;
+          }
+
+          for (const key of aKeys) {
+            if (
+              !b.has(key) ||
+              !compare(a.get(key), (b as Map<unknown, unknown>).get(key))
+            ) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        let unmatchedEntries = a.size;
+
+        for (const [aKey, aValue] of a.entries()) {
+          for (const [bKey, bValue] of b.entries()) {
+            /* Given that Map keys can be references, we need
+             * to ensure that they are also deeply equal */
+
+            if (!compare(aKey, bKey)) continue;
+
+            if (
+              (aKey === aValue && bKey === bValue) ||
+              (compare(aValue, bValue))
+            ) {
+              unmatchedEntries--;
+              break;
+            }
+          }
+        }
+
+        return unmatchedEntries === 0;
+      }
+      const merged = { ...a, ...b };
+      for (
+        const key of [
+          ...Object.getOwnPropertyNames(merged),
+          ...Object.getOwnPropertySymbols(merged),
+        ]
+      ) {
+        type Key = keyof typeof merged;
+        if (!compare(a && a[key as Key], b && b[key as Key])) {
+          return false;
+        }
+        if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  })(c, d);
+}
+
+// denoCacheMetadata={"headers":{"via":"1.1 google","x-goog-metageneration":"1","date":"Sun, 09 Feb 2025 13:22:34 GMT","content-length":"4662","server":"UploadServer","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-goog-storage-class":"STANDARD","x-guploader-uploadid":"AHMx-iHH7iiUOwHhrT4TZNnyAyQCJSon8bDofoG5jntQJ1ZXdOwmHhYgbTbIiZCo5S_4w_H_","cache-control":"public, max-age=31536000, immutable","expires":"Mon, 09 Feb 2026 13:22:34 GMT","accept-ranges":"bytes","access-control-allow-origin":"*","etag":"\"f3445d1d432838b5c42eab8b4da50b2e\"","content-type":"text/typescript","x-jsr-cache-id":"MRS-fea0badd","x-jsr-cache-status":"miss","access-control-expose-headers":"*","x-goog-stored-content-encoding":"identity","cross-origin-resource-policy":"cross-origin","x-goog-stored-content-length":"4662","x-content-type-options":"nosniff","x-goog-generation":"1727173874899559","last-modified":"Tue, 24 Sep 2024 10:31:14 GMT","x-robots-tag":"noindex","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-goog-hash":"crc32c=1WFkig==,md5=80RdHUMoOLXELquLTaULLg=="},"url":"https://jsr.io/@std/assert/1.0.6/equal.ts","time":1739107354}

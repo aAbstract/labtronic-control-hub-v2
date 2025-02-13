@@ -1,0 +1,32 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion that `actual` match RegExp `expected`. If not
+ * then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertMatch } from "@std/assert";
+ *
+ * assertMatch("Raptor", /Raptor/); // Doesn't throw
+ * assertMatch("Denosaurus", /Raptor/); // Throws
+ * ```
+ *
+ * @param actual The actual value to be matched.
+ * @param expected The expected pattern to match.
+ * @param msg The optional message to display if the assertion fails.
+ */
+export function assertMatch(
+  actual: string,
+  expected: RegExp,
+  msg?: string,
+) {
+  if (expected.test(actual)) return;
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg = `Expected actual: "${actual}" to match: "${expected}"${msgSuffix}`;
+  throw new AssertionError(msg);
+}
+
+// denoCacheMetadata={"headers":{"via":"1.1 google","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","access-control-expose-headers":"*","cache-control":"public, max-age=31536000, immutable","x-goog-stored-content-encoding":"identity","x-guploader-uploadid":"AHMx-iEz03FtaP7pXM_bvJCU1g14sR7GPrTigQy9aXMrSTUOdpyJ3Knqj4pz_83W155b0tP3TrmVOmM","x-goog-hash":"crc32c=ZUGEtQ==,md5=RgRIs6swZJZdQsD7V4z+4Q==","accept-ranges":"bytes","x-robots-tag":"noindex","last-modified":"Tue, 24 Sep 2024 10:31:15 GMT","x-goog-stored-content-length":"906","x-goog-generation":"1727173874962143","content-length":"906","x-jsr-cache-status":"miss","access-control-allow-origin":"*","x-content-type-options":"nosniff","x-goog-metageneration":"1","expires":"Mon, 09 Feb 2026 13:22:34 GMT","content-type":"text/typescript","server":"UploadServer","date":"Sun, 09 Feb 2025 13:22:34 GMT","x-goog-storage-class":"STANDARD","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","etag":"\"460448b3ab3064965d42c0fb578cfee1\"","x-jsr-cache-id":"MRS-fea0badd","cross-origin-resource-policy":"cross-origin"},"url":"https://jsr.io/@std/assert/1.0.6/match.ts","time":1739107354}

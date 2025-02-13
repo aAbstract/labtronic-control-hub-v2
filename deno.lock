@@ -41,6 +41,7 @@
         "npm:primeicons@7",
         "npm:primevue@^3.51.0",
         "npm:serialport@12",
+        "npm:ts-node@^10.9.2",
         "npm:typescript@^5.3.3",
         "npm:vite@^5.0.12",
         "npm:vue-tsc@^2.1.6",

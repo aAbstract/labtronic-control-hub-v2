@@ -1,0 +1,33 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion that actual is not null or undefined.
+ * If not then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertExists } from "@std/assert";
+ *
+ * assertExists("something"); // Doesn't throw
+ * assertExists(undefined); // Throws
+ * ```
+ *
+ * @typeParam T The type of the actual value.
+ * @param actual The actual value to check.
+ * @param msg The optional message to include in the error if the assertion fails.
+ */
+export function assertExists<T>(
+  actual: T,
+  msg?: string,
+): asserts actual is NonNullable<T> {
+  if (actual === undefined || actual === null) {
+    const msgSuffix = msg ? `: ${msg}` : ".";
+    msg =
+      `Expected actual: "${actual}" to not be null or undefined${msgSuffix}`;
+    throw new AssertionError(msg);
+  }
+}
+
+// denoCacheMetadata={"headers":{"x-jsr-cache-id":"MRS-fea0badd","server":"UploadServer","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","via":"1.1 google","x-robots-tag":"noindex","access-control-allow-origin":"*","x-goog-generation":"1727173875003306","x-goog-storage-class":"STANDARD","cache-control":"public, max-age=31536000, immutable","content-length":"937","x-goog-metageneration":"1","access-control-expose-headers":"*","cross-origin-resource-policy":"cross-origin","x-goog-hash":"crc32c=MyZfYQ==,md5=ly/c2g9haRZgbe1afjJ1AA==","x-guploader-uploadid":"AHMx-iGZO5tvNXjOL-mfZcPVX08NKw2l0QhHnLRoZW93c2OhxdvIPk7RWXJ60-E5fQgPiE4WtoX0TgI","date":"Sun, 09 Feb 2025 13:22:34 GMT","x-goog-stored-content-encoding":"identity","expires":"Mon, 09 Feb 2026 13:22:34 GMT","last-modified":"Tue, 24 Sep 2024 10:31:15 GMT","etag":"\"972fdcda0f616916606ded5a7e327500\"","content-type":"text/typescript","accept-ranges":"bytes","x-jsr-cache-status":"miss","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-goog-stored-content-length":"937"},"url":"https://jsr.io/@std/assert/1.0.6/exists.ts","time":1739107354}

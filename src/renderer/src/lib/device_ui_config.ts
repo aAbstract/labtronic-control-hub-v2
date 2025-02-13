@@ -8,16 +8,21 @@ export class ChartParams {
     tension: number;
     borderColor: string;
     pointRadius: number;
+    yAxisID:string;
 
-    constructor(_label: string, _borderColor: string) {
+    constructor(_label: string, _borderColor: string,yID:string='y') {
         this.label = _label;
         this.data = [];
         this.fill = false;
         this.tension = 0.4;
         this.borderColor = _borderColor;
         this.pointRadius = 0;
+        this.yAxisID = yID
     }
 };
+
+
+
 
 export class DeviceUIConfig {
     static ROT_COLOR_LIST = [
@@ -244,6 +249,21 @@ export const LT_EV574_DUIC = new DeviceUIConfig(
     'LT-EV574',
 );
 
+export const LT_AT000_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('B_V', '#9C27B0'), // READ_B_V
+        1: new ChartParams('B_C', '#00BCD4'), // READ_B_C
+        2: new ChartParams('B_P', '#009688'), // READ_B_P
+        3: new ChartParams('W_S', '#2196F3'), // READ_W_S
+        4: new ChartParams('M_P', '#DD2C00'), // READ_M_P
+
+        16: new ChartParams('M_T', '#CDDC39'), // VCE: M_T
+    },
+    'LT-AT000',
+);
+
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
 
@@ -258,4 +278,5 @@ export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-RE600': LT_RE600_DUIC,
 
     'LT-EV574': LT_EV574_DUIC,
+    'LT-AT000': LT_AT000_DUIC,
 };

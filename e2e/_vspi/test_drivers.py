@@ -119,3 +119,20 @@ DRIVER_CONFIG_LT_EV574: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=15, msg_name='DEVICE_HEART_BEAT', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
 ]
 ltd_driver_lt_ev574 = LtdDriver([0x10, 0xA0], DRIVER_CONFIG_LT_EV574)
+
+
+
+DRIVER_CONFIG_LT_AT000: list[MsgTypeConfig] = [
+    MsgTypeConfig(msg_type=0, msg_name='READ_T1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=1, msg_name='READ_T2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=2, msg_name='READ_T3', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=3, msg_name='READ_T4', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=4, msg_name='READ_T5', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=5, msg_name='READ_L1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=6, msg_name='READ_L2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=8, msg_name='WRITE_DIGITAL_OUTPUTS', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
+
+    MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=15, msg_name='DEVICE_HEART_BEAT', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
+]
+ltd_driver_lt_at000 = LtdDriver([0xA0, 0xA0], DRIVER_CONFIG_LT_AT000)

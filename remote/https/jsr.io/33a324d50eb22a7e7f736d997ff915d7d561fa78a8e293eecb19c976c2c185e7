@@ -1,0 +1,39 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+/**
+ * Converts the input into a string. Objects, Sets and Maps are sorted so as to
+ * make tests less flaky.
+ *
+ * @param v Value to be formatted
+ *
+ * @returns The formatted string
+ *
+ * @example Usage
+ * ```ts
+ * import { format } from "@std/internal/format";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(format({ a: 1, b: 2 }), "{\n  a: 1,\n  b: 2,\n}");
+ * assertEquals(format(new Set([1, 2])), "Set(2) {\n  1,\n  2,\n}");
+ * assertEquals(format(new Map([[1, 2]])), "Map(1) {\n  1 => 2,\n}");
+ * ```
+ */
+export function format(v: unknown): string {
+  // deno-lint-ignore no-explicit-any
+  const { Deno } = globalThis as any;
+  return typeof Deno?.inspect === "function"
+    ? Deno.inspect(v, {
+      depth: Infinity,
+      sorted: true,
+      trailingComma: true,
+      compact: false,
+      iterableLimit: Infinity,
+      // getters should be true in assertEquals.
+      getters: true,
+      strAbbreviateSize: Infinity,
+    })
+    : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
+}
+
+// denoCacheMetadata={"headers":{"x-robots-tag":"noindex","cache-control":"public, max-age=31536000, immutable","last-modified":"Tue, 24 Sep 2024 10:31:08 GMT","x-goog-generation":"1727173868455801","date":"Sun, 09 Feb 2025 13:22:34 GMT","content-length":"1123","x-goog-stored-content-length":"1123","accept-ranges":"bytes","via":"1.1 google","etag":"\"1b50f6ae72744dffc8c949d615ecb7a7\"","x-goog-stored-content-encoding":"identity","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-jsr-cache-status":"miss","access-control-allow-origin":"*","server":"UploadServer","access-control-expose-headers":"*","x-goog-storage-class":"STANDARD","cross-origin-resource-policy":"cross-origin","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-guploader-uploadid":"AHMx-iEhudkUZwnofXyzgrau6Z7bwakKn-TSRBI7AUB_7W04rF6gR3GVLWa0_p11lQdv70EAu2rL-CU","content-type":"text/typescript","x-goog-hash":"crc32c=Currkw==,md5=G1D2rnJ0Tf/IyUnWFey3pw==","x-goog-metageneration":"1","expires":"Mon, 09 Feb 2026 13:22:34 GMT","x-jsr-cache-id":"MRS-fea0badd"},"url":"https://jsr.io/@std/internal/1.0.4/format.ts","time":1739107354}

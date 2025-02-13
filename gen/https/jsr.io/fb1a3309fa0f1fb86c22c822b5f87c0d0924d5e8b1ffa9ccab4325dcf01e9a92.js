@@ -1,0 +1,28 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { assertFalse } from "./false.ts";
+/**
+ * Make an assertion that `obj` is not an instance of `type`.
+ * If so, then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertNotInstanceOf } from "@std/assert";
+ *
+ * assertNotInstanceOf(new Date(), Number); // Doesn't throw
+ * assertNotInstanceOf(new Date(), Date); // Throws
+ * ```
+ *
+ * @typeParam A The type of the object to check.
+ * @typeParam T The type of the class to check against.
+ * @param actual The object to check.
+ * @param unexpectedType The class constructor to check against.
+ * @param msg The optional message to display if the assertion fails.
+ */ export function assertNotInstanceOf(actual, // deno-lint-ignore no-explicit-any
+unexpectedType, msg) {
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg = `Expected object to not be an instance of "${typeof unexpectedType}"${msgSuffix}`;
+  assertFalse(actual instanceof unexpectedType, msg);
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImh0dHBzOi8vanNyLmlvL0BzdGQvYXNzZXJ0LzEuMC42L25vdF9pbnN0YW5jZV9vZi50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBDb3B5cmlnaHQgMjAxOC0yMDI0IHRoZSBEZW5vIGF1dGhvcnMuIEFsbCByaWdodHMgcmVzZXJ2ZWQuIE1JVCBsaWNlbnNlLlxuLy8gVGhpcyBtb2R1bGUgaXMgYnJvd3NlciBjb21wYXRpYmxlLlxuaW1wb3J0IHsgYXNzZXJ0RmFsc2UgfSBmcm9tIFwiLi9mYWxzZS50c1wiO1xuXG4vKipcbiAqIE1ha2UgYW4gYXNzZXJ0aW9uIHRoYXQgYG9iamAgaXMgbm90IGFuIGluc3RhbmNlIG9mIGB0eXBlYC5cbiAqIElmIHNvLCB0aGVuIHRocm93LlxuICpcbiAqIEBleGFtcGxlIFVzYWdlXG4gKiBgYGB0cyBpZ25vcmVcbiAqIGltcG9ydCB7IGFzc2VydE5vdEluc3RhbmNlT2YgfSBmcm9tIFwiQHN0ZC9hc3NlcnRcIjtcbiAqXG4gKiBhc3NlcnROb3RJbnN0YW5jZU9mKG5ldyBEYXRlKCksIE51bWJlcik7IC8vIERvZXNuJ3QgdGhyb3dcbiAqIGFzc2VydE5vdEluc3RhbmNlT2YobmV3IERhdGUoKSwgRGF0ZSk7IC8vIFRocm93c1xuICogYGBgXG4gKlxuICogQHR5cGVQYXJhbSBBIFRoZSB0eXBlIG9mIHRoZSBvYmplY3QgdG8gY2hlY2suXG4gKiBAdHlwZVBhcmFtIFQgVGhlIHR5cGUgb2YgdGhlIGNsYXNzIHRvIGNoZWNrIGFnYWluc3QuXG4gKiBAcGFyYW0gYWN0dWFsIFRoZSBvYmplY3QgdG8gY2hlY2suXG4gKiBAcGFyYW0gdW5leHBlY3RlZFR5cGUgVGhlIGNsYXNzIGNvbnN0cnVjdG9yIHRvIGNoZWNrIGFnYWluc3QuXG4gKiBAcGFyYW0gbXNnIFRoZSBvcHRpb25hbCBtZXNzYWdlIHRvIGRpc3BsYXkgaWYgdGhlIGFzc2VydGlvbiBmYWlscy5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGFzc2VydE5vdEluc3RhbmNlT2Y8QSwgVD4oXG4gIGFjdHVhbDogQSxcbiAgLy8gZGVuby1saW50LWlnbm9yZSBuby1leHBsaWNpdC1hbnlcbiAgdW5leHBlY3RlZFR5cGU6IGFic3RyYWN0IG5ldyAoLi4uYXJnczogYW55W10pID0+IFQsXG4gIG1zZz86IHN0cmluZyxcbik6IGFzc2VydHMgYWN0dWFsIGlzIEV4Y2x1ZGU8QSwgVD4ge1xuICBjb25zdCBtc2dTdWZmaXggPSBtc2cgPyBgOiAke21zZ31gIDogXCIuXCI7XG4gIG1zZyA9XG4gICAgYEV4cGVjdGVkIG9iamVjdCB0byBub3QgYmUgYW4gaW5zdGFuY2Ugb2YgXCIke3R5cGVvZiB1bmV4cGVjdGVkVHlwZX1cIiR7bXNnU3VmZml4fWA7XG4gIGFzc2VydEZhbHNlKGFjdHVhbCBpbnN0YW5jZW9mIHVuZXhwZWN0ZWRUeXBlLCBtc2cpO1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLDBFQUEwRTtBQUMxRSxxQ0FBcUM7QUFDckMsU0FBUyxXQUFXLFFBQVEsYUFBYTtBQUV6Qzs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0FpQkMsR0FDRCxPQUFPLFNBQVMsb0JBQ2QsTUFBUyxFQUNULG1DQUFtQztBQUNuQyxjQUFrRCxFQUNsRCxHQUFZO0VBRVosTUFBTSxZQUFZLE1BQU0sQ0FBQyxFQUFFLEVBQUUsSUFBSSxDQUFDLEdBQUc7RUFDckMsTUFDRSxDQUFDLDBDQUEwQyxFQUFFLE9BQU8sZUFBZSxDQUFDLEVBQUUsVUFBVSxDQUFDO0VBQ25GLFlBQVksa0JBQWtCLGdCQUFnQjtBQUNoRCJ9
+// denoCacheMetadata=16710476351011089267,10080693037461765046

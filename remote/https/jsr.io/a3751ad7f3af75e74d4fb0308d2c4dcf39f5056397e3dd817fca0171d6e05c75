@@ -1,0 +1,32 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { format } from "jsr:@std/internal@^1.0.4/format";
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion that `actual` is greater than `expected`.
+ * If not then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertGreater } from "@std/assert";
+ *
+ * assertGreater(2, 1); // Doesn't throw
+ * assertGreater(1, 1); // Throws
+ * assertGreater(0, 1); // Throws
+ * ```
+ *
+ * @typeParam T The type of the values to compare.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
+ */
+export function assertGreater<T>(actual: T, expected: T, msg?: string) {
+  if (actual > expected) return;
+
+  const actualString = format(actual);
+  const expectedString = format(expected);
+  throw new AssertionError(msg ?? `Expect ${actualString} > ${expectedString}`);
+}
+
+// denoCacheMetadata={"headers":{"x-goog-metageneration":"1","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cross-origin-resource-policy":"cross-origin","cache-control":"public, max-age=31536000, immutable","x-goog-stored-content-length":"1016","last-modified":"Tue, 24 Sep 2024 10:31:14 GMT","x-guploader-uploadid":"AHMx-iGvySX_o9PznopPiYGlpREGon3zdbCyuKeCoXlONT2AFWKNuqAvw-NrPXrBYRKgxHPS","content-type":"text/typescript","x-goog-storage-class":"STANDARD","x-jsr-cache-id":"MRS-fea0badd","x-jsr-cache-status":"miss","access-control-allow-origin":"*","access-control-expose-headers":"*","date":"Sun, 09 Feb 2025 13:22:34 GMT","etag":"\"0fdb5a84608fd5a2f0ded0886d8e83cb\"","x-goog-hash":"crc32c=E3LJxw==,md5=D9tahGCP1aLw3tCIbY6Dyw==","accept-ranges":"bytes","x-goog-generation":"1727173874854091","content-length":"1016","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","server":"UploadServer","x-content-type-options":"nosniff","x-robots-tag":"noindex","via":"1.1 google","expires":"Mon, 09 Feb 2026 13:22:34 GMT","x-goog-stored-content-encoding":"identity"},"url":"https://jsr.io/@std/assert/1.0.6/greater.ts","time":1739107354}

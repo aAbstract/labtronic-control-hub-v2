@@ -1,0 +1,31 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { format } from "jsr:@std/internal@^1.0.4/format";
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion that `actual` is less than `expected`.
+ * If not then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertLess } from "@std/assert";
+ *
+ * assertLess(1, 2); // Doesn't throw
+ * assertLess(2, 1); // Throws
+ * ```
+ *
+ * @typeParam T The type of the values to compare.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
+ */
+export function assertLess<T>(actual: T, expected: T, msg?: string) {
+  if (actual < expected) return;
+
+  const actualString = format(actual);
+  const expectedString = format(expected);
+  throw new AssertionError(msg ?? `Expect ${actualString} < ${expectedString}`);
+}
+
+// denoCacheMetadata={"headers":{"via":"1.1 google","content-length":"967","x-goog-stored-content-length":"967","etag":"\"cdc042fed83c759f8294d537db24781c\"","cross-origin-resource-policy":"cross-origin","x-guploader-uploadid":"AHMx-iHMeVRcdcgBkHtFTKPUwnKtLDlB46zxCyXHn1XvnBTI8ficQ2TkAg_g4H8vk7NrFcFp0p3KlDQ","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","server":"UploadServer","x-goog-storage-class":"STANDARD","x-content-type-options":"nosniff","access-control-expose-headers":"*","date":"Sun, 09 Feb 2025 13:22:34 GMT","x-goog-stored-content-encoding":"identity","x-goog-hash":"crc32c=03jjkg==,md5=zcBC/tg8dZ+ClNU32yR4HA==","x-goog-metageneration":"1","content-type":"text/typescript","x-jsr-cache-status":"miss","x-goog-generation":"1727173874962125","x-jsr-cache-id":"MRS-fea0badd","access-control-allow-origin":"*","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","cache-control":"public, max-age=31536000, immutable","x-robots-tag":"noindex","last-modified":"Tue, 24 Sep 2024 10:31:15 GMT","expires":"Mon, 09 Feb 2026 13:22:34 GMT"},"url":"https://jsr.io/@std/assert/1.0.6/less.ts","time":1739107354}

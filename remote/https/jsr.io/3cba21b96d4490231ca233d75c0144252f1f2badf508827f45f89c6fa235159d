@@ -1,0 +1,38 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { format } from "jsr:@std/internal@^1.0.4/format";
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion that `actual` is greater than or equal to `expected`.
+ * If not then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertGreaterOrEqual } from "@std/assert";
+ *
+ * assertGreaterOrEqual(2, 1); // Doesn't throw
+ * assertGreaterOrEqual(1, 1); // Doesn't throw
+ * assertGreaterOrEqual(0, 1); // Throws
+ * ```
+ *
+ * @typeParam T The type of the values to compare.
+ * @param actual The actual value to compare.
+ * @param expected The expected value to compare.
+ * @param msg The optional message to display if the assertion fails.
+ */
+export function assertGreaterOrEqual<T>(
+  actual: T,
+  expected: T,
+  msg?: string,
+) {
+  if (actual >= expected) return;
+
+  const actualString = format(actual);
+  const expectedString = format(expected);
+  throw new AssertionError(
+    msg ?? `Expect ${actualString} >= ${expectedString}`,
+  );
+}
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","content-length":"1090","x-goog-hash":"crc32c=y+sgJw==,md5=7b/S4DdboSc3akrqTng39w==","server":"UploadServer","via":"1.1 google","x-jsr-cache-status":"miss","x-guploader-uploadid":"AHMx-iFzlaKyQ-ThRp1FXtAGeOozFB-aEv5YxEsobTyk222K9RVsWicAxKTfOWe6BdSIbVaL","last-modified":"Tue, 24 Sep 2024 10:31:14 GMT","x-goog-stored-content-length":"1090","expires":"Mon, 09 Feb 2026 13:22:34 GMT","etag":"\"edbfd2e0375ba127376a4aea4e7837f7\"","x-jsr-cache-id":"MRS-fea0badd","cache-control":"public, max-age=31536000, immutable","access-control-allow-origin":"*","x-robots-tag":"noindex","cross-origin-resource-policy":"cross-origin","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","access-control-expose-headers":"*","date":"Sun, 09 Feb 2025 13:22:34 GMT","x-goog-stored-content-encoding":"identity","content-type":"text/typescript","x-goog-storage-class":"STANDARD","x-goog-metageneration":"1","x-goog-generation":"1727173874894463"},"url":"https://jsr.io/@std/assert/1.0.6/greater_or_equal.ts","time":1739107354}

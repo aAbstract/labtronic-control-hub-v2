@@ -1,0 +1,32 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+import { AssertionError } from "./assertion_error.ts";
+
+/**
+ * Make an assertion that actual includes expected. If not
+ * then throw.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { assertStringIncludes } from "@std/assert";
+ *
+ * assertStringIncludes("Hello", "ello"); // Doesn't throw
+ * assertStringIncludes("Hello", "world"); // Throws
+ * ```
+ *
+ * @param actual The actual string to check for inclusion.
+ * @param expected The expected string to check for inclusion.
+ * @param msg The optional message to display if the assertion fails.
+ */
+export function assertStringIncludes(
+  actual: string,
+  expected: string,
+  msg?: string,
+) {
+  if (actual.includes(expected)) return;
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg = `Expected actual: "${actual}" to contain: "${expected}"${msgSuffix}`;
+  throw new AssertionError(msg);
+}
+
+// denoCacheMetadata={"headers":{"last-modified":"Tue, 24 Sep 2024 10:31:15 GMT","x-robots-tag":"noindex","x-goog-metageneration":"1","x-goog-generation":"1727173874961895","access-control-allow-origin":"*","x-goog-storage-class":"STANDARD","x-jsr-cache-id":"MRS-fea0badd","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sun, 09 Feb 2025 13:22:34 GMT","content-length":"954","expires":"Mon, 09 Feb 2026 13:22:34 GMT","x-goog-stored-content-encoding":"identity","via":"1.1 google","content-type":"text/typescript","cache-control":"public, max-age=31536000, immutable","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","etag":"\"132f4c3e17c09d66726c3b5d08265f76\"","x-goog-stored-content-length":"954","accept-ranges":"bytes","cross-origin-resource-policy":"cross-origin","access-control-expose-headers":"*","server":"UploadServer","x-content-type-options":"nosniff","x-guploader-uploadid":"AHMx-iEYBQLyZZjBlMBI2dEgvt31LyImTaAD1zfan6DBF2sa7ENQLzDIAwtNy4tPUIoPkDzu","x-goog-hash":"crc32c=HOOozQ==,md5=Ey9MPhfAnWZybDtdCCZfdg==","x-jsr-cache-status":"miss"},"url":"https://jsr.io/@std/assert/1.0.6/string_includes.ts","time":1739107354}
