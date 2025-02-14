@@ -3,14 +3,13 @@ import { ref, computed, watch, inject, onMounted } from 'vue';
 import { OBDCONFIG } from '@common/models';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
-
+import TemperatureLowIcon from '../icons/TemperatureLowIcon.vue';
 
 const device_model = inject('device_model');
 
 const load = ref(0)
 const speed = ref(0)
 const heat = ref(0)
-
 const load_conf = ref<OBDCONFIG | null>(null)
 const rpm_conf = ref<OBDCONFIG | null>(null)
 const tem_conf = ref<OBDCONFIG | null>(null)
@@ -113,12 +112,10 @@ function animate_rpm_gauge() {
     let _line_angel = Math.atan((_line_y2 - 50) / (50 - _line_x2));
     if (_line_angel > 0)
         _line_angel = _line_angel - Math.PI;
-    console.log(_line_angel)
-    console.log(_line_x2, _line_y2);
     let target_angle = 0
     if (rpm_conf.value)
-        target_angle = -(speed.value / (rpm_conf.value?.max - rpm_conf.value?.max) * Math.PI);
-
+        target_angle = -(speed.value / (rpm_conf.value?.max - rpm_conf.value?.min) * Math.PI);
+    console.log(target_angle)
     function animation_loop(t: number) {
         if (!_line)
             return;
@@ -182,7 +179,7 @@ onMounted(() => {
                 <path d="M 5,50 A 40,40 0 0,1 95,50" stroke="var(--font-color)" fill="none" :stroke-width="line_thick" />
                 <line :x1="50 + 35 * Math.cos(load_angle)" :y1="50 + 35 * Math.sin(load_angle)" :x2="50 + 45 * Math.cos(load_angle)" :y2="50 + 45 * Math.sin(load_angle)" stroke="var(--accent-color)" :stroke-width="line_thick * 5" />
 
-                <line id="rpm_gauge_line" x1="50" y1="50" x2="10" y2="50" stroke="var(--accent-color)" :stroke-width="line_thick * 4" />
+                <line id="rpm_gauge_line" x1="50" y1="50" :x2="10" :y2="50" stroke="var(--accent-color)" :stroke-width="line_thick * 4" />
 
                 <path d="M 25,92.5 A 50,50 0 0,0 75,92.5" stroke="url(#arcGradient)" fill="none" :stroke-width="line_thick * 5" />
 
@@ -264,7 +261,7 @@ p {
 }
 
 .speed_container {
-    width: 75%;
+    width: 90%;
     aspect-ratio: 1/1;
     position: relative;
 }

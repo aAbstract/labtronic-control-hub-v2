@@ -6,49 +6,36 @@ import { Result } from '../../common/models';
 
 
 
-async function readUntil(
-    port: SerialPort,
-    stopCondition: string = '\r\r>',
-    timeout: number = 5000
-): Promise<string> {
+async function nc_jdm_obd_elm327_command(serial_port: SerialPort, elm327_command: string): Promise<string> {
+    const buffer: any = [];
+    let __resolve = <Function | null>null;
+    let __iid = <NodeJS.Timeout | null>null;
+
+    function __pool() {
+        let byte = serial_port.read(1);
+        if (byte === null)
+            return;
+        byte = byte[0];
+        buffer.push(byte);
+
+        if (buffer[buffer.length - 1] === 0x3E && buffer[buffer.length - 2] === 0x0D && buffer[buffer.length - 3] === 0x0D) { // \r\r>
+
+            if (__iid)
+                clearInterval(__iid);
+            if (__resolve)
+                __resolve(buffer.map((x: number) => String.fromCharCode(x)).join(''));
+        }
+    }
+
     return new Promise((resolve, reject) => {
-        let receivedData = "";
-        let resolved = false; // Prevent multiple calls to resolve/reject
-
-        const timer = setTimeout(() => {
-            if (!resolved) {
-                resolved = true;
-                port.removeAllListeners("data");
-                port.removeAllListeners("error");
-                reject(new Error("Timeout reached"));
-            }
-        }, timeout);
-
-        port.on("data", (data: Buffer) => {
-            if (resolved) return; // Ignore if already resolved
-            receivedData += data.toString("utf-8");
-
-            if (receivedData.includes(stopCondition)) {
-                resolved = true;
-                clearTimeout(timer);
-                port.removeAllListeners("data");
-                port.removeAllListeners("error");
-                resolve(receivedData);
-            }
-        });
-
-        port.once("error", (err) => {
-            if (!resolved) {
-                resolved = true;
-                clearTimeout(timer);
-                port.removeAllListeners("data");
-                port.removeAllListeners("error");
+        __resolve = resolve;
+        serial_port.write(elm327_command, err => {
+            if (err)
                 reject(err);
-            }
+            __iid = setInterval(__pool, 10);
         });
     });
 }
-
 
 
 const header = '7E8'
@@ -167,6 +154,7 @@ export const obd_config: OBDCONFIG[] = [
             abs: 0
         }
     }]
+
 class NC_JDM_OBD_driver {
 
     public header: string;
@@ -282,7 +270,7 @@ export class NC_JDM_OBD_SerialAdapter {
         _device_model: string,
         _ipc_handler: (channel: string, data: any) => void,
         _logger: (log_msg: LogMsg) => void,
-    ):Promise<Result<string>> {
+    ): Promise<Result<string>> {
         try {
             const ports = await SerialPort.list()
             let devices_ports = ports.filter(x => (x.path.includes('COM') || x.path.includes('ttyUSB') || x.path.includes('ttyACM')));
@@ -291,47 +279,64 @@ export class NC_JDM_OBD_SerialAdapter {
             }
 
             if (devices_ports.length === 0) {
-                return {err:'No Ports Connected'}; 
+                return { err: 'No Ports Connected' };
             }
-            const detected_ports = devices_ports.map(x => {
+            let detected_ports = devices_ports.map(x => {
                 return {
                     port_name: x.path,
                     manufacturer: x.manufacturer,
                 } as SerialPortMetaData;
             });
+
             for (let i = 0; i < detected_ports.length; i++) {
                 const portPath = detected_ports[i].port_name
                 const port = new SerialPort({ path: portPath, baudRate: this.BAUD_RATE, autoOpen: false });
+                try {
+                    const promise_response = await new Promise<Result<string>>((resolve, reject) => {
+                        
+                        const timeout = setTimeout(() => {
+                            _logger({ level: 'ERROR', msg: `No Response From ${port.path}` })
+                            if(port.isOpen)
+                                port.close(); // Close the port if it's still open
+                            reject({ err: "Timeout: No response from port" });
+                        }, 2000); // 2-second timeout
 
-                port.open(async (err) => {
-                    if (err) {
-                        return;
-                    }
-                    port.write('ATZ\r');
-                    const response = await readUntil(port)
-                    _logger({ level: 'INFO', msg: response })
 
-                    if (response.includes('ELM327 v1.5')) {
-                        const init_commands = ['ATE0', 'ATH1', 'ATS0']
-                        for (let j = 0; j < init_commands.length; j++) {
-                            port.write(init_commands[j] + '\r')
-                            const res = await readUntil(port)
-                            _logger({ level: 'INFO', msg: res })
-                            if (res.includes('OK')) {
-                                return {ok: detected_ports[i].port_name}
+                        port.open(async (err) => {
+                            if (err)
+                                reject({ err: 'Error While Scanning The Port1' })
+                            const response = await nc_jdm_obd_elm327_command(port, 'ATZ\r')
+
+                            if (response.includes('ELM327 v1.5')) {
+                                const init_commands = ['ATE0', 'ATH1', 'ATS0']
+                                for (let j = 0; j < init_commands.length; j++) {
+                                    const res = await nc_jdm_obd_elm327_command(port, init_commands[j] + '\r')
+
+                                    if (!res.includes('OK')) {
+                                        reject({ err: 'not Ok' })
+                                    }
+                                }
+                                if (timeout)
+                                    clearTimeout(timeout)
+                                resolve({ ok: detected_ports[i].port_name })
                             }
-                        }
-                    }
+                            reject({ err: 'Error While Scanning The Port2' })
+                        })
+
+                    });
+
                     port.close();
-                    return  {err: 'No Ports Found'}
-                });
+                    return { ok: promise_response.ok }
+                } catch {
+                    
+                }
 
             }
         }
-        catch{
-            return {err: 'Error While Scanning Ports'}
+        catch (error) {
+            return { err: 'No Ports' }
         }
-        return {err: 'Error While Scanning Ports'}
+        return { err: 'Error While Scanning Ports2' }
     }
 
     connect() {
@@ -364,37 +369,36 @@ export class NC_JDM_OBD_SerialAdapter {
         this.seq_num = (this.seq_num + 1) % 0xFFFF;
         this.logger({ level: 'INFO', msg: command + ' r' })
     }
-    async read_untill(delimiter: string = '\r\r>') {
-
-        await readUntil(this.serial_port, delimiter, 1000).then(res => {
-            const decode_res = this.device_driver.decode(res.slice(0, -1), this.sent_command);
-            this.logger({ level: 'INFO', msg: res })
-            if (decode_res.err) {
-                this.logger({ level: 'ERROR', msg: JSON.stringify(decode_res.err) });
-                return;
-            }
-            this.logger({ level: 'INFO', msg: JSON.stringify(decode_res.ok) });
-            const command_config = this.device_driver.config.find((conf) => { return conf.command == this.sent_command })
-            if (!(command_config && decode_res.ok))
-                return;
-            const device_msg: DeviceMsg = {
-                config: {
-                    msg_type: command_config?.msg_type,
-                    msg_name: command_config?.name,
-                    data_type: DataType.FLOAT,
-                    size_bytes: 0,
-                    cfg2: 0,
-                },
-                seq_number: this.seq_num,
-                msg_value: decode_res.ok,
-                b64_msg_value: '',
-            }
-            this.ipc_handler(`${this.device_model}_device_msg`, { device_msg });
 
 
-        }).catch(() => {
-            this.logger({ level: 'ERROR', msg: "Error While Reading Data" })
-        })
+    async send_read_command(command: string) {
+        const res = await nc_jdm_obd_elm327_command(this.serial_port, command + ' 1\r')
+        const decode_res = this.device_driver.decode(res.slice(0, -1), this.sent_command);
+        this.logger({ level: 'INFO', msg: res });
+        if (decode_res.err) {
+            this.logger({ level: 'ERROR', msg: JSON.stringify(decode_res.err) });
+            return;
+        }
+
+
+        const command_config = this.device_driver.config.find((conf) => { return conf.command == this.sent_command })
+        if (!(command_config && decode_res.ok))
+            return;
+        const device_msg: DeviceMsg = {
+            config: {
+                msg_type: command_config?.msg_type,
+                msg_name: command_config?.name,
+                data_type: DataType.FLOAT,
+                size_bytes: 0,
+                cfg2: 0,
+            },
+            seq_number: this.seq_num,
+            msg_value: decode_res.ok,
+            b64_msg_value: '',
+        }
+        this.ipc_handler(`${this.device_model}_device_msg`, { device_msg });
+
+
 
     }
 
@@ -407,8 +411,9 @@ export class NC_JDM_OBD_SerialAdapter {
     async loop_commands() {
 
         for (const command of this.device_driver.config) {
-            this.send_packet(command.command);
-            await this.read_untill();
+            await this.send_read_command(command.command);
         }
     }
 }
+
+

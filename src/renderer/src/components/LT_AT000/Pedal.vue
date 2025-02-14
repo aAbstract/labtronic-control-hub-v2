@@ -5,10 +5,11 @@ import { DeviceMsg,OBDCONFIG } from '@common/models';
 
 
 const device_model = inject('device_model');
-const left_pedal_val = ref(0)
+const left_pedal_val = ref(100)
+const right_pedal_val = ref(0)
 const left_pedal_conf = ref<OBDCONFIG|null>(null)
 const right_pedal_conf= ref<OBDCONFIG|null >(null)
-const right_pedal_val = ref(0)
+
 
 window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     const device_msg: DeviceMsg = data.device_msg;
@@ -85,7 +86,7 @@ onMounted(()=>{
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 2%;
+    gap: 8px;
     align-items: center;
     justify-content: center;
 }
@@ -95,11 +96,12 @@ onMounted(()=>{
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 100%;
 
 }
 
 .progress-container {
-    width: 50%;
+    width: 40px;
     height: 100%;
     border: 2px solid var(--accent-color);
     background-color: transparent;
@@ -122,7 +124,7 @@ h3 {
 }
 
 img {
-    width: 30%;
+    width: 10%;
 }
 
 .mode1_text {

@@ -331,17 +331,7 @@ export function init_lt_at000_serial_adapter(_main_window: BrowserWindow) {
     });
 
    
-    // device heart beat signal
-    setInterval(() => {
-        if (!serial_adapter)
-            return;
-
-        if (!serial_adapter.is_connected)
-            return;
-
-        serial_adapter.send_packet(DEVICE_HEART_BEAT_MSG_TYPE, 0);
-
-    }, 1000);
+   
     req_nc_jdm_obd_param()
 
 }
@@ -359,8 +349,8 @@ async function scan_connect_obd(){
         nc_jdm_obd_serial_adapter = new NC_JDM_OBD_SerialAdapter(port.ok, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         nc_jdm_obd_serial_adapter.connect();
     }
-    else{
-        mw_logger({level:'ERROR',msg:JSON.stringify(port)})
+    else if(port.err){
+        mw_logger({level:'ERROR',msg:port.err})
     }
 
 }

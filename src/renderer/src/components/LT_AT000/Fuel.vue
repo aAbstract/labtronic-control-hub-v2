@@ -7,7 +7,7 @@ import { OBDCONFIG } from '@common/models';
 const device_model = inject('device_model');
 
 //const fuel_rate = ref(0)
-const pressure = ref(0)
+const pressure = ref(650565)
 const flow = ref(0)
 const pressure_conf = ref<OBDCONFIG|null>(null)
 
@@ -31,10 +31,6 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     }
 }
 )
-
-
-
-
 
 
 
@@ -98,8 +94,8 @@ onMounted(()=>{
         </svg>
         <div class="pressure">
             <img :src="fuel_src" style="height: 40%;margin-top: 50%;" alt="">
-            <h3>{{ Math.round(pressure / 10000) }} <span style="font-size: 18px;">{{ pressure_conf?.unit }}</span></h3>
-            <p style="font-size: 14;">x10000</p>
+            <h3>{{ Math.round(pressure / 1000) }} <span style="font-size: 18px;">{{ pressure_conf?.unit }}</span></h3>
+            <p style="font-size: 14;">x1000</p>
         </div>
         <div>
             <h3 style="position: absolute;bottom: -10%;left: 40%;">{{ flow }} <span style="font-size: 18px;">L/s</span></h3>
@@ -116,7 +112,7 @@ onMounted(()=>{
         </div>
         <div class="fuel_element">
             <p class="mode1_small_text">Pressure</p>
-            <h3 class="mode1_text">{{ pressure }} <span class="mode1_small_text">{{ pressure_conf?.unit }}</span></h3>
+            <h3 class="mode1_text">{{ Math.round(pressure / 1000) }}<span  class="mode1_small_text">x1000 {{ pressure_conf?.unit }}</span></h3>
         </div>
 
         <div class="fuel_element">

@@ -57,17 +57,17 @@ subscribe('change_lt_at000_screen_mode', 'change_lt_at000_screen_mode_dashboard'
 .dashboard_container1 {
     width: 100%;
     display: grid;
-    grid-template-columns: 30fr 50fr 30fr;
-    padding-block: 8px;
-    padding-inline: 16px;
-    justify-content: center;
+    grid-template-columns: 20fr 40fr 25fr;
+    padding: 8px;
+    padding-top: 24px;
 }
 
 .dashboard_container2 {
     width: 100%;
+    height: 100%;
     display: grid;
-    grid-template-columns: 30fr 50fr 30fr;
-    padding: 24px;
+    grid-template-columns: 20fr 45fr 30fr;
+    padding-inline: 24px;
     justify-content: center;
 }
 
@@ -107,7 +107,7 @@ subscribe('change_lt_at000_screen_mode', 'change_lt_at000_screen_mode_dashboard'
     justify-content: center;
     align-items: center;
     margin: 8px 0px;
-    padding: 8px;
+    padding-inline: 8px;
     border-radius: 4px;
 }
 </style>
