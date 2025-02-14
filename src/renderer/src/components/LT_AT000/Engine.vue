@@ -188,7 +188,7 @@ onMounted(() => {
         </transition>
         <div class="rpm">
             <h3 class="rpm_text" :class="{ mode1_rpm_text: mode == 1 }">{{ Math.round(speed / 100) }} <span style="font-size: 16px;"> {{ rpm_conf?.unit }} </span></h3>
-            <p :class="{ mode1_text: mode == 1 }" v-if="mode == 2">x100</p>
+            <p style="font-size: 16px;">x100</p>
         </div>
         <div class="engine_load">
             <img style="width: 12.5%;" :src="engine_src" alt="">
@@ -273,7 +273,6 @@ p {
 .mode1_text {
     font-size: 20px;
 }
-
 .mode1_rpm_text {
     font-size: 24px;
     line-height: 24px;

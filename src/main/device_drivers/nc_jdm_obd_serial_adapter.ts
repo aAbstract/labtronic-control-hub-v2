@@ -42,7 +42,7 @@ const header = '7E8'
 
 export const obd_config: OBDCONFIG[] = [
     {
-        name: 'abs_pedal_pos_d',
+        name: 'Pedal_D',
         command: '2149',
         msg_type: 20,
         response_size: 3,
@@ -56,7 +56,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'abs_pedal_pos_e',
+        name: 'Pedal_E',
         command: '214A',
         msg_type: 21,
         response_size: 3,
@@ -70,7 +70,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'fuel_rail_pressure',
+        name: 'Rail_Pressure',
         command: '2123',
         msg_type: 22,
         response_size: 4,
@@ -84,7 +84,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'engine_load',
+        name: 'Load',
         command: '2104',
         msg_type: 23,
         response_size: 3,
@@ -99,7 +99,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'engine_rpm',
+        name: 'RPM',
         command: '210C',
         msg_type: 24,
         response_size: 4,
@@ -113,7 +113,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'engine_coolant_temp',
+        name: 'ECT',
         command: '2105',
         msg_type: 25,
         response_size: 3,
@@ -127,7 +127,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'intake_air_temp',
+        name: 'IAT',
         command: '210F',
         msg_type: 26,
         response_size: 3,
@@ -141,7 +141,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'intake_abs_manifold_abs_press',
+        name: 'IMAP',
         command: '210b',
         msg_type: 27,
         response_size: 3,
