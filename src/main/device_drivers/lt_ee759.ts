@@ -91,11 +91,12 @@ function energy_trapz(sn: number, power: number) {
     if (last_t === 0) {
         last_t = new Date().getTime();
         last_p = power;
-        return;
+        //return; // no need to return
     }
 
     const current_t = new Date().getTime();
     const dt = (current_t - last_t) * 1E-3;
+    console.log(dt,last_p,power,e_wh,sn)
     const trapz_integral_step = 0.5 * dt * (last_p + power);
     e_wh += trapz_integral_step * 2.78E-4; // convert from watt*second to watt*hour
 
@@ -170,7 +171,13 @@ export function init_lt_ee759_serial_adapter(_main_window: BrowserWindow) {
         lt_ee759_cmd_exec(cmd);
     });
 
-    ipcMain.on(`${DEVICE_MODEL}_reset_energy`, () => e_wh = 0);
+    ipcMain.on(`${DEVICE_MODEL}_reset_energy`, () => {
+        last_t = 0;
+        last_p = 0;
+        e_wh = 0;
+        debug_last_wh = 0;
+        console.log(e_wh)
+    });
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_scan`, () => SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
     SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger);

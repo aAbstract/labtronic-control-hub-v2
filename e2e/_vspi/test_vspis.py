@@ -22,7 +22,7 @@ from e2e._vspi.test_drivers import (
 
     ltd_driver_lt_ev574,
 
-    ltd_driver_lt_ee579,
+    ltd_driver_lt_ee759,
 )
 # autopep8: on
 
@@ -39,7 +39,7 @@ lt_re600_vspi = VSPI(device_model='LT-RE600', device_driver=ltd_driver_lt_re600)
 
 lt_ev574_vspi = VSPI(device_model='LT-EV574', device_driver=ltd_driver_lt_ev574, control_feedback_map={12: 5})
 
-lt_ee579_vspi = VSPI(device_model='LT-EE579', device_driver=ltd_driver_lt_ee579)
+lt_ee759_vspi = VSPI(device_model='LT-EE759', device_driver=ltd_driver_lt_ee759,auto_connect=True)
 
 
 if __name__ == '__main__':

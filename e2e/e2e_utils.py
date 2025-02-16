@@ -187,7 +187,7 @@ def get_chx_device_state(driver: webdriver.Chrome) -> dict | None:
     return {x.text.split(': ')[0]: float(x.text.split(': ')[1]) for x in device_readings}
 
 
-def check_chx_device_state(driver: webdriver.Chrome, device_vspi: VSPI, func_id: str, states_check_arr: list[CheckChxDeviceState]) -> int:
+def check_chx_device_state(driver: webdriver.Chrome, device_vspi: VSPI, func_id: str, states_check_arr: list[CheckChxDeviceState],time_to_sleep=5) -> int:
     '''
     this function checks the state of any device by:
         1- checking if states taken are subset of the device state
@@ -212,7 +212,7 @@ def check_chx_device_state(driver: webdriver.Chrome, device_vspi: VSPI, func_id:
             device_vspi.write_msg(state.key_msg_type, state.value)
 
     #   some times the values delay until being updated so ,sleep 5 seconds
-    time.sleep(5)
+    time.sleep(time_to_sleep)
     chx_device_state = get_chx_device_state(driver)
 
     for state in states_check_arr:

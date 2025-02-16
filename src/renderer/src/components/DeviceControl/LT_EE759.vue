@@ -20,6 +20,10 @@ onMounted(() => {
             energy_wh.value = device_msg.msg_value.toFixed(5);
     });
 });
+function reset_energy(){
+    electron_renderer_send(`${device_model}_reset_energy`, {})
+    energy_wh.value='0.00000'
+}
 
 </script>
 
@@ -37,7 +41,7 @@ onMounted(() => {
                 <span>{{ energy_wh }}</span>
             </div>
             <div style="flex-grow: 1;"></div>
-            <Button style="height: 30px; width: 150px; font-size: 12px;" label="Reset Energy" icon="pi pi-refresh" outlined @click="electron_renderer_send(`${device_model}_reset_energy`, {})" />
+            <Button style="height: 30px; width: 150px; font-size: 12px;" label="Reset Energy" icon="pi pi-refresh" outlined @click="reset_energy" />
         </div>
     </div>
 </template>
