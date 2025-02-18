@@ -1,0 +1,42 @@
+# intake air density
+pb -> baro pressure
+T -> temp sensor (T1)
+
+# intake air velocity
+V_avg/V_max -> input constant
+Cp -> input constant
+Pv -> pressure diff
+d -> # intake air density
+
+# intake air flow rate * roh (kg/s)
+r -> input constant
+v -> # intake air velocity
+roh -> # intake air density
+
+# fuel density
+d_o -> input constant
+SG -> input constant
+
+# air feul ratio
+m_air -> # intake air flow rate (kg/s)
+m_fuel -> obd:fuel_rate (kg/s)
+
+# thermal_power
+q_water -> input constant
+d_o -> input constant
+c_water -> input constant
+delta_water -> obd:engine_coolant - T1
+
+# vol. eff.
+q_air -> # intake air flow rate * roh (kg/s)
+stroke_factor -> input constant
+rpm -> obd:engine_rpm
+swept_volume -> input constant
+
+# eta
+power -> (LC2 - LC1) * dia(input constant) * 2pi*rpm/60
+cv -> input constant
+fuel mass -> obd:fuel_rate to g/s
+system_mech_eff -> input constant
+
+Note: Completed
