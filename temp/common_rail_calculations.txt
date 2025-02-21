@@ -1,0 +1,47 @@
+# Intake_Air_Density [Kg/m3] - LIVE
+    Pb: OBD:Barometric_Pressure [kPa]
+    T: Intake Air Temperature (CHX:T1 + 273.15) [K]
+
+# Intake_Air_Velocity [m/s] - LIVE
+    V_avg/V_max: INPUT_CONSTANT
+    Cp: INPUT_CONSTANT
+    Pv: CHX:Pressure_Difference [kPa]
+    d: #Intake_Air_Density
+
+# Intake_Air_Flow_Rate [m3/s] - LIVE
+    r: INPUT_CONSTANT
+    V: #Intake_Air_Velocity
+    Note: #Intake_Air_Flow_Rate = #Intake_Air_Flow_Rate * #Intake_Air_Density [Kg/s]
+
+# Fuel_Density [Kg/m3] - LIVE
+    d_o: INPUT_CONSTANT
+    SG: INPUT_CONSTANT
+
+# Air_Fuel_Ratio - LIVE
+    m_air: #Intake_Air_Flow_Rate
+    m_fuel: OBD:Fuel_Rate [kg/s]
+
+# Thermal_Power [W] - LIVE
+    Q_water: INPUT_CONSTANT
+    d_o: INPUT_CONSTANT
+    c_water: INPUT_CONSTANT
+    Delta_T_water: OBD:Engine_Coolant - CHX:T1
+
+# Engine_Power [W] - LIVE - CHART
+    Diameter: INPUT_CONSTANT
+    Power: (CHX:LC2 - CHX:LC1) * Diameter * 2pi * OBD:Engine_RPM / 60
+
+# Specific_Fuel_Consumption - LIVE - CHART
+    = OBD:Fuel_Rate / Engine_Power
+
+# Volumetric_Efficiency - LIVE - CHART
+    Q_air: #Intake_Air_Flow_Rate
+    Stroke_Factor: INPUT_CONSTANT
+    rpm: OBD:Engine_RPM
+    Swept_Volume -> INPUT_CONSTANT
+
+# ETA - LIVE - CHART
+    Power: #Engine_Power
+    CV: INPUT_CONSTANT
+    Fuel_Mass_Flow_Rate: OBD:Fuel_Mass_Flow_Rate [g/s]
+    Mech_Eff: INPUT_CONSTANT

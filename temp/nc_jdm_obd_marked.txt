@@ -18,7 +18,7 @@ CAN Packet 2 OBD2 Command: 210D 1\r -> vehicle_speed
 CAN Packet 3 OBD2 Command: 210B 1\r -> intake_abs_manifold_abs_press
 CAN Packet 4 OBD2 Command: 210C 1\r -> engine_rpm
 
-fuel_rail_pressure: 0kpa - OK
+fuel_rail_pressure: 0kPa - OK
 OBD2 Command: 2123 1\r
 OBD2 Response: 7E8 04 61 23 00 00 \r\r>
 v = (A(0x00) * 256 + B(0x00)) * 10 = 0
@@ -47,7 +47,12 @@ OBD2 Command: 210F 1\r
 OBD2 Response: 7E8 03 61 0F 00 \r\r>
 v = 0x00 - 40 = -40 C (Disconnected)
 
-intake_abs_manifold_abs_press: 100kpa - OK
+intake_abs_manifold_abs_press: 100kPa - OK
 OBD2 Command: 210B 1\r
 OBD2 Response: 7E8 03 61 0B 64 \r\r>
-v = 0x64 = 100 kpa
+v = 0x64 = 100 kPa
+
+barometric_pressure: 100kPa - OK
+OBD2 Command: 2133 1\r
+OBD2 Response: 7E8 03 61 33 64 \r\r>
+v = A(0x64) = 100 kPa
