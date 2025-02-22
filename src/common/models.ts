@@ -211,6 +211,10 @@ export enum LT_RE600_ScreenMode {
     W1280 = 1,
     W1920 = 2,
 };
+export enum LT_RE850_ScreenMode {
+    W1280 = 1,
+    W1920 = 2,
+};
 
 export interface LT_RE600_MeterParams {
     meter_name: string;
