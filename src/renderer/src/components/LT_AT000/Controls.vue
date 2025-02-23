@@ -54,6 +54,7 @@ function compute_packet() {
 
 function reset(){
     outs.value = [false, false, false, false,false]
+    send_digital()
 }
 
 function send_digital() {
