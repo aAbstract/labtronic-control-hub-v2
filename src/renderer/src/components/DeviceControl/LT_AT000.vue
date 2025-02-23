@@ -10,7 +10,7 @@ import { electron_renderer_invoke } from '@renderer/lib/util';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 import LT_AT000_Chart from '@renderer/components/LT_AT000/Chart.vue';
 import Dashboard from '../LT_AT000/Dashboard.vue';
-
+import Controls from '../LT_AT000/Controls.vue';
 
 
 const tabview_pt = {
@@ -95,6 +95,9 @@ onMounted(() => {
             <TabPanel header="Components" :pt="tabpanel_pt">
                 <img style="width: 90%; margin: 5%;" :src="system_components_src" alt="Componenets">
             </TabPanel>
+            <TabPanel header="Controls" :pt="tabpanel_pt">
+                <Controls :full_screen="lt_at000_control_panel_pos=='absolute'"/>
+          </TabPanel>
           
         </TabView>
     </div>

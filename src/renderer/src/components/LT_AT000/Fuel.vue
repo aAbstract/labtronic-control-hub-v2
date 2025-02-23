@@ -7,7 +7,7 @@ import { OBDCONFIG } from '@common/models';
 const device_model = inject('device_model');
 
 //const fuel_rate = ref(0)
-const pressure = ref(650565)
+const pressure = ref(0)
 const flow = ref(0)
 const pressure_conf = ref<OBDCONFIG|null>(null)
 

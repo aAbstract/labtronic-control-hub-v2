@@ -5,7 +5,7 @@ import { DeviceMsg,OBDCONFIG } from '@common/models';
 
 
 const device_model = inject('device_model');
-const left_pedal_val = ref(100)
+const left_pedal_val = ref(0)
 const right_pedal_val = ref(0)
 const left_pedal_conf = ref<OBDCONFIG|null>(null)
 const right_pedal_conf= ref<OBDCONFIG|null >(null)

@@ -8,7 +8,7 @@ import { DeviceMsg } from '@common/models';
 import { OBDCONFIG } from '@common/models';
 
 
-const speed = ref(5)
+const speed = ref(0)
 const tem = ref(0)
 const pressure = ref(0)
 
@@ -29,6 +29,9 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
             break;
         case 27:
             pressure.value = Math.round(device_msg.msg_value)
+            break;
+        case 41:
+            speed.value = Math.round(device_msg.msg_value)
             break;
         default:
             break;

@@ -54,14 +54,19 @@ const chart_data = shallowRef<ChartData>({
     datasets: [],
 });
 
-const chart_y_min = ref('0');
-const chart_y_max = ref('100');
+const chart_y1_min = ref('0');
+const chart_y1_max = ref('100');
+
+// const chart_y2_min = ref('0');
+// const chart_y2_max = ref('100');
+
+
 const chart_state = ref(CHXChartState.STOPPED);
 const chart_x_msg_type = ref(-1);
 const chart_y_msg_type1 = ref(0);
 const chart_y_msg_type2 = ref(1);
 const chart_auto_scale = ref(true);
-const chart_opts = shallowRef(create_chart_options(font_color, chart_grid_color, Number(chart_y_min.value), Number(chart_y_max.value)));
+const chart_opts = shallowRef(create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value)));
 
 const chart_params = computed(() => {
     const _chart_params_map: Record<number, ChartParams> = {};
@@ -81,7 +86,6 @@ const chart_params = computed(() => {
 });
 
 const chart_tool_op = ref();
-const chart_cursor_info_op = ref();
 const chart_cursor_info_values = shallowRef<Record<number, number>>({});
 
 function on_chart_click(chart_event: ChartEvent) {
@@ -162,13 +166,9 @@ function show_chart_tool_settings_overlay_panel(_event: MouseEvent) {
     chart_tool_op.value.toggle(_event);
 }
 
-function show_chart_cursor_info_op_overlay_panel(_event: MouseEvent) {
-    chart_cursor_info_op.value.toggle(_event);
-}
-
 function set_chart_y_min_max() {
-    const y_min = Number(chart_y_min.value);
-    const y_max = Number(chart_y_max.value);
+    const y_min = Number(chart_y1_min.value);
+    const y_max = Number(chart_y1_max.value);
     if (isNaN(y_min) || isNaN(y_max))
         return;
 
@@ -182,7 +182,7 @@ function set_chart_auto_scale() {
     if (chart_auto_scale.value)
         chart_opts.value = create_chart_options(font_color, chart_grid_color, -1, -1, x_title);
     else
-        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y_min.value), Number(chart_y_max.value), x_title);
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value), x_title);
 }
 
 function set_chart_x_y_msg_type() {
@@ -191,7 +191,7 @@ function set_chart_x_y_msg_type() {
     if (chart_auto_scale.value)
         chart_opts.value = create_chart_options(font_color, chart_grid_color, -1, -1, x_title);
     else
-        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y_min.value), Number(chart_y_max.value), x_title);
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value), x_title);
 
     if (chart_state.value === CHXChartState.RECORDING)
         set_chart_tool_state(CHXChartState.RECORDING);
@@ -219,10 +219,6 @@ function __time_s(): number {
     const time_ms = new Date().getTime() - start_epoch;
     const time_s = time_ms / 1000;
     return Number(time_s.toFixed(1));
-}
-
-function __msg_type_color(msg_type: number): string {
-    return chart_params.value[msg_type]?.borderColor ?? accent_color;
 }
 
 let sorted_cache: DataPointType[] = [];
@@ -298,34 +294,15 @@ onMounted(() => {
 
 <template>
     <div id="chart_tool_panel" v-on="screenshot_handlers">
-        <Button style="top: 8px; right: 8px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
-        <Button style="top: 8px; right: 40px;" id="chart_cursor_info_btn" class="chart_tool_btn" icon="pi pi-info-circle" @click="show_chart_cursor_info_op_overlay_panel" text />
-        <OverlayPanel ref="chart_cursor_info_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;" :dismissable="false">
-            <div id="cci_cont">
-                <div v-if="chart_x_msg_type !== -2" class="cci_row" :style="{ color: __msg_type_color(chart_x_msg_type) }">
-                    <span>{{ msg_type_chart_name_map[chart_x_msg_type] }}: </span>
-                    <span>{{ chart_cursor_info_values[chart_x_msg_type] ?? '00.0' }}</span>
-                </div>
-                <div class="cci_row" :style="{ color: __msg_type_color(chart_y_msg_type1) }">
-                    <span>{{ msg_type_chart_name_map[chart_y_msg_type1] }}: </span>
-                    <span>{{ chart_cursor_info_values[chart_y_msg_type1] ?? '00.0' }}</span>
-                </div>
-                <div class="cci_row" :style="{ color: __msg_type_color(chart_y_msg_type2) }">
-                    <span>{{ msg_type_chart_name_map[chart_y_msg_type2] }}: </span>
-                    <span>{{ chart_cursor_info_values[chart_y_msg_type2] ?? '00.0' }}</span>
-                </div>
-                <div style="display: flex; justify-content: flex-end; align-items: center; width: 100%; margin-top: 8px;">
-                    <Button style="width: 24px; height: 24px;" icon="pi pi-times" @click="chart_cursor_info_op.hide()" text />
-                </div>
-            </div>
-        </OverlayPanel>
+        <Button style="top: 40px; right: 8px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
+
         <OverlayPanel ref="chart_tool_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
             <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                 <div style="width: 280px;">
                     <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Chart Tool Y Range</span>
-                    <input class="dt_tf" type="number" v-model="chart_y_min" @keyup.enter="set_chart_y_min_max()" @focus="chart_y_min = ''">
+                    <input class="dt_tf" type="number" v-model="chart_y1_min" @keyup.enter="set_chart_y_min_max()" @focus="chart_y1_min = ''">
                     <span style="text-align: center;"> - </span>
-                    <input class="dt_tf" type="number" v-model="chart_y_max" @keyup.enter="set_chart_y_min_max()" @focus="chart_y_max = ''">
+                    <input class="dt_tf" type="number" v-model="chart_y1_max" @keyup.enter="set_chart_y_min_max()" @focus="chart_y1_max = ''">
                 </div>
                 <div style="height: 8px;"></div>
                 <div style="width: 280px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center;">

@@ -184,67 +184,67 @@ const analog_output = {
 
 
 const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
-    // VCE_VAR
-    // {
-    //     msg_type_config: {
-    //         msg_type: 0,
-    //         msg_name: 'READ_T1',
-    //         data_type: DataType.FLOAT,
-    //         size_bytes: 4,
-    //         cfg2: 0,
-    //     },
-    //     param_symbol: '$T1',
-    //     param_type: VceParamType.VCE_VAR,
-    //     desc: 'Thermocouple 1',
-    // },
-    // {
-    //     msg_type_config: {
-    //         msg_type: 1,
-    //         msg_name: 'READ_T2',
-    //         data_type: DataType.FLOAT,
-    //         size_bytes: 4,
-    //         cfg2: 0,
-    //     },
-    //     param_symbol: '$T2',
-    //     param_type: VceParamType.VCE_VAR,
-    //     desc: 'Thermocouple 2',
-    // },
-    // {
-    //     msg_type_config: {
-    //         msg_type: 2,
-    //         msg_name: 'READ_T3',
-    //         data_type: DataType.FLOAT,
-    //         size_bytes: 4,
-    //         cfg2: 0,
-    //     },
-    //     param_symbol: '$T3',
-    //     param_type: VceParamType.VCE_VAR,
-    //     desc: 'Thermocouple 3',
-    // },
-    // {
-    //     msg_type_config: {
-    //         msg_type: 3,
-    //         msg_name: 'READ_T4',
-    //         data_type: DataType.FLOAT,
-    //         size_bytes: 4,
-    //         cfg2: 0,
-    //     },
-    //     param_symbol: '$T4',
-    //     param_type: VceParamType.VCE_VAR,
-    //     desc: 'Thermocouple 4',
-    // },
-    // {
-    //     msg_type_config: {
-    //         msg_type: 4,
-    //         msg_name: 'READ_T5',
-    //         data_type: DataType.FLOAT,
-    //         size_bytes: 4,
-    //         cfg2: 0,
-    //     },
-    //     param_symbol: '$T5',
-    //     param_type: VceParamType.VCE_VAR,
-    //     desc: 'Thermocouple 5',
-    // },
+   // VCE_VAR
+    {
+        msg_type_config: {
+            msg_type: 0,
+            msg_name: 'READ_T1',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$T1',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Thermocouple 1',
+    },
+    {
+        msg_type_config: {
+            msg_type: 1,
+            msg_name: 'READ_T2',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$T2',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Thermocouple 2',
+    },
+    {
+        msg_type_config: {
+            msg_type: 2,
+            msg_name: 'READ_T3',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$T3',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Thermocouple 3',
+    },
+    {
+        msg_type_config: {
+            msg_type: 3,
+            msg_name: 'READ_T4',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$T4',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Thermocouple 4',
+    },
+    {
+        msg_type_config: {
+            msg_type: 4,
+            msg_name: 'READ_T5',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$T5',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Thermocouple 5',
+    },
     {
         msg_type_config: {
             msg_type: 5,
@@ -318,16 +318,16 @@ const DEVICE_SERIES: CHXSeries[] = [
 
 // msg_type start from 40
 const DEVICE_CPS: CHXComputedParam[] = [
-    // { param_name: 'D_air', expr: '$PB * $T1', msg_type: 40 },
-    // { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
-    // { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
-    // { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
-    // // { param_name: 'A_F_Ratio', expr: '$PB * $T1', msg_type:44  }, 
-    // { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
-    // { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
-    // //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
-    // { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
-    // //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
+    { param_name: 'D_air', expr: '$PB * $T1', msg_type: 40 },
+    { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
+    { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
+    { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
+    // { param_name: 'A_F_Ratio', expr: '$PB * $T1', msg_type:44  }, 
+    { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
+    { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
+    //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
+    { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
+    //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
     { param_name: 'LOAD_CELL', expr: '($L2 - $L1) ', msg_type: 50 },
 ];
 
