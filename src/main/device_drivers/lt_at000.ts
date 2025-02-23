@@ -173,70 +173,78 @@ const LT_AT000_DRIVER_CONFIG: MsgTypeConfig[] = [
 
 ];
 
+const analog_output = {
+    msg_type: 100,
+    msg_name: 'READ_PISTON',
+    data_type: DataType.UINT,
+    size_bytes: 2,
+    cfg2: 0,
+}
+
 
 
 const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
     // VCE_VAR
-    {
-        msg_type_config: {
-            msg_type: 0,
-            msg_name: 'READ_T1',
-            data_type: DataType.FLOAT,
-            size_bytes: 4,
-            cfg2: 0,
-        },
-        param_symbol: '$T1',
-        param_type: VceParamType.VCE_VAR,
-        desc: 'Thermocouple 1',
-    },
-    {
-        msg_type_config: {
-            msg_type: 1,
-            msg_name: 'READ_T2',
-            data_type: DataType.FLOAT,
-            size_bytes: 4,
-            cfg2: 0,
-        },
-        param_symbol: '$T2',
-        param_type: VceParamType.VCE_VAR,
-        desc: 'Thermocouple 2',
-    },
-    {
-        msg_type_config: {
-            msg_type: 2,
-            msg_name: 'READ_T3',
-            data_type: DataType.FLOAT,
-            size_bytes: 4,
-            cfg2: 0,
-        },
-        param_symbol: '$T3',
-        param_type: VceParamType.VCE_VAR,
-        desc: 'Thermocouple 3',
-    },
-    {
-        msg_type_config: {
-            msg_type: 3,
-            msg_name: 'READ_T4',
-            data_type: DataType.FLOAT,
-            size_bytes: 4,
-            cfg2: 0,
-        },
-        param_symbol: '$T4',
-        param_type: VceParamType.VCE_VAR,
-        desc: 'Thermocouple 4',
-    },
-    {
-        msg_type_config: {
-            msg_type: 4,
-            msg_name: 'READ_T5',
-            data_type: DataType.FLOAT,
-            size_bytes: 4,
-            cfg2: 0,
-        },
-        param_symbol: '$T5',
-        param_type: VceParamType.VCE_VAR,
-        desc: 'Thermocouple 5',
-    },
+    // {
+    //     msg_type_config: {
+    //         msg_type: 0,
+    //         msg_name: 'READ_T1',
+    //         data_type: DataType.FLOAT,
+    //         size_bytes: 4,
+    //         cfg2: 0,
+    //     },
+    //     param_symbol: '$T1',
+    //     param_type: VceParamType.VCE_VAR,
+    //     desc: 'Thermocouple 1',
+    // },
+    // {
+    //     msg_type_config: {
+    //         msg_type: 1,
+    //         msg_name: 'READ_T2',
+    //         data_type: DataType.FLOAT,
+    //         size_bytes: 4,
+    //         cfg2: 0,
+    //     },
+    //     param_symbol: '$T2',
+    //     param_type: VceParamType.VCE_VAR,
+    //     desc: 'Thermocouple 2',
+    // },
+    // {
+    //     msg_type_config: {
+    //         msg_type: 2,
+    //         msg_name: 'READ_T3',
+    //         data_type: DataType.FLOAT,
+    //         size_bytes: 4,
+    //         cfg2: 0,
+    //     },
+    //     param_symbol: '$T3',
+    //     param_type: VceParamType.VCE_VAR,
+    //     desc: 'Thermocouple 3',
+    // },
+    // {
+    //     msg_type_config: {
+    //         msg_type: 3,
+    //         msg_name: 'READ_T4',
+    //         data_type: DataType.FLOAT,
+    //         size_bytes: 4,
+    //         cfg2: 0,
+    //     },
+    //     param_symbol: '$T4',
+    //     param_type: VceParamType.VCE_VAR,
+    //     desc: 'Thermocouple 4',
+    // },
+    // {
+    //     msg_type_config: {
+    //         msg_type: 4,
+    //         msg_name: 'READ_T5',
+    //         data_type: DataType.FLOAT,
+    //         size_bytes: 4,
+    //         cfg2: 0,
+    //     },
+    //     param_symbol: '$T5',
+    //     param_type: VceParamType.VCE_VAR,
+    //     desc: 'Thermocouple 5',
+    // },
     {
         msg_type_config: {
             msg_type: 5,
@@ -283,7 +291,19 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
 
 
 
-
+    {
+        msg_type_config: {
+            msg_type: 100,
+            msg_name: 'READ_PISTON',
+            data_type: DataType.UINT,
+            size_bytes: 2,
+            cfg2: 0,
+        },
+        param_symbol: '$PISTON',
+        param_type: VceParamType.VCE_CONST,
+        desc: 'PISTON',
+    },
+  
 
 
 ];
@@ -298,17 +318,17 @@ const DEVICE_SERIES: CHXSeries[] = [
 
 // msg_type start from 40
 const DEVICE_CPS: CHXComputedParam[] = [
-    { param_name: 'D_air', expr: '$PB * $T1', msg_type: 40 },
-    { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
-    { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
-    { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
-    // { param_name: 'A_F_Ratio', expr: '$PB * $T1', msg_type:44  }, 
-    { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
-    { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
-    //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
-    { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
-    //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
-    { param_name: 'LOAD_CELL', expr: '($L2 - $L1) ', msg_type:50  }, 
+    // { param_name: 'D_air', expr: '$PB * $T1', msg_type: 40 },
+    // { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
+    // { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
+    // { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
+    // // { param_name: 'A_F_Ratio', expr: '$PB * $T1', msg_type:44  }, 
+    // { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
+    // { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
+    // //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
+    // { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
+    // //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
+    { param_name: 'LOAD_CELL', expr: '($L2 - $L1) ', msg_type: 50 },
 ];
 
 let serial_adapter: SerialAdapter | null = null;
@@ -317,7 +337,7 @@ let main_window: BrowserWindow | null = null;
 let lt_at000_vce0: VirtualComputeEngine | null = null;
 let device_config: LT_AT000_DeviceConfig | null = null;
 
-ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config)]);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config), analog_output]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_AT000_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_AT000_VCE_CONFIG);
 
@@ -334,6 +354,7 @@ function mw_logger(log_msg: LogMsg) {
 }
 
 let last_sn = 0
+let last_analog_output = 0
 function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
 
@@ -343,16 +364,31 @@ function mw_ipc_handler(channel: string, data: any) {
             lt_at000_vce0?.load_device_msg(data.device_msg);
             last_sn = data.device_msg.seq_number
         }
+        if (device_msg.config.msg_type == 5) {
+            const _device_msg: DeviceMsg = {
+                config: {
+                    msg_type: 100,
+                    msg_name: 'READ_PISTON',
+                    data_type: DataType.UINT,
+                    size_bytes: 2,
+                    cfg2: 0,
+                },
+                seq_number: last_sn,
+                msg_value: last_analog_output,
+                b64_msg_value: '',
+            }
+            main_window?.webContents.send(channel, {device_msg:_device_msg});
+        }
 
 
         if (device_msg.config.msg_type <= 29 && device_msg.config.msg_type >= 20) {
             let device_msg = data.device_msg
-            mw_logger({level:'INFO',msg:JSON.stringify(last_sn)})
-            
+            mw_logger({ level: 'INFO', msg: JSON.stringify(last_sn) })
+
             device_msg.seq_number = last_sn
-            
+
             lt_at000_vce0?.load_device_msg(device_msg);
-            mw_logger({level:'INFO',msg:JSON.stringify(device_msg)})
+            mw_logger({ level: 'INFO', msg: JSON.stringify(device_msg) })
         }
     }
 }
@@ -365,13 +401,13 @@ function load_vce_settings_symbols() {
     if (!device_config)
         device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
 
-    for (let i = 0 ; i < input_consts.length;i++){
-        lt_at000_vce0.load_symbol('$'+input_consts[i], device_config[input_consts[i]]);
+    for (let i = 0; i < input_consts.length; i++) {
+        lt_at000_vce0.load_symbol('$' + input_consts[i], device_config[input_consts[i]]);
     }
-    for (let i = 0 ; i < obd_config.length;i++){
-        lt_at000_vce0.load_symbol('$'+obd_config[i].name, 0);
+    for (let i = 0; i < obd_config.length; i++) {
+        lt_at000_vce0.load_symbol('$' + obd_config[i].name, 0);
     }
-   
+
 
 }
 
@@ -393,6 +429,7 @@ const LT_AT000_DEVICE_CMD_HELP: string[] = [
     'GET ALL CONSTS',
     '=======================================================================================================',
 ];
+
 function lt_at000_cmd_exec(cmd: string) {
 
     let cmd_parts = cmd.split(' ');
@@ -408,8 +445,9 @@ function lt_at000_cmd_exec(cmd: string) {
         return;
     }
     if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'ANALOG' && !isNaN(new_set_val)) {
-        serial_adapter?.send_packet(9, new_set_val*655);
-        mw_logger({ level: 'DEBUG', msg: `Set ANALOG OUTPUT : ${new_set_val*655}` });
+        serial_adapter?.send_packet(9, new_set_val * 655);
+        last_analog_output = new_set_val
+        mw_logger({ level: 'DEBUG', msg: `Set ANALOG OUTPUT : ${new_set_val * 655}` });
         return;
     }
 
@@ -441,11 +479,11 @@ function lt_at000_cmd_exec(cmd: string) {
     }
 
 
-    if (cmd_parts[0] === 'OBD' ) {
+    if (cmd_parts[0] === 'OBD') {
         const device_msg: DeviceMsg = {
             config: {
                 msg_type: Number(cmd_parts[1]),
-                msg_name: LT_AT000_VCE_CONFIG.find(conf=>{return conf.msg_type_config.msg_type == Number(cmd_parts[1])})?.msg_type_config.msg_name ?? '',
+                msg_name: LT_AT000_VCE_CONFIG.find(conf => { return conf.msg_type_config.msg_type == Number(cmd_parts[1]) })?.msg_type_config.msg_name ?? '',
                 data_type: DataType.FLOAT,
                 size_bytes: 0,
                 cfg2: 0,
