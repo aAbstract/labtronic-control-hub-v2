@@ -56,8 +56,12 @@ onMounted(() => {
     });
 
     electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models_labeled/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
-        if (!base64_src)
+        if (!base64_src) {
+            device_model_panel_severity.value = 'warn';
+            device_model_panel_content.value = 'No Assets Found for this CHX Module';
+            show_device_model_panel_msg.value = true;
             return;
+        }
         device_model_labeled_img.value = base64_src;
     });
 

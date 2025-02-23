@@ -5,6 +5,7 @@ import sys
 
 CHX_MODULES = [
     'lt_ch000',
+    'lt_ch500',
     'lt_ht004',
     'lt_ht103',
     'lt_ht107',

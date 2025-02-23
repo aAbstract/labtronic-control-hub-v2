@@ -91,12 +91,14 @@ function save_screenshot(main_window: BrowserWindow, comp_rect: Rectangle) {
     });
 }
 
-function load_device_asset(asset_path: string): string {
+function load_device_asset(asset_path: string): string | null {
     const file_path = `device_assets/${asset_path}`;
-    const bitmap = fs.readFileSync(file_path);
-    const base64_buffer = Buffer.from(bitmap).toString('base64');
-    const img_ext = asset_path.split('.').pop();
-    return `data:image/${img_ext};base64,${base64_buffer}`;
+    try {
+        const bitmap = fs.readFileSync(file_path);
+        const base64_buffer = Buffer.from(bitmap).toString('base64');
+        const img_ext = asset_path.split('.').pop();
+        return `data:image/${img_ext};base64,${base64_buffer}`;
+    } catch (_) { return null; }
 }
 
 function load_device_pdf(device_model: string): string {
