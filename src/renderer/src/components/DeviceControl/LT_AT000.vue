@@ -95,8 +95,7 @@ onMounted(() => {
             <TabPanel header="Components" :pt="tabpanel_pt">
                 <img style="width: 90%; margin: 5%;" :src="system_components_src" alt="Componenets">
             </TabPanel>
-            <TabPanel header="Tests" :pt="tabpanel_pt">
-            </TabPanel>
+          
         </TabView>
     </div>
 </template>

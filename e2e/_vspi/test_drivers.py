@@ -130,8 +130,9 @@ DRIVER_CONFIG_LT_AT000: list[MsgTypeConfig] = [
     MsgTypeConfig(msg_type=4, msg_name='READ_T5', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=5, msg_name='READ_L1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
     MsgTypeConfig(msg_type=6, msg_name='READ_L2', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
-    MsgTypeConfig(msg_type=8, msg_name='WRITE_DIGITAL_OUTPUTS', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
-
+    MsgTypeConfig(msg_type=7, msg_name='READ_RP1', data_type=DATA_TYPE_FLOAT, size_bytes=4, cfg2=0),
+    MsgTypeConfig(msg_type=8, msg_name='WRITE_DIGITAL_OUTPUTS', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
+    MsgTypeConfig(msg_type=9, msg_name='WRITE_ANALOG_OUTPUTS', data_type=DATA_TYPE_UINT, size_bytes=2, cfg2=0),
     MsgTypeConfig(msg_type=14, msg_name='DEVICE_ERROR', data_type=DATA_TYPE_UINT, size_bytes=1, cfg2=0),
     MsgTypeConfig(msg_type=15, msg_name='DEVICE_HEART_BEAT', data_type=DATA_TYPE_COMMAND, size_bytes=1, cfg2=0),
 ]

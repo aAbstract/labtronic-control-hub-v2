@@ -142,7 +142,7 @@ export const obd_config: OBDCONFIG[] = [
     },
     {
         name: 'IMAP',
-        command: '210b',
+        command: '210B',
         msg_type: 27,
         response_size: 3,
         min: 0,
@@ -153,7 +153,40 @@ export const obd_config: OBDCONFIG[] = [
             b: 0,
             abs: 0
         }
-    }]
+    },
+    {
+        name: 'Speed',
+        command: '210D',
+        msg_type: 28,
+        response_size: 1,
+        min: 0,
+        max: 255,
+        unit: 'Km/h',
+        equation_weights:
+        {
+            a: 1,
+            b: 0,
+            abs: 0
+        }
+    },
+    {
+        name: 'PB',
+        command: '2133',
+        msg_type: 29,
+        response_size: 1,
+        min: 0,
+        max: 255,
+        unit: 'kPa',
+        equation_weights:
+        {
+            a: 1,
+            b: 0,
+            abs: 0
+        }
+    },
+   
+
+]
 
 class NC_JDM_OBD_driver {
 

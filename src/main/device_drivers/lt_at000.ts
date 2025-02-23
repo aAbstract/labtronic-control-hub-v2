@@ -3,9 +3,20 @@ import { SerialAdapter } from "./serial_adapter";
 import { NC_JDM_OBD_SerialAdapter, obd_config } from "./nc_jdm_obd_serial_adapter";
 import { OBDCONFIG } from "../../common/models";
 import { LtdDriver } from "./ltd_driver";
-import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, _ToastMessageOptions, CHXSeries, CHXComputedParam, DeviceMsg } from '../../common/models';
-import { get_chx_cps, get_chx_eqs, get_chx_scripts, get_chx_series } from "../system_settings";
+import { DataType, MsgTypeConfig, LogMsg, VceParamConfig, VceParamType, _ToastMessageOptions, CHXSeries, CHXComputedParam, DeviceMsg, LT_AT000_DeviceConfig } from '../../common/models';
 import { VirtualComputeEngine } from "../vce";
+import {
+    get_chx_device_confg,
+    get_chx_cps,
+    get_chx_scripts,
+    get_chx_series,
+    get_chx_eqs,
+    set_chx_device_config,
+    save_chx_settings
+} from "../system_settings";
+
+
+
 
 const DEVICE_MODEL = 'LT-AT000';
 const WRITE_DIGITAL_OUTPUTS = 8;
@@ -15,6 +26,47 @@ const DEVICE_HEART_BEAT_MSG_TYPE = 15;
 const DEVICE_ERROR_MSG_MAP: Record<number, string> = {
     0xFF: 'Invalid Packet',
 };
+const input_consts = ["VAVG_VMAX", "CP", "R", "DO", "SG", "Q_WATER", "C_WATER", "D", "SF", "SV", "CV", "ME"]
+
+function map_obd_config_2_lt_vce_config(obd_config: OBDCONFIG[]): VceParamConfig[] {
+    let mapped_configs: VceParamConfig[] = []
+    for (const conf of obd_config) {
+        mapped_configs.push({
+            msg_type_config: {
+                msg_type: conf.msg_type,
+                msg_name: 'READ_' + conf.name,
+                data_type: DataType.FLOAT,
+                size_bytes: 4,
+                cfg2: 0,
+            },
+            param_symbol: '$' + conf.name,
+            param_type: VceParamType.VCE_CONST,
+            desc: conf.name,
+
+        })
+    }
+    return mapped_configs
+}
+
+function map_input_const_2_vce_config(): VceParamConfig[] {
+    let mapped_configs: VceParamConfig[] = []
+    for (const conf of input_consts) {
+        mapped_configs.push({
+            msg_type_config: {
+                msg_type: -1,
+                msg_name: conf,
+                data_type: DataType.FLOAT,
+                size_bytes: 4,
+                cfg2: 0,
+            },
+            param_symbol: '$' + conf,
+            param_type: VceParamType.VCE_CONST,
+            desc: conf,
+        })
+    }
+    return mapped_configs
+}
+
 function map_obd_config_2_lt_config(obd_config: OBDCONFIG[]): MsgTypeConfig[] {
     let mapped_configs: MsgTypeConfig[] = []
     for (const conf of obd_config) {
@@ -28,6 +80,9 @@ function map_obd_config_2_lt_config(obd_config: OBDCONFIG[]): MsgTypeConfig[] {
     }
     return mapped_configs
 }
+
+
+
 const LT_AT000_DRIVER_CONFIG: MsgTypeConfig[] = [
     {
         msg_type: 0,
@@ -79,10 +134,24 @@ const LT_AT000_DRIVER_CONFIG: MsgTypeConfig[] = [
         cfg2: 0,
     },
     {
+        msg_type: 7,
+        msg_name: 'READ_PR1',
+        data_type: DataType.FLOAT,
+        size_bytes: 4,
+        cfg2: 0,
+    },
+    {
         msg_type: WRITE_DIGITAL_OUTPUTS,
         msg_name: 'WRITE_DIGITAL_OUTPUTS',
         data_type: DataType.UINT,
         size_bytes: 1,
+        cfg2: 0,
+    },
+    {
+        msg_type: 9,
+        msg_name: 'WRITE_ANALOG_OUTPUT',
+        data_type: DataType.UINT,
+        size_bytes: 2,
         cfg2: 0,
     },
     {
@@ -99,6 +168,9 @@ const LT_AT000_DRIVER_CONFIG: MsgTypeConfig[] = [
         size_bytes: 1,
         cfg2: 0,
     },
+
+
+
 ];
 
 
@@ -189,7 +261,31 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
         param_type: VceParamType.VCE_VAR,
         desc: 'LoadCell 2',
     },
-    
+    {
+        msg_type_config: {
+            msg_type: 7,
+            msg_name: 'READ_PR1',
+            data_type: DataType.FLOAT,
+            size_bytes: 4,
+            cfg2: 0,
+        },
+        param_symbol: '$PR1',
+        param_type: VceParamType.VCE_VAR,
+        desc: 'Differential Pressure',
+    },
+    //OBD 20-29
+    ...map_obd_config_2_lt_vce_config(obd_config),
+
+    // VCE_CONST - NON-ECHO
+    ...map_input_const_2_vce_config(),
+
+
+
+
+
+
+
+
 ];
 const DEVICE_SERIES: CHXSeries[] = [
     // {
@@ -197,16 +293,29 @@ const DEVICE_SERIES: CHXSeries[] = [
     //     x_param: -1,
     //     y_param: 0,
     // },
-  
+
 ];
+
+// msg_type start from 40
 const DEVICE_CPS: CHXComputedParam[] = [
-    
+    { param_name: 'D_air', expr: '$PB * $T1', msg_type: 40 },
+    { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
+    { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
+    { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
+    // { param_name: 'A_F_Ratio', expr: '$PB * $T1', msg_type:44  }, 
+    { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
+    { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
+    //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
+    { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
+    //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
+    { param_name: 'LOAD_CELL', expr: '($L2 - $L1) ', msg_type:50  }, 
 ];
 
 let serial_adapter: SerialAdapter | null = null;
 let nc_jdm_obd_serial_adapter: NC_JDM_OBD_SerialAdapter | null = null
 let main_window: BrowserWindow | null = null;
 let lt_at000_vce0: VirtualComputeEngine | null = null;
+let device_config: LT_AT000_DeviceConfig | null = null;
 
 ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config)]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_AT000_DEVICE_CMD_HELP);
@@ -219,36 +328,76 @@ ipcMain.handle(`${DEVICE_MODEL}_get_chx_scripts`, () => get_chx_scripts());
 
 
 
-ipcMain.handle(`${DEVICE_MODEL}_get_obd_congis`,()=>obd_config)
+ipcMain.handle(`${DEVICE_MODEL}_get_obd_congis`, () => obd_config)
 function mw_logger(log_msg: LogMsg) {
     main_window?.webContents.send('add_sys_log', log_msg);
 }
 
+let last_sn = 0
 function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
 
     if (channel === `${DEVICE_MODEL}_device_msg`) {
         const device_msg: DeviceMsg = data.device_msg;
-        if (device_msg.config.msg_type < 16)
+        if (device_msg.config.msg_type < 16) {
             lt_at000_vce0?.load_device_msg(data.device_msg);
+            last_sn = data.device_msg.seq_number
+        }
+
+
+        if (device_msg.config.msg_type <= 29 && device_msg.config.msg_type >= 20) {
+            let device_msg = data.device_msg
+            mw_logger({level:'INFO',msg:JSON.stringify(last_sn)})
+            
+            device_msg.seq_number = last_sn
+            
+            lt_at000_vce0?.load_device_msg(device_msg);
+            mw_logger({level:'INFO',msg:JSON.stringify(device_msg)})
+        }
     }
 }
 
+
+function load_vce_settings_symbols() {
+    if (!lt_at000_vce0)
+        return;
+
+    if (!device_config)
+        device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
+
+    for (let i = 0 ; i < input_consts.length;i++){
+        lt_at000_vce0.load_symbol('$'+input_consts[i], device_config[input_consts[i]]);
+    }
+    for (let i = 0 ; i < obd_config.length;i++){
+        lt_at000_vce0.load_symbol('$'+obd_config[i].name, 0);
+    }
+   
+
+}
+
+
+
+function set_commands_list(): string[] {
+    let commands: string[] = []
+    for (let i = 0; i < input_consts.length; i++) {
+        commands.push(`SET ${input_consts[i]} <value>`)
+        commands.push(`GET ${input_consts[i]}`)
+    }
+    return commands
+}
 const LT_AT000_DEVICE_CMD_HELP: string[] = [
     '=======================================================================================================',
-    'SET OUTREG <value>, Alias: SDO <value> | Control Device Control_BUTTONS, 0 <= value <= 63',
+    'SET OUTREG <value>',
+    'SET ANALOG <value>',
+    ...set_commands_list(),
+    'GET ALL CONSTS',
     '=======================================================================================================',
 ];
 function lt_at000_cmd_exec(cmd: string) {
-    const CMD_ALIAS_LIST: Record<string, string[]> = {
-        'SCB': ['SET', 'OUTREG'],
-    };
-    let cmd_parts = cmd.split(' ');
-    const cmd_part_1 = cmd_parts[0];
-    if (cmd_part_1 in CMD_ALIAS_LIST)
-        cmd_parts = [...CMD_ALIAS_LIST[cmd_part_1], ...cmd_parts.slice(1)];
 
-    if (cmd_parts.length !== 3) {
+    let cmd_parts = cmd.split(' ');
+
+    if (cmd_parts.length !== 3 && cmd_parts.length !== 2) {
         mw_logger({ level: 'ERROR', msg: 'Invalid Device Command, Type HELP to List Device Commands' });
         return;
     }
@@ -258,6 +407,57 @@ function lt_at000_cmd_exec(cmd: string) {
         mw_logger({ level: 'DEBUG', msg: `Set Control Buttons State: ${new_set_val}` });
         return;
     }
+    if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'ANALOG' && !isNaN(new_set_val)) {
+        serial_adapter?.send_packet(9, new_set_val*655);
+        mw_logger({ level: 'DEBUG', msg: `Set ANALOG OUTPUT : ${new_set_val*655}` });
+        return;
+    }
+
+    if (cmd_parts[0] === 'GET' && input_consts.includes(cmd_parts[1])) {
+        if (!device_config)
+            device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
+        mw_logger({ level: 'DEBUG', msg: ` ${cmd_parts[1]}: ${device_config[cmd_parts[1]]}` });
+        return;
+    }
+
+    if (cmd_parts[0] === 'SET' && input_consts.includes(cmd_parts[1]) && !isNaN(new_set_val)) {
+        if (!device_config)
+            device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
+        device_config[cmd_parts[1]] = Number(cmd_parts[2]);
+        set_chx_device_config(device_config);
+        save_chx_settings()
+        mw_logger({ level: 'DEBUG', msg: `Set ${cmd_parts[1]}: ${new_set_val}` });
+        return;
+    }
+
+    if (cmd_parts[0] === 'GET' && cmd_parts[1] == 'ALL' && cmd_parts[2] == 'CONSTS') {
+        if (!device_config)
+            device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
+        for (let i = 0; i < input_consts.length; i++) {
+            mw_logger({ level: 'DEBUG', msg: `${input_consts[i]}: ${device_config[input_consts[i]]}` });
+
+        }
+        return;
+    }
+
+
+    if (cmd_parts[0] === 'OBD' ) {
+        const device_msg: DeviceMsg = {
+            config: {
+                msg_type: Number(cmd_parts[1]),
+                msg_name: LT_AT000_VCE_CONFIG.find(conf=>{return conf.msg_type_config.msg_type == Number(cmd_parts[1])})?.msg_type_config.msg_name ?? '',
+                data_type: DataType.FLOAT,
+                size_bytes: 0,
+                cfg2: 0,
+            },
+            seq_number: 0,
+            msg_value: new_set_val,
+            b64_msg_value: '',
+        }
+        mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
+        return;
+    }
+
     mw_logger({ level: 'ERROR', msg: 'Invalid Device Command, Type HELP to List Device Commands' });
 }
 
@@ -266,11 +466,11 @@ export function init_lt_at000_serial_adapter(_main_window: BrowserWindow) {
 
     main_window = _main_window;
 
-    ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, async(_, data) => {
+    ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, async (_, data) => {
         const { port_name } = data;
         serial_adapter = new SerialAdapter(port_name, new LtdDriver([0xA0, 0xA0], LT_AT000_DRIVER_CONFIG), DEVICE_ERROR_MSG_TYPE, DEVICE_ERROR_MSG_MAP, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         serial_adapter.connect();
-            scan_connect_obd()
+        scan_connect_obd()
     });
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_disconnect`, () => {
@@ -282,10 +482,10 @@ export function init_lt_at000_serial_adapter(_main_window: BrowserWindow) {
     });
 
     ipcMain.on(`${DEVICE_MODEL}_exec_device_cmd`, (_, data) => {
-        if (!serial_adapter) {
-            mw_logger({ level: 'ERROR', msg: 'No Connected Device' });
-            return;
-        }
+        // if (!serial_adapter) {
+        //     mw_logger({ level: 'ERROR', msg: 'No Connected Device' });
+        //     return;
+        // }
 
         const { cmd } = data;
         lt_at000_cmd_exec(cmd);
@@ -314,7 +514,7 @@ export function init_lt_at000_serial_adapter(_main_window: BrowserWindow) {
 
 
 
-
+    load_vce_settings_symbols()
 
     ipcMain.on(`${DEVICE_MODEL}_OBD_serial_port_scan`, () => NC_JDM_OBD_SerialAdapter.scan_ports(true, DEVICE_MODEL, mw_ipc_handler, mw_logger));
     ipcMain.on(`${DEVICE_MODEL}_OBD_serial_port_connect`, (_, data) => {
@@ -330,8 +530,8 @@ export function init_lt_at000_serial_adapter(_main_window: BrowserWindow) {
         nc_jdm_obd_serial_adapter = null;
     });
 
-   
-   
+
+
     req_nc_jdm_obd_param()
 
 }
@@ -340,22 +540,21 @@ async function req_nc_jdm_obd_param() {
     if (nc_jdm_obd_serial_adapter)
         await nc_jdm_obd_serial_adapter.loop_commands()
     setTimeout(req_nc_jdm_obd_param, 1000)
-
 }
 
-async function scan_connect_obd(){
+async function scan_connect_obd() {
     const port = await NC_JDM_OBD_SerialAdapter.scan_ports(false, DEVICE_MODEL, mw_ipc_handler, mw_logger)
-    if (port.ok){
+    if (port.ok) {
         nc_jdm_obd_serial_adapter = new NC_JDM_OBD_SerialAdapter(port.ok, mw_ipc_handler, mw_logger, DEVICE_MODEL);
         nc_jdm_obd_serial_adapter.connect();
     }
-    else if(port.err){
-        mw_logger({level:'ERROR',msg:port.err})
+    else if (port.err) {
+        mw_logger({ level: 'ERROR', msg: port.err })
     }
 
 }
 
-function OBD_serial_port_disconnect(){
+function OBD_serial_port_disconnect() {
     if (!nc_jdm_obd_serial_adapter)
         return;
     nc_jdm_obd_serial_adapter.disconnect();

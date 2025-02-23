@@ -261,3 +261,19 @@ export interface OBDCONFIG {
         abs: number
     }
 }
+
+
+export interface LT_AT000_DeviceConfig {
+    Vavg_Vmax: number,
+    Cp: number,
+    r: number,
+    d_o: number,
+    SG: number,
+    Q_water: number,
+    C_water: number,
+    D: number,
+    SF: number,
+    SV: number,
+    CV: number,
+    Mech_eff: number
+};
