@@ -6,70 +6,8 @@ import { LtBusDriver } from "./lt_bus_driver";
 const DEVICE_MODEL = 'LT-CH500';
 const LT_BUS_SLAVE_ID = 0x01;
 
-const LT_EV574_DRIVER_CONFIG: MsgTypeConfig[] = [
-    {
-        msg_type: 0,
-        msg_name: 'READ_B_V',
-        data_type: DataType.FLOAT,
-        size_bytes: 4,
-        cfg2: 0,
-    },
-    {
-        msg_type: 1,
-        msg_name: 'READ_B_C',
-        data_type: DataType.FLOAT,
-        size_bytes: 4,
-        cfg2: 0,
-    },
-    {
-        msg_type: 2,
-        msg_name: 'READ_B_P',
-        data_type: DataType.FLOAT,
-        size_bytes: 4,
-        cfg2: 0,
-    },
-    {
-        msg_type: 3,
-        msg_name: 'READ_W_S',
-        data_type: DataType.FLOAT,
-        size_bytes: 4,
-        cfg2: 0,
-    },
-    {
-        msg_type: 4,
-        msg_name: 'READ_M_P',
-        data_type: DataType.FLOAT,
-        size_bytes: 4,
-        cfg2: 0,
-    },
-    {
-        msg_type: 5,
-        msg_name: 'CONTROL_BUTTONS',
-        data_type: DataType.UINT,
-        size_bytes: 1,
-        cfg2: 0,
-    },
-    {
-        msg_type: WRITE_CONTROL_BUTTONS_MSG_TYPE,
-        msg_name: 'WRITE_CONTROL_BUTTONS',
-        data_type: DataType.COMMAND,
-        size_bytes: 1,
-        cfg2: 0,
-    },
-    {
-        msg_type: DEVICE_ERROR_MSG_TYPE,
-        msg_name: 'DEVICE_ERROR',
-        data_type: DataType.UINT,
-        size_bytes: 1,
-        cfg2: 0,
-    },
-    {
-        msg_type: DEVICE_HEART_BEAT_MSG_TYPE,
-        msg_name: 'DEVICE_HEART_BEAT',
-        data_type: DataType.COMMAND,
-        size_bytes: 1,
-        cfg2: 0,
-    },
+const LT_BUS_MSGS = [
+    '',
 ];
 
 let main_window: BrowserWindow | null = null;
