@@ -184,7 +184,7 @@ export const obd_config: OBDCONFIG[] = [
             abs: 0
         }
     },
-   
+
 
 ]
 
@@ -222,7 +222,9 @@ class NC_JDM_OBD_driver {
         // const command = (parseInt(data.slice(5, 7), 16) - 0x40).toString(16) + data.slice(7, 9)
         // if (command != sent_command)
         //     return { err: 'unexpected command return' }
+
         const command_config = this.config.find((conf) => { return conf.command == sent_command })
+
         if (!(command_config?.equation_weights.a))
             return { err: 'command config error' }
 
@@ -276,6 +278,10 @@ export class NC_JDM_OBD_SerialAdapter {
         this.serial_port.on('close', this.on_serial_port_close);
     }
 
+    set_seq_num(_seq_num: number) {
+        this.seq_num = _seq_num;
+    }
+
     set_sent_command(command: string) {
         this.sent_command = command
     }
@@ -326,10 +332,10 @@ export class NC_JDM_OBD_SerialAdapter {
                 const port = new SerialPort({ path: portPath, baudRate: this.BAUD_RATE, autoOpen: false });
                 try {
                     const promise_response = await new Promise<Result<string>>((resolve, reject) => {
-                        
+
                         const timeout = setTimeout(() => {
                             _logger({ level: 'ERROR', msg: `No Response From ${port.path}` })
-                            if(port.isOpen)
+                            if (port.isOpen)
                                 port.close(); // Close the port if it's still open
                             reject({ err: "Timeout: No response from port" });
                         }, 2000); // 2-second timeout
@@ -361,7 +367,7 @@ export class NC_JDM_OBD_SerialAdapter {
                     port.close();
                     return { ok: promise_response.ok }
                 } catch {
-                    
+
                 }
 
             }
@@ -400,14 +406,12 @@ export class NC_JDM_OBD_SerialAdapter {
         const uint8_command = new Uint8Array(new TextEncoder().encode(command + '\r'))
         this.serial_port.write(uint8_command);
         this.seq_num = (this.seq_num + 1) % 0xFFFF;
-        this.logger({ level: 'INFO', msg: command + ' r' })
     }
 
 
     async send_read_command(command: string) {
         const res = await nc_jdm_obd_elm327_command(this.serial_port, command + ' 1\r')
         const decode_res = this.device_driver.decode(res.slice(0, -1), this.sent_command);
-        this.logger({ level: 'INFO', msg: res });
         if (decode_res.err) {
             this.logger({ level: 'ERROR', msg: JSON.stringify(decode_res.err) });
             return;
@@ -415,7 +419,7 @@ export class NC_JDM_OBD_SerialAdapter {
 
 
         const command_config = this.device_driver.config.find((conf) => { return conf.command == this.sent_command })
-        if (!(command_config && decode_res.ok))
+        if (!(command_config))
             return;
         const device_msg: DeviceMsg = {
             config: {
@@ -426,7 +430,7 @@ export class NC_JDM_OBD_SerialAdapter {
                 cfg2: 0,
             },
             seq_number: this.seq_num,
-            msg_value: decode_res.ok,
+            msg_value: decode_res.ok as number,
             b64_msg_value: '',
         }
         this.ipc_handler(`${this.device_model}_device_msg`, { device_msg });
@@ -444,6 +448,7 @@ export class NC_JDM_OBD_SerialAdapter {
     async loop_commands() {
 
         for (const command of this.device_driver.config) {
+            this.set_sent_command(command.command)
             await this.send_read_command(command.command);
         }
     }

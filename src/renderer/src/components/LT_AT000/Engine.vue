@@ -29,13 +29,13 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     switch (msg_type) {
 
         case 23:
-            load.value = Math.round(device_msg.msg_value)
+            load.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         case 24:
-            speed.value = Math.round(device_msg.msg_value)
+            speed.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         case 25:
-            heat.value = Math.round(device_msg.msg_value)
+            heat.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
 
         default:
@@ -115,7 +115,6 @@ function animate_rpm_gauge() {
     let target_angle = 0
     if (rpm_conf.value)
         target_angle = -(speed.value / (rpm_conf.value?.max - rpm_conf.value?.min) * Math.PI);
-    console.log(target_angle)
     function animation_loop(t: number) {
         if (!_line)
             return;
@@ -273,6 +272,7 @@ p {
 .mode1_text {
     font-size: 20px;
 }
+
 .mode1_rpm_text {
     font-size: 24px;
     line-height: 24px;

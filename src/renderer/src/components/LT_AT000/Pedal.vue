@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { ref, inject, onMounted } from 'vue';
 import { electron_renderer_invoke } from '@renderer/lib/util';
-import { DeviceMsg,OBDCONFIG } from '@common/models';
+import { DeviceMsg, OBDCONFIG } from '@common/models';
 
 
 const device_model = inject('device_model');
 const left_pedal_val = ref(0)
 const right_pedal_val = ref(0)
-const left_pedal_conf = ref<OBDCONFIG|null>(null)
-const right_pedal_conf= ref<OBDCONFIG|null >(null)
+const left_pedal_conf = ref<OBDCONFIG | null>(null)
+const right_pedal_conf = ref<OBDCONFIG | null>(null)
 
 
 window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
@@ -16,10 +16,10 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     const { msg_type } = device_msg.config;
     switch (msg_type) {
         case 20:
-        left_pedal_val.value = Math.round(device_msg.msg_value)
+            left_pedal_val.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         case 21:
-        right_pedal_val.value = Math.round(device_msg.msg_value)
+            right_pedal_val.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         default:
             break;
@@ -36,12 +36,12 @@ electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_at000
     pedal_src.value = base64_src;
 });
 
-onMounted(()=>{
-    electron_renderer_invoke<OBDCONFIG[]>(`${device_model}_get_obd_congis`).then((obd_config)=>{
-        if(!obd_config)
+onMounted(() => {
+    electron_renderer_invoke<OBDCONFIG[]>(`${device_model}_get_obd_congis`).then((obd_config) => {
+        if (!obd_config)
             return
-        left_pedal_conf.value = obd_config.find((conf:OBDCONFIG)=>{return conf.msg_type == 20}) ?? null
-        right_pedal_conf.value = obd_config.find((conf:OBDCONFIG)=>{return conf.msg_type == 21}) ?? null
+        left_pedal_conf.value = obd_config.find((conf: OBDCONFIG) => { return conf.msg_type == 20 }) ?? null
+        right_pedal_conf.value = obd_config.find((conf: OBDCONFIG) => { return conf.msg_type == 21 }) ?? null
     })
 })
 
@@ -66,7 +66,7 @@ onMounted(()=>{
             </div>
             <div class="pedal_val">
                 <img :src="pedal_src" alt="">
-                <h3 :class="{ mode1_text: mode == 1 }">{{ right_pedal_val }}  {{ right_pedal_conf?.unit }}</h3>
+                <h3 :class="{ mode1_text: mode == 1 }">{{ right_pedal_val }} {{ right_pedal_conf?.unit }}</h3>
             </div>
         </div>
     </div>

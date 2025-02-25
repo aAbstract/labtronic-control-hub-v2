@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, inject, computed,onMounted } from 'vue';
+import { ref, inject, computed, onMounted } from 'vue';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
 import { OBDCONFIG } from '@common/models';
-
+import FuelIcon from '../icons/FuelIcon.vue';
 const device_model = inject('device_model');
 
 //const fuel_rate = ref(0)
 const pressure = ref(0)
 const flow = ref(0)
-const pressure_conf = ref<OBDCONFIG|null>(null)
+const pressure_conf = ref<OBDCONFIG | null>(null)
 
 const pressure_angle = computed(() => {
     if (!pressure_conf.value)
@@ -23,7 +23,7 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     switch (msg_type) {
 
         case 22:
-            pressure.value = Math.round(device_msg.msg_value)
+            pressure.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
 
         default:
@@ -72,11 +72,11 @@ electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_at000
 });
 
 
-onMounted(()=>{
-    electron_renderer_invoke<OBDCONFIG[]>(`${device_model}_get_obd_congis`).then((obd_config)=>{
-        if(!obd_config)
+onMounted(() => {
+    electron_renderer_invoke<OBDCONFIG[]>(`${device_model}_get_obd_congis`).then((obd_config) => {
+        if (!obd_config)
             return
-        pressure_conf.value = obd_config.find((conf:OBDCONFIG)=>{return conf.msg_type == 22}) ?? null
+        pressure_conf.value = obd_config.find((conf: OBDCONFIG) => { return conf.msg_type == 22 }) ?? null
     })
 })
 
@@ -93,7 +93,8 @@ onMounted(()=>{
             <circle :r="line_thick * 10" cx="50" cy="50" fill="var(--accent-color)" />
         </svg>
         <div class="pressure">
-            <img :src="fuel_src" style="height: 40%;margin-top: 50%;" alt="">
+            <FuelIcon fill_color="var(--font-color)" style="height: 35%;margin-top: 55%;"/>
+           
             <h3>{{ Math.round(pressure / 1000) }} <span style="font-size: 18px;">{{ pressure_conf?.unit }}</span></h3>
             <p style="font-size: 14;">x1000</p>
         </div>
@@ -107,12 +108,12 @@ onMounted(()=>{
 
     <div class="fuel_container" v-if="mode == 1">
         <div class="fuel_element" style="margin-top: 10%;justify-content: start; gap: 8px;font-weight: bold;">
-            <img :src="fuel_src" style="width:20px;" alt="">
+            <FuelIcon fill_color="var(--font-color)" style="width:20px;"/>
             <p class="mode1_small_text" style="font-size: 16px;">Fuel System</p>
         </div>
         <div class="fuel_element">
             <p class="mode1_small_text">Pressure</p>
-            <h3 class="mode1_text">{{ Math.round(pressure / 1000) }}<span  class="mode1_small_text">x1000 {{ pressure_conf?.unit }}</span></h3>
+            <h3 class="mode1_text">{{ Math.round(pressure / 1000) }}<span class="mode1_small_text">x1000 {{ pressure_conf?.unit }}</span></h3>
         </div>
 
         <div class="fuel_element">

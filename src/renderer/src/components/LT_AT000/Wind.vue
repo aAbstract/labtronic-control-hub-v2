@@ -8,9 +8,9 @@ import { DeviceMsg } from '@common/models';
 import { OBDCONFIG } from '@common/models';
 
 
-const speed = ref(0)
-const tem = ref(0)
-const pressure = ref(0)
+const speed = ref(100)
+const tem = ref(100)
+const pressure = ref(100)
 
 //const speed_conf = ref<OBDCONFIG | null>(null)
 const tem_conf = ref<OBDCONFIG | null>(null)
@@ -25,13 +25,13 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     switch (msg_type) {
 
         case 26:
-            tem.value = Math.round(device_msg.msg_value)
+            tem.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         case 27:
-            pressure.value = Math.round(device_msg.msg_value)
+            pressure.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         case 41:
-            speed.value = Math.round(device_msg.msg_value)
+            speed.value = isNaN(device_msg.msg_value) ? 0 : Math.round(device_msg.msg_value)
             break;
         default:
             break;
@@ -64,21 +64,21 @@ onMounted(() => {
         <div class="info_container">
             <div class="info_element">
                 <div class="icon_val">
-                    <TemperatureLowIcon class="icon" fill_color="var(--font-color)" />
+                    <TemperatureLowIcon v-if="mode ==2" class="icon" fill_color="var(--font-color)" />
                     <h3 :class="{ mode1_text: mode == 1 }">{{ tem }}</h3>
                 </div>
                 <p :class="{ mode1_small_text: mode == 1 }"> {{ tem_conf?.unit }} </p>
             </div>
             <div class="info_element">
                 <div class="icon_val">
-                    <PressureIcon class="icon" fill_color="var(--font-color)" />
+                    <PressureIcon  v-if="mode ==2" class="icon" fill_color="var(--font-color)" />
                     <h3 :class="{ mode1_text: mode == 1 }">{{ pressure }}</h3>
                 </div>
                 <p :class="{ mode1_small_text: mode == 1 }"> {{ pressure_conf?.unit }} </p>
             </div>
             <div class="info_element">
                 <div class="icon_val">
-                    <WindIcon class="icon" fill_color="var(--font-color)" />
+                    <WindIcon  v-if="mode ==2" class="icon" fill_color="var(--font-color)" />
                     <h3 :class="{ mode1_text: mode == 1 }">{{ speed }}</h3>
                 </div>
                 <p :class="{ mode1_small_text: mode == 1 }"> m/s </p>

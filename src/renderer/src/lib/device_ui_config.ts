@@ -252,15 +252,7 @@ export const LT_EV574_DUIC = new DeviceUIConfig(
 export const LT_AT000_DUIC = new DeviceUIConfig(
     {},
     {},
-    {
-        0: new ChartParams('B_V', '#9C27B0'), // READ_B_V
-        1: new ChartParams('B_C', '#00BCD4'), // READ_B_C
-        2: new ChartParams('B_P', '#009688'), // READ_B_P
-        3: new ChartParams('W_S', '#2196F3'), // READ_W_S
-        4: new ChartParams('M_P', '#DD2C00'), // READ_M_P
-
-        16: new ChartParams('M_T', '#CDDC39'), // VCE: M_T
-    },
+    {},
     'LT-AT000',
 );
 

@@ -66,7 +66,7 @@ subscribe('change_lt_at000_screen_mode', 'change_lt_at000_screen_mode_dashboard'
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 20fr 45fr 30fr;
+    grid-template-columns: 25fr 30fr 30fr;
     padding-inline: 24px;
     justify-content: center;
 }

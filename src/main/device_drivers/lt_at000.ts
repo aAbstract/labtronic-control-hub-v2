@@ -181,10 +181,19 @@ const analog_output = {
     cfg2: 0,
 }
 
+const test_calc = {
+    msg_type: 200,
+    msg_name: 'READ_TEST',
+    data_type: DataType.FLOAT,
+    size_bytes: 4,
+    cfg2: 0,
+}
+
+
 
 
 const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
-   // VCE_VAR
+    // VCE_VAR
     {
         msg_type_config: {
             msg_type: 0,
@@ -194,7 +203,8 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
             cfg2: 0,
         },
         param_symbol: '$T1',
-        param_type: VceParamType.VCE_VAR,
+        param_type: VceParamType.VCE_CONST,
+        const_init_value: 1,
         desc: 'Thermocouple 1',
     },
     {
@@ -206,7 +216,8 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
             cfg2: 0,
         },
         param_symbol: '$T2',
-        param_type: VceParamType.VCE_VAR,
+        param_type: VceParamType.VCE_CONST,
+        const_init_value: 2,
         desc: 'Thermocouple 2',
     },
     {
@@ -218,7 +229,8 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
             cfg2: 0,
         },
         param_symbol: '$T3',
-        param_type: VceParamType.VCE_VAR,
+        param_type: VceParamType.VCE_CONST,
+        const_init_value: 3,
         desc: 'Thermocouple 3',
     },
     {
@@ -230,7 +242,8 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
             cfg2: 0,
         },
         param_symbol: '$T4',
-        param_type: VceParamType.VCE_VAR,
+        param_type: VceParamType.VCE_CONST,
+        const_init_value: 4,
         desc: 'Thermocouple 4',
     },
     {
@@ -242,7 +255,8 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
             cfg2: 0,
         },
         param_symbol: '$T5',
-        param_type: VceParamType.VCE_VAR,
+        param_type: VceParamType.VCE_CONST,
+        const_init_value: 5,
         desc: 'Thermocouple 5',
     },
     {
@@ -255,6 +269,7 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
         },
         param_symbol: '$L1',
         param_type: VceParamType.VCE_VAR,
+
         desc: 'LoadCell 1',
     },
     {
@@ -303,7 +318,7 @@ const LT_AT000_VCE_CONFIG: VceParamConfig[] = [
         param_type: VceParamType.VCE_CONST,
         desc: 'PISTON',
     },
-  
+
 
 
 ];
@@ -328,7 +343,7 @@ const DEVICE_CPS: CHXComputedParam[] = [
     //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
     { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
     //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
-    { param_name: 'LOAD_CELL', expr: '($L2 - $L1) ', msg_type: 50 },
+    { param_name: 'LOAD_DIFF', expr: '($L2 - $L1) ', msg_type: 50 },
 ];
 
 let serial_adapter: SerialAdapter | null = null;
@@ -337,7 +352,7 @@ let main_window: BrowserWindow | null = null;
 let lt_at000_vce0: VirtualComputeEngine | null = null;
 let device_config: LT_AT000_DeviceConfig | null = null;
 
-ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config), analog_output]);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config), analog_output, test_calc]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_AT000_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_AT000_VCE_CONFIG);
 
@@ -355,15 +370,69 @@ function mw_logger(log_msg: LogMsg) {
 
 let last_sn = 0
 let last_analog_output = 0
+let last_l1 = 0
+let last_l2 = 0
+let last_p_d = 0
+let last_inp = 0
+let remove_list = [0, 1, 2, 3, 4]
+let obd_cache: Record<string, DeviceMsg> = {};
 function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
 
+
     if (channel === `${DEVICE_MODEL}_device_msg`) {
+
+
+
+        const _device_msg: DeviceMsg = {
+            config: {
+                msg_type: 200,
+                msg_name: 'READ_TEST',
+                data_type: DataType.FLOAT,
+                size_bytes: 4,
+                cfg2: 0,
+            },
+            seq_number: last_sn,
+            msg_value: last_l1 - last_l2 + last_p_d + last_inp,
+            b64_msg_value: '',
+        }
+        main_window?.webContents.send(channel, { device_msg: _device_msg });
+
+
+
+
         const device_msg: DeviceMsg = data.device_msg;
+        if (device_msg.config.msg_type < 16) {
+            last_sn = data.device_msg.seq_number
+            nc_jdm_obd_serial_adapter?.set_seq_num(last_sn);
+
+            if (!remove_list.includes(device_msg.config.data_type))
+                lt_at000_vce0?.load_device_msg(data.device_msg);
+
+        }
+
+
+
+        if (device_msg.config.msg_type == 5) {
+            last_l1 = device_msg.msg_value
+            for (const _k of Object.keys(obd_cache)) {
+                obd_cache[_k].seq_number = last_sn;
+                main_window?.webContents.send(channel, { device_msg: obd_cache[_k] });
+            }
+        }
+        if (device_msg.config.msg_type == 6) {
+            last_l2 = device_msg.msg_value
+        }
+        if (device_msg.config.msg_type == 20) {
+            last_p_d = device_msg.msg_value
+        }
+
+
         if (device_msg.config.msg_type < 16) {
             lt_at000_vce0?.load_device_msg(data.device_msg);
             last_sn = data.device_msg.seq_number
         }
+
         if (device_msg.config.msg_type == 5) {
             const _device_msg: DeviceMsg = {
                 config: {
@@ -377,18 +446,15 @@ function mw_ipc_handler(channel: string, data: any) {
                 msg_value: last_analog_output,
                 b64_msg_value: '',
             }
-            main_window?.webContents.send(channel, {device_msg:_device_msg});
+            main_window?.webContents.send(channel, { device_msg: _device_msg });
         }
 
 
         if (device_msg.config.msg_type <= 29 && device_msg.config.msg_type >= 20) {
-            let device_msg = data.device_msg
-            mw_logger({ level: 'INFO', msg: JSON.stringify(last_sn) })
-
+            let device_msg = data.device_msg as DeviceMsg
             device_msg.seq_number = last_sn
-
             lt_at000_vce0?.load_device_msg(device_msg);
-            mw_logger({ level: 'INFO', msg: JSON.stringify(device_msg) })
+            obd_cache[device_msg.config.msg_type] = device_msg;
         }
     }
 }
@@ -431,7 +497,6 @@ const LT_AT000_DEVICE_CMD_HELP: string[] = [
 ];
 
 function lt_at000_cmd_exec(cmd: string) {
-
     let cmd_parts = cmd.split(' ');
 
     if (cmd_parts.length !== 3 && cmd_parts.length !== 2) {
@@ -445,9 +510,9 @@ function lt_at000_cmd_exec(cmd: string) {
         return;
     }
     if (cmd_parts[0] === 'SET' && cmd_parts[1] === 'ANALOG' && !isNaN(new_set_val)) {
-        serial_adapter?.send_packet(9, new_set_val * 655);
+        serial_adapter?.send_packet(9, new_set_val * 65);
         last_analog_output = new_set_val
-        mw_logger({ level: 'DEBUG', msg: `Set ANALOG OUTPUT : ${new_set_val * 655}` });
+        mw_logger({ level: 'DEBUG', msg: `Set ANALOG OUTPUT : ${new_set_val * 65}` });
         return;
     }
 
@@ -459,6 +524,7 @@ function lt_at000_cmd_exec(cmd: string) {
     }
 
     if (cmd_parts[0] === 'SET' && input_consts.includes(cmd_parts[1]) && !isNaN(new_set_val)) {
+        last_inp = new_set_val
         if (!device_config)
             device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
         device_config[cmd_parts[1]] = Number(cmd_parts[2]);
@@ -577,7 +643,7 @@ export function init_lt_at000_serial_adapter(_main_window: BrowserWindow) {
 async function req_nc_jdm_obd_param() {
     if (nc_jdm_obd_serial_adapter)
         await nc_jdm_obd_serial_adapter.loop_commands()
-    setTimeout(req_nc_jdm_obd_param, 1000)
+    setTimeout(req_nc_jdm_obd_param, 1)
 }
 
 async function scan_connect_obd() {

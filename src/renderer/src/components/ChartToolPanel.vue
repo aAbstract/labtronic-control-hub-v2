@@ -116,7 +116,7 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
         aspectRatio: 2,
         color: font_color,
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? 'Time [s]', display: true, color: font_color } },
+            x: {type:'linear', ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? 'Time [s]', display: true, color: font_color } },
             y: _y_min === -1 && _y_max === -1 ?
                 {
                     ticks: { color: font_color },
@@ -214,6 +214,7 @@ function render_chart() {
             return;
         const _chart_params = chart_params.value[__y];
         _chart_params.data = _data_points.map(x => x[__y]);
+     
         _datasets.push(_chart_params);
     });
     chart_data.value = {
