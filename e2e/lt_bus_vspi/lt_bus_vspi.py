@@ -232,6 +232,7 @@ class LTBusVSPI:
 
         READ_RESP_packet = self.encode_READ_RESP_packet(register_address, register_data)
         if self.comm_mode == LTBusVSPICommMode.NETWORK:
+            print(self.log_tag, '[DEBUG]', f"Sending Packet: {READ_RESP_packet}")
             self.v_socket.send(READ_RESP_packet)
         elif self.comm_mode == LTBusVSPICommMode.WIRED:
             pass  # IGNORE

@@ -87,9 +87,9 @@ data_generator = DataGenerator(registers_config, DataGenerator.CONST_MODE)
 def encode_READ_RESP_packet(reg_addr: int, reg_value: int | float) -> bytes:
     # header
     READ_RESP_packet = bytes([SLAVE_ID, READ_RESP_FC])
-    READ_RESP_packet += reg_addr.to_bytes(2, 'big')
+    READ_RESP_packet += reg_addr.to_bytes(2, 'little')
     reg_conf = registers_config[reg_addr]
-    READ_RESP_packet += reg_conf['size'].to_bytes(2, 'big')
+    READ_RESP_packet += reg_conf['size'].to_bytes(2, 'little')
 
     # data
     READ_RESP_packet += struct.pack(reg_conf['bin_decoder'], reg_value)
@@ -102,8 +102,8 @@ def encode_READ_RESP_packet(reg_addr: int, reg_value: int | float) -> bytes:
 
 
 def handle_lt_bus_read_request(request_packet: bytes):
-    reg_addr = int.from_bytes(bytes(request_packet[2:4]), 'big')
-    reg_offset = int.from_bytes(bytes(request_packet[4:6]), 'big')
+    reg_addr = int.from_bytes(bytes(request_packet[2:4]), 'little')
+    reg_offset = int.from_bytes(bytes(request_packet[4:6]), 'little')
     if reg_addr not in registers_config:
         print('ERROR', f"Unknown Register Address: {reg_addr}")
         return

@@ -18,6 +18,11 @@ export interface MsgTypeConfig {
     cfg2: number;
 };
 
+export interface LTBusMsgConfig {
+    msg_type: number;
+    msg_name: string;
+};
+
 export interface DeviceMsg {
     config: MsgTypeConfig;
     seq_number: number;
