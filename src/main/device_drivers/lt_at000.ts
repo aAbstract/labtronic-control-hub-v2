@@ -181,14 +181,6 @@ const analog_output = {
     cfg2: 0,
 }
 
-const test_calc = {
-    msg_type: 200,
-    msg_name: 'READ_TEST',
-    data_type: DataType.FLOAT,
-    size_bytes: 4,
-    cfg2: 0,
-}
-
 
 
 
@@ -337,13 +329,15 @@ const DEVICE_CPS: CHXComputedParam[] = [
     { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
     { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
     { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
-    // { param_name: 'A_F_Ratio', expr: '$PB * $T1', msg_type:44  }, 
+    { param_name: 'A_F_Ratio', expr: '($PB * $T1) / (0.001596 * $RPM - 0.0705)', msg_type: 44 },
     { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
     { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
-    //{ param_name: 'Fuel_Consumption', expr: '$', msg_type:47  }, 
+    { param_name: 'Fuel_Consumption', expr: '(0.001596 * $RPM - 0.0705) / (($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60)', msg_type: 47 },
     { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
-    //{ param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * $)', msg_type:49  }, 
-    { param_name: 'LOAD_DIFF', expr: '($L2 - $L1) ', msg_type: 50 },
+    { param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * (0.001596 * $RPM - 0.0705))', msg_type: 49 },
+    { param_name: 'Load_Diff', expr: '($L2 - $L1) ', msg_type: 50 },
+    { param_name: 'Fuel_Rate', expr: '0.001596 * $RPM - 0.0705', msg_type: 51 },
+    { param_name: 'Engine_T', expr: '($L2 - $L1) * $D ', msg_type: 52 }
 ];
 
 let serial_adapter: SerialAdapter | null = null;
@@ -352,7 +346,7 @@ let main_window: BrowserWindow | null = null;
 let lt_at000_vce0: VirtualComputeEngine | null = null;
 let device_config: LT_AT000_DeviceConfig | null = null;
 
-ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config), analog_output, test_calc]);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => [...LT_AT000_DRIVER_CONFIG, ...(lt_at000_vce0?.get_cps_config() ?? []), ...map_obd_config_2_lt_config(obd_config), analog_output]);
 ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_AT000_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => LT_AT000_VCE_CONFIG);
 
@@ -370,35 +364,13 @@ function mw_logger(log_msg: LogMsg) {
 
 let last_sn = 0
 let last_analog_output = 0
-let last_l1 = 0
-let last_l2 = 0
-let last_p_d = 0
-let last_inp = 0
-let remove_list = [0, 1, 2, 3, 4]
+let remove_list = [ 1, 2, 3, 4] // if any value comes with value nan => problem happens so, we filter them
 let obd_cache: Record<string, DeviceMsg> = {};
 function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
 
 
     if (channel === `${DEVICE_MODEL}_device_msg`) {
-
-
-
-        const _device_msg: DeviceMsg = {
-            config: {
-                msg_type: 200,
-                msg_name: 'READ_TEST',
-                data_type: DataType.FLOAT,
-                size_bytes: 4,
-                cfg2: 0,
-            },
-            seq_number: last_sn,
-            msg_value: last_l1 - last_l2 + last_p_d + last_inp,
-            b64_msg_value: '',
-        }
-        main_window?.webContents.send(channel, { device_msg: _device_msg });
-
-
 
 
         const device_msg: DeviceMsg = data.device_msg;
@@ -408,25 +380,16 @@ function mw_ipc_handler(channel: string, data: any) {
 
             if (!remove_list.includes(device_msg.config.data_type))
                 lt_at000_vce0?.load_device_msg(data.device_msg);
-
         }
 
 
 
         if (device_msg.config.msg_type == 5) {
-            last_l1 = device_msg.msg_value
             for (const _k of Object.keys(obd_cache)) {
                 obd_cache[_k].seq_number = last_sn;
                 main_window?.webContents.send(channel, { device_msg: obd_cache[_k] });
             }
         }
-        if (device_msg.config.msg_type == 6) {
-            last_l2 = device_msg.msg_value
-        }
-        if (device_msg.config.msg_type == 20) {
-            last_p_d = device_msg.msg_value
-        }
-
 
         if (device_msg.config.msg_type < 16) {
             lt_at000_vce0?.load_device_msg(data.device_msg);
@@ -524,7 +487,6 @@ function lt_at000_cmd_exec(cmd: string) {
     }
 
     if (cmd_parts[0] === 'SET' && input_consts.includes(cmd_parts[1]) && !isNaN(new_set_val)) {
-        last_inp = new_set_val
         if (!device_config)
             device_config = get_chx_device_confg() as LT_AT000_DeviceConfig;
         device_config[cmd_parts[1]] = Number(cmd_parts[2]);

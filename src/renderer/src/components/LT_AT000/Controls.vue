@@ -56,6 +56,14 @@ function compute_packet() {
     }
     return '0x' + value.toString(16);
 }
+function calibrate(){
+    let value = 16;
+    for (let i = 0; i < outs.value.length; i++) {
+        value = outs.value[i] ? value + Math.pow(2, i) : value;
+    }
+    const out = '0x' + value.toString(16);
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET OUTREG ${out}` });
+}
 
 
 function send_digital() {
@@ -165,7 +173,7 @@ setInterval(() => {
                 </div>
             </div>
             <div id="lt_ev574_faults_actions_container">
-                <Button outlined icon="pi pi-refresh" label="CALIB" @click="() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET OUTREG ${16}` }); }" />
+                <Button outlined icon="pi pi-refresh" label="CALIB" @click="() => { calibrate()}" />
                 <Button outlined icon="pi pi-angle-right" label="RESET" @click="reset" />
                 <Button outlined icon="pi pi-angle-right" label="SEND" @click="send_digital" />
             </div>

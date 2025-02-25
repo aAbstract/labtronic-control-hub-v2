@@ -57,16 +57,17 @@ const chart_data = shallowRef<ChartData>({
 const chart_y1_min = ref('0');
 const chart_y1_max = ref('100');
 
-// const chart_y2_min = ref('0');
-// const chart_y2_max = ref('100');
+const chart_y2_min = ref('0');
+const chart_y2_max = ref('100');
 
 
 const chart_state = ref(CHXChartState.STOPPED);
-const chart_x_msg_type = ref(-1);
-const chart_y_msg_type1 = ref(0);
-const chart_y_msg_type2 = ref(1);
-const chart_auto_scale = ref(true);
-const chart_opts = shallowRef(create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value)));
+const chart_x_msg_type = ref(24);
+const chart_y_msg_type1 = ref(46);
+const chart_y_msg_type2 = ref(47);
+const chart_auto_scale1 = ref(true);
+const chart_auto_scale2 = ref(true);
+const chart_opts = shallowRef(create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value), Number(chart_y2_min.value), Number(chart_y2_max.value)));
 
 const chart_params = computed(() => {
     const _chart_params_map: Record<number, ChartParams> = {};
@@ -76,12 +77,10 @@ const chart_params = computed(() => {
             return;
         if (opt.value === -1)
             return;
-        const y_label = opt.value==0 ? 'y' : 'y1'
-        console.log(y_label)
+        const y_label = opt.value == 0 ? 'y' : 'y1'
         _chart_params_map[opt.value] = new ChartParams(opt.label, DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(opt.value)?.borderColor ?? accent_color, y_label);
-        i = i+1
+        i = i + 1
     });
-    console.log(_chart_params_map)
     return _chart_params_map;
 });
 
@@ -118,7 +117,7 @@ function on_chart_click(chart_event: ChartEvent) {
     _chart.ctx.stroke();
 }
 
-function create_chart_options(font_color: string, grid_color: string, _y_min: number, _y_max: number, _x_title?: string): ChartOptions {
+function create_chart_options(font_color: string, grid_color: string, _y_min: number, _y_max: number, _y2_min, _y2_max, _x_title?: string): ChartOptions {
     return {
         responsive: true,
         maintainAspectRatio: false,
@@ -127,7 +126,7 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
 
 
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? 'Time [s]', display: true, color: font_color } },
+            x: {type:'linear', ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? '', display: true, color: font_color } },
             y: _y_min === -1 && _y_max === -1 ?
                 {
                     position: 'left',
@@ -141,7 +140,7 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
                     min: _y_min,
                     max: _y_max,
                 },
-            y1: _y_min === -1 && _y_max === -1 ?
+            y1: _y2_min === -1 && _y2_max === -1 ?
                 {
                     position: 'right',
                     ticks: { color: font_color },
@@ -151,8 +150,8 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
                     position: 'right',
                     ticks: { color: font_color },
                     grid: { color: grid_color },
-                    min: _y_min,
-                    max: _y_max,
+                    min: _y2_min,
+                    max: _y2_max,
                 }
 
         },
@@ -167,32 +166,33 @@ function show_chart_tool_settings_overlay_panel(_event: MouseEvent) {
 }
 
 function set_chart_y_min_max() {
-    const y_min = Number(chart_y1_min.value);
-    const y_max = Number(chart_y1_max.value);
-    if (isNaN(y_min) || isNaN(y_max))
+    const y1_min = Number(chart_y1_min.value);
+    const y1_max = Number(chart_y1_max.value);
+    const y2_min = Number(chart_y2_min.value);
+    const y2_max = Number(chart_y2_max.value);
+    if (isNaN(y1_min) || isNaN(y1_max) || isNaN(y2_min) || isNaN(y2_max))
         return;
 
     const x_title = msg_type_chart_name_map.value[chart_x_msg_type.value] ?? msg_type_msg_name_map[chart_x_msg_type.value];
-    chart_opts.value = create_chart_options(font_color, chart_grid_color, y_min, y_max, x_title);
+    chart_opts.value = create_chart_options(font_color, chart_grid_color, y1_min, y1_max, y2_min, y2_max, x_title);
     chart_tool_op.value.hide();
 }
 
 function set_chart_auto_scale() {
     const x_title = msg_type_chart_name_map.value[chart_x_msg_type.value] ?? msg_type_msg_name_map[chart_x_msg_type.value];
-    if (chart_auto_scale.value)
-        chart_opts.value = create_chart_options(font_color, chart_grid_color, -1, -1, x_title);
+    if (chart_auto_scale1.value && chart_auto_scale2.value)
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, -1, -1, -1, -1, x_title);
+    else if (chart_auto_scale1.value)
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, -1, -1, Number(chart_y1_min.value), Number(chart_y1_max.value), x_title);
+    else if (chart_auto_scale2.value)
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y2_min.value), Number(chart_y2_max.value), -1, -1, x_title);
     else
-        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value), x_title);
+        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value), Number(chart_y2_min.value), Number(chart_y2_max.value), x_title);
 }
 
 function set_chart_x_y_msg_type() {
-    const x_title = msg_type_chart_name_map.value[chart_x_msg_type.value] ?? msg_type_msg_name_map[chart_x_msg_type.value];
 
-    if (chart_auto_scale.value)
-        chart_opts.value = create_chart_options(font_color, chart_grid_color, -1, -1, x_title);
-    else
-        chart_opts.value = create_chart_options(font_color, chart_grid_color, Number(chart_y1_min.value), Number(chart_y1_max.value), x_title);
-
+    set_chart_auto_scale()
     if (chart_state.value === CHXChartState.RECORDING)
         set_chart_tool_state(CHXChartState.RECORDING);
 }
@@ -250,8 +250,9 @@ onMounted(() => {
                 return;
             const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
             msg_types_opts.value = [
-                { label: 'time', value: -1 },
-                ...read_config.map(_config => {
+                ...read_config.filter(_config =>{
+                    return [24,52,49,48,47,46].includes(_config.msg_type)
+                }).map(_config => {
                     const label = _config.msg_name.replace('READ_', '');
                     msg_type_msg_name_map[_config.msg_type] = label;
 
@@ -294,34 +295,49 @@ onMounted(() => {
 
 <template>
     <div id="chart_tool_panel" v-on="screenshot_handlers">
-        <Button style="top: 40px; right: 8px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
+        <Button style="top: 8px; right: 28px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
 
         <OverlayPanel ref="chart_tool_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
             <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                 <div style="width: 280px;">
-                    <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Chart Tool Y Range</span>
+                    <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Chart Tool Y1 Range</span>
                     <input class="dt_tf" type="number" v-model="chart_y1_min" @keyup.enter="set_chart_y_min_max()" @focus="chart_y1_min = ''">
                     <span style="text-align: center;"> - </span>
                     <input class="dt_tf" type="number" v-model="chart_y1_max" @keyup.enter="set_chart_y_min_max()" @focus="chart_y1_max = ''">
                 </div>
+                <div style="width: 280px;">
+                    <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Chart Tool Y2 Range</span>
+                    <input class="dt_tf" type="number" v-model="chart_y2_min" @keyup.enter="set_chart_y_min_max()" @focus="chart_y2_min = ''">
+                    <span style="text-align: center;"> - </span>
+                    <input class="dt_tf" type="number" v-model="chart_y2_max" @keyup.enter="set_chart_y_min_max()" @focus="chart_y2_max = ''">
+                </div>
                 <div style="height: 8px;"></div>
                 <div style="width: 280px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center;">
-                    <Dropdown style="width: 100%;" :pt="dropdown_pt" :options="msg_types_opts.slice(2)" optionLabel="label" optionValue="value" placeholder="Chart Y2" title="Chart Y2" v-model="chart_y_msg_type2" @change="set_chart_x_y_msg_type()" />
-
+                    <Dropdown style="width: 100%;" :pt="dropdown_pt" :options="msg_types_opts.slice(1)" optionLabel="label" optionValue="value" placeholder="Chart X" title="Chart X" v-model="chart_x_msg_type" @change="set_chart_x_y_msg_type()" />
+                    <div style="height: 8px;"></div>
+                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
+                        <Dropdown style="width: calc(50% - 4px);" :pt="dropdown_pt" :options="msg_types_opts" optionLabel="label" optionValue="value" :placeholder="`Chart Y 1`" :title="`Chart Y 1`" v-model="chart_y_msg_type1" @change="set_chart_x_y_msg_type()" />
+                        <Dropdown style="width: calc(50% - 4px);" :pt="dropdown_pt" :options="msg_types_opts" optionLabel="label" optionValue="value" :placeholder="`Chart Y 2`" :title="`Chart Y 2`" v-model="chart_y_msg_type2" @change="set_chart_x_y_msg_type()" />
+                    </div>
+                   
                 </div>
                 <div style="height: 16px;"></div>
-                <div style="display: flex; width: 280px;">
+                <div style="display: flex; width: 280px; justify-content: space-between;">
                     <div style="display: flex; justify-content: flex-start; align-items: center;">
-                        <Checkbox :pt="checkbox_pt" binary v-model="chart_auto_scale" @change="set_chart_auto_scale()" />
+                        <Checkbox :pt="checkbox_pt" binary v-model="chart_auto_scale1" @change="set_chart_auto_scale()" />
                         <div style="width: 8px;"></div>
-                        <span style="font-size: 14px; margin-bottom: 2px;">Auto Scale</span>
+                        <span style="font-size: 14px; margin-bottom: 2px;">Auto Scale Y1</span>
                     </div>
-                    <div style="flex-grow: 1;"></div>
-                    <div>
-                        <Button icon="pi pi-play" @click="set_chart_tool_state(CHXChartState.RECORDING)" text :style="{ color: chart_state === CHXChartState.RECORDING ? '#64DD17' : '', width: '32px', height: '32px' }" />
-                        <Button icon="pi pi-pause" @click="set_chart_tool_state(CHXChartState.PAUSED)" text :style="{ color: chart_state === CHXChartState.PAUSED ? '#FFAB00' : '', width: '32px', height: '32px' }" />
-                        <Button icon="pi pi-stop" @click="set_chart_tool_state(CHXChartState.STOPPED)" text style="color: #DD2C00; width: 32px; height: 32px;" />
+                    <div style="display: flex; justify-content: flex-start; align-items: center;">
+                        <Checkbox :pt="checkbox_pt" binary v-model="chart_auto_scale2" @change="set_chart_auto_scale()" />
+                        <div style="width: 8px;"></div>
+                        <span style="font-size: 14px; margin-bottom: 2px;">Auto Scale Y2</span>
                     </div>
+                </div>
+                <div style="margin: auto;">
+                    <Button icon="pi pi-play" @click="set_chart_tool_state(CHXChartState.RECORDING)" text :style="{ color: chart_state === CHXChartState.RECORDING ? '#64DD17' : '', width: '32px', height: '32px' }" />
+                    <Button icon="pi pi-pause" @click="set_chart_tool_state(CHXChartState.PAUSED)" text :style="{ color: chart_state === CHXChartState.PAUSED ? '#FFAB00' : '', width: '32px', height: '32px' }" />
+                    <Button icon="pi pi-stop" @click="set_chart_tool_state(CHXChartState.STOPPED)" text style="color: #DD2C00; width: 32px; height: 32px;" />
                 </div>
             </div>
         </OverlayPanel>
