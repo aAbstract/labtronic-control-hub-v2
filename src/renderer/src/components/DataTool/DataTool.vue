@@ -19,10 +19,12 @@ import { DeviceMsg, MsgTypeConfig, CHXEquation, CHXScript, Result, CHXScriptInje
 
 type DataPointType = Record<string, number>;
 
+const RT_SAMPLING_DT_LIMIT = 50;
+
 let data_points_cache: Record<string, DataPointType> = {};
 let recorded_data_points: DataPointType[] = [];
 let last_sn = -1;
-let time_ms = 0;
+let start_epoch = 0;
 const time_fmt = ref('00:00:00');
 let iid: NodeJS.Timeout | null = null;
 const data_points_count = ref(0);
@@ -127,7 +129,7 @@ function reset_recording_state() {
     data_points_cache = {};
     recorded_data_points = [];
     last_sn = -1;
-    time_ms = 0;
+    start_epoch = 0;
     time_fmt.value = fmt_time(0);
     iid = null;
     data_points_count.value = 0;
@@ -161,9 +163,13 @@ function start_data_recording() {
         return;
 
     set_recording_state(RecordingState.RUNNING);
+    start_epoch = new Date().getTime();
+
+    if (sampling_dt.value < RT_SAMPLING_DT_LIMIT)
+        return;
+
     iid = setInterval(() => {
-        // recording timer
-        time_ms += sampling_dt.value;
+        const time_ms = new Date().getTime() - start_epoch;
         time_fmt.value = fmt_time(time_ms);
 
         // sampling selection criteria: lateset valid point
@@ -231,8 +237,8 @@ function sampling_dt_focused() {
 
 function validate_sampling_dt() {
     sampling_dt.value = Math.round(sampling_dt.value);
-    if (sampling_dt.value <= 50)
-        sampling_dt.value = 50;
+    if (sampling_dt.value < RT_SAMPLING_DT_LIMIT)
+        sampling_dt.value = RT_SAMPLING_DT_LIMIT;
 }
 
 onBeforeMount(() => {
@@ -315,6 +321,24 @@ onMounted(() => {
         if (!data_points_cache[seq_number])
             data_points_cache[seq_number] = { seq_number };
         data_points_cache[seq_number][msg_type] = msg_value;
+
+        if (sampling_dt.value < RT_SAMPLING_DT_LIMIT) {
+            const _data_point = data_points_cache[last_sn];
+            if (!_data_point)
+                return;
+
+            const _dp_keys: Set<string> = new Set(Object.keys(_data_point));
+            if (complete_data_point_keys.every(cdp_key => _dp_keys.has(cdp_key))) {
+                const time_ms = new Date().getTime() - start_epoch;
+                _data_point.time_ms = time_ms;
+                post_event('record_data_point', { _data_point });
+                recorded_data_points.push(_data_point);
+                data_points_count.value = recorded_data_points.length;
+                // clear sampling cache
+                data_points_cache = {};
+                last_sn = -1;
+            }
+        }
     });
 
     window.electron?.ipcRenderer.on('export_device_data_res', (_, data) => {
