@@ -78,5 +78,6 @@ p {
     margin: 0;
     padding: 0;
     font-size: 16px;
+    color: var(--font-color);
 }
 </style>

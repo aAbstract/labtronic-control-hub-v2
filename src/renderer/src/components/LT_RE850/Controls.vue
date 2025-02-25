@@ -144,7 +144,7 @@ const buttons = reactive({
 
     <div class="controls_container" :class="{ full_screen: full_screen }">
 
-        
+
         <div class="lt_re850_control_row" title="Heater Power (W)">
             <span class="lt_re850_control_lbl">Fan Speed (%)</span>
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="fan_speed_slide" @slideend="fan_speed = fan_speed_slide" />
@@ -171,14 +171,14 @@ const buttons = reactive({
             <div class="control_buttons">
                 <div class="button_text" v-for="button in buttons.control">
                     <span>{{ button.name }}</span>
-                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" />
+                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size:12px' } }" />
                 </div>
             </div>
             <div style="min-height: 100%; width: 4px;border-radius: 8px; background-color: var(--empty-gauge-color);"></div>
             <div class="fault_buttons">
                 <div class="button_text" v-for="button in buttons.fault">
                     <span>{{ button.name }}</span>
-                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" />
+                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size:12px' } }"  />
                 </div>
             </div>
         </div>
@@ -196,15 +196,18 @@ const buttons = reactive({
 <style scoped>
 .button {
     padding: 0;
-    height: 28px;
-    width: 60px;
+    height: 20px;
+    width: 80px;
 }
 
 .button_text {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 16px;
+    color: var(--font-color);
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .fault_buttons,
@@ -257,6 +260,7 @@ const buttons = reactive({
     align-items: center;
     margin-block: 4px;
     width: 100%;
+    gap: 8px;
 }
 
 .controls_container {
