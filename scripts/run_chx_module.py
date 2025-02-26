@@ -13,6 +13,7 @@ CHX_MODULES = [
     'lt_to202',
     'lt_re600',
     'lt_re849',
+    'lt_re850',
     'lt_ev574',
 ]
 
