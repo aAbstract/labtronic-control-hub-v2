@@ -5,7 +5,6 @@ import sys
 
 CHX_MODULES = [
     'lt_ch000',
-    'lt_ch500',
     'lt_ht004',
     'lt_ht103',
     'lt_ht107',
@@ -13,6 +12,7 @@ CHX_MODULES = [
     'lt_to101',
     'lt_to202',
     'lt_re600',
+    'lt_re849',
     'lt_ev574',
 ]
 

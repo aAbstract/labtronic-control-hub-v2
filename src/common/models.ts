@@ -23,6 +23,13 @@ export interface LTBusMsgConfig {
     msg_name: string;
 };
 
+export interface LTBusDeviceMsg {
+    config: LTBusMsgConfig;
+    seq_number: number;
+    msg_value: number;
+    b64_msg_value: string;
+};
+
 export interface DeviceMsg {
     config: MsgTypeConfig;
     seq_number: number;

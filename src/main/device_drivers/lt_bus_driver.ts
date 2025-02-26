@@ -1,5 +1,5 @@
 import { SerialPort } from 'serialport';
-import { LogMsg, Result, SerialPortMetaData } from '../../common/models';
+import { LogMsg, Result, SerialPortMetaData, LTBusDeviceMsg, LTBusMsgConfig } from '../../common/models';
 
 enum LtBusFunctionCode {
     READ = 0xAA,
@@ -9,7 +9,25 @@ enum LtBusFunctionCode {
     WRITE_ACK_RESP = 0xEC,
 };
 
+export type LTBusDataType = 'U8' | 'U16' | 'U32' | 'U64' | 'I8' | 'I16' | 'I32' | 'I64' | 'F32' | 'F64';
+
 export class LtBusDriver {
+    static readonly LT_BUS_PACKET_DATA_START = 7;
+    static readonly BINARY_PARSERS: Record<LTBusDataType, [any, number]> = {
+        'U8': [Uint8Array, 1],
+        'U16': [Uint16Array, 2],
+        'U32': [Uint32Array, 4],
+        'U64': [BigUint64Array, 8],
+
+        'I8': [Int8Array, 1],
+        'I16': [Int16Array, 2],
+        'I32': [Int32Array, 4],
+        'I64': [BigInt64Array, 8],
+
+        'F32': [Float32Array, 4],
+        'F64': [Float64Array, 8],
+    };
+
     private static readonly BAUD_RATE = 115200;
     private static readonly REQUEST_PACKET_MIN_SIZE = 10;
 
@@ -165,8 +183,33 @@ export class LtBusDriver {
         }).catch(err => _logger({ level: 'ERROR', msg: `Can not Scan Devices, Error: ${err}` }));
     }
 
-    static decode_fltsq(fltsq_buffer: Uint8Array) {
+    static decode_fltsq(sn: number, fltsq_buffer: Uint8Array, fltsq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
+        if (fltsq_msg_config.length !== fltsq_buffer.length / 4)
+            return { err: 'Invalid Float Sequence Buffer Size' };
 
+        const device_msg_list: LTBusDeviceMsg[] = [];
+        for (let i = 0; i < fltsq_msg_config.length; i++) {
+            const ith_buffer_seg_offset = i * 4;
+            const ith_buffer_seg_end = ith_buffer_seg_offset + 4;
+            const buffer_seg = fltsq_buffer.slice(ith_buffer_seg_offset, ith_buffer_seg_end);
+            const msg_value = Number(new Float32Array(buffer_seg.buffer)[0].toFixed(2));
+            const b64_msg_value = btoa(String.fromCharCode.apply(null, Array.from(buffer_seg)));
+            device_msg_list.push({
+                config: fltsq_msg_config[i],
+                seq_number: sn,
+                msg_value,
+                b64_msg_value,
+            });
+        }
+        return { ok: device_msg_list };
+    }
+
+    static async async_sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    static fmt_packet_hex_str(packet: Uint8Array): string {
+        return Array.from(packet).map(x => '0x' + x.toString(16).toUpperCase().padStart(2, '0')).join(' ');
     }
 
     private async lt_bus_request(request_packet: Uint8Array, response_data_size: number): Promise<Result<Uint8Array>> {
@@ -230,20 +273,36 @@ export class LtBusDriver {
         this.ipc_handler(`${this.device_model}_device_disconnected`, {});
     }
 
-    async read_registers_request(base_address: number, size: number): Promise<Result<any>> {
+    async read_registers(base_address: number, size: number): Promise<Result<any>> {
         const packet_header = new Uint8Array([0x7B, this.slave_id, LtBusFunctionCode.READ]);
         const base_address_bytes = LtBusDriver.u16_to_2u8(base_address);
         const size_bytes = LtBusDriver.u16_to_2u8(size);
         const packet = LtBusDriver.concat_uint8_arrays([packet_header, base_address_bytes, size_bytes]);
         const crc16_bytes = LtBusDriver.u16_to_2u8(LtBusDriver.compute_crc16(packet));
         const packet_to_send = LtBusDriver.concat_uint8_arrays([packet, crc16_bytes, new Uint8Array([0x7D])]);
-        const response_packet = await this.lt_bus_request(packet_to_send, size);
+        const response_packet_result = await this.lt_bus_request(packet_to_send, size);
+        if (response_packet_result.err)
+            return response_packet_result;
+
+        const response_packet = response_packet_result.ok;
         const response_sn = this.seq_number;
         this.seq_number++;
         return { ok: { response_sn, response_packet } };
     }
 
-    write_register_request() {
-
+    write_register(reg_address: number, reg_type: LTBusDataType, value: number): Uint8Array {
+        const packet_header = new Uint8Array([0x7B, this.slave_id, LtBusFunctionCode.WRITE]);
+        const reg_address_bytes = LtBusDriver.u16_to_2u8(reg_address);
+        const [BinaryParser, reg_size] = LtBusDriver.BINARY_PARSERS[reg_type];
+        const size_bytes = LtBusDriver.u16_to_2u8(reg_size);
+        const data_raw_buffer = new ArrayBuffer(reg_size);
+        const data_parsed_buffer = new BinaryParser(data_raw_buffer);
+        const data_u8_buffer = new Uint8Array(data_raw_buffer);
+        data_parsed_buffer[0] = value;
+        const packet = LtBusDriver.concat_uint8_arrays([packet_header, reg_address_bytes, size_bytes, data_u8_buffer]);
+        const crc16_bytes = LtBusDriver.u16_to_2u8(LtBusDriver.compute_crc16(packet));
+        const packet_to_send = LtBusDriver.concat_uint8_arrays([packet, crc16_bytes, new Uint8Array([0x7D])]);
+        this.serial_port.write(packet_to_send);
+        return packet_to_send;
     }
 };
