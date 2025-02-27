@@ -89,7 +89,6 @@ function submit_fault_reg(fault_idx: number) {
     // encode faults register bits
     let fault_reg_bits = _fault_buttons_state.map(x => x ? '1' : '0').toReversed().join('');
     const fault_reg = parseInt(fault_reg_bits, 2);
-    console.log(fault_reg);
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD08C U16 ${fault_reg}` }); // OFFSET_CALC_LT-RE850
 }
 
@@ -163,9 +162,9 @@ onMounted(() => {
         <div class="lt_re850_control_row">
             <span class="lt_re850_control_lbl">Water Level (#)</span>
             <div id="water_level_bar">
-                <div style="width: 25%; height: 16px;" :class="`${level_bits[0] === '1' ? 'water_level_bar_seg_on' : 'water_level_bar_seg_off'}`"></div>
-                <div style="width: 25%; height: 16px;" :class="`${level_bits[1] === '1' ? 'water_level_bar_seg_on' : 'water_level_bar_seg_off'}`"></div>
-                <div style="width: 25%; height: 16px;" :class="`${level_bits[2] === '1' ? 'water_level_bar_seg_on' : 'water_level_bar_seg_off'}`"></div>
+                <div style="width: 25%; height: 16px; border-radius: 4px;" :class="`${level_bits[0] === '1' ? 'water_level_bar_seg_on' : 'water_level_bar_seg_off'}`"></div>
+                <div style="width: 25%; height: 16px; border-radius: 4px;" :class="`${level_bits[1] === '1' ? 'water_level_bar_seg_on' : 'water_level_bar_seg_off'}`"></div>
+                <div style="width: 25%; height: 16px; border-radius: 4px;" :class="`${level_bits[2] === '1' ? 'water_level_bar_seg_on' : 'water_level_bar_seg_off'}`"></div>
             </div>
         </div>
 
@@ -195,14 +194,14 @@ onMounted(() => {
             <div class="control_buttons">
                 <div class="button_text" v-for="button in control_buttons">
                     <span>{{ button.name }}</span>
-                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size:12px' } }" @change="submit_ctrl_reg()" />
+                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size: 12px; border-radius: 4px;' } }" @change="submit_ctrl_reg()" />
                 </div>
             </div>
             <div style="min-height: 100%; width: 4px;border-radius: 8px; background-color: var(--empty-gauge-color);"></div>
             <div class="fault_buttons">
                 <div class="button_text" v-for="(fault_name, idx) in fault_buttons_labels">
                     <span>{{ fault_name }}</span>
-                    <ToggleButton class="button" v-model:modelValue="fault_buttons_state[idx]" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size:12px' } }" @change="submit_fault_reg(idx)" />
+                    <ToggleButton class="button" v-model:modelValue="fault_buttons_state[idx]" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size: 12px; border-radius: 4px;' } }" @change="submit_fault_reg(idx)" />
                 </div>
             </div>
         </div>
