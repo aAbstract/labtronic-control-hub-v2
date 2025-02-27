@@ -55,6 +55,7 @@ const LT_RE850_DEVICE_CMD_HELP: string[] = [
     'READ F_REGISTER <address> <type>, Alias: RFR <address> <type>                  | Read and Parse Register from LT Bus',
     'WRITE REGISTER <address> <type> <value>, Alias WR <address> <type> <value>     | Write Register to LT Bus',
     'STOP DATA_POOL, Alias SDP                                                      | Stops Data Pool Task',
+    'SYNC CTRL_REG, Alias SCR                                                       | Sync LT-RE850 Device CTRL Register',
     '================================================================================================================================',
 ];
 function lt_bus_driver_cmd_exec(cmd: string) {
@@ -68,6 +69,7 @@ function lt_bus_driver_cmd_exec(cmd: string) {
         'RFR': ['READ', 'F_REGISTER'],
         'WR': ['WRITE', 'REGISTER'],
         'SDP': ['STOP', 'DATA_POOL'],
+        'SCR': ['SYNC', 'CTRL_REG'],
     };
 
     // substitute command alias
@@ -143,14 +145,46 @@ function lt_bus_driver_cmd_exec(cmd: string) {
 
         const reg_addr = Number(cmd_parts[2]);
         const reg_value = Number(cmd_parts[4]);
-        const sent_packet = lt_bus_driver.write_register(reg_addr, reg_type as LTBusDataType, reg_value);
-        mw_logger({ level: 'DEBUG', msg: `SENT: ${LtBusDriver.fmt_packet_hex_str(sent_packet)}` });
+        lt_bus_driver.write_register(reg_addr, reg_type as LTBusDataType, reg_value).then(write_result => {
+            if (write_result.err) {
+                mw_logger({ level: 'ERROR', msg: write_result.err });
+                return;
+            }
+
+            const sent_packet = write_result.ok as Uint8Array;
+            mw_logger({ level: 'DEBUG', msg: `SENT: ${LtBusDriver.fmt_packet_hex_str(sent_packet)}` });
+        });
 
         return;
     }
 
     if (cmd_parts[0] === 'STOP' && cmd_parts[1] === 'DATA_POOL') {
         __enable_pool = false;
+        return;
+    }
+
+    if (cmd_parts[0] === 'SYNC' && cmd_parts[1] === 'CTRL_REG') {
+        const reg_size = 2;
+        lt_bus_driver.read_registers(0xD08A, reg_size).then(request_result => {
+            if (request_result.err) {
+                mw_logger({ level: 'ERROR', msg: request_result.err });
+                return;
+            }
+
+            const response_sn: number = request_result.ok.response_sn;
+            const response_packet: Uint8Array = request_result.ok.response_packet;
+            const data_buffer = response_packet.slice(LtBusDriver.LT_BUS_PACKET_DATA_START, LtBusDriver.LT_BUS_PACKET_DATA_START + reg_size);
+            const decoded_result = LtBusDriver.decode_u16_seq(response_sn, data_buffer, [__u16_pool_msg_config[1]]);
+            if (decoded_result.err) {
+                mw_logger({ level: 'ERROR', msg: decoded_result.err });
+                return;
+            }
+
+            const decoded_msg_list = decoded_result.ok as LTBusDeviceMsg[];
+            const device_msg = decoded_msg_list[0];
+            mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
+        });
+
         return;
     }
 
@@ -161,7 +195,8 @@ let __enable_pool: boolean = false;
 const __pool_freq_ms = 100;
 const __pool_data_size = (LT_RE850_DRIVER_CONFIG.length - 3) * 4 + 6;
 const __pool_filter_set = new Set(['INPUT_REG', 'CTRL_REG', 'FAULT_REG']);
-const __pool_msg_config = LT_RE850_DRIVER_CONFIG.filter(x => !__pool_filter_set.has(x.msg_name));
+const __f32_pool_msg_config = LT_RE850_DRIVER_CONFIG.filter(x => !__pool_filter_set.has(x.msg_name));
+const __u16_pool_msg_config = LT_RE850_DRIVER_CONFIG.filter(x => __pool_filter_set.has(x.msg_name));
 async function __pool_task() {
     while (__enable_pool) {
         if (!lt_bus_driver) {
@@ -178,16 +213,27 @@ async function __pool_task() {
         const response_sn: number = request_result.ok.response_sn;
         const response_packet: Uint8Array = request_result.ok.response_packet;
         const data_buffer = response_packet.slice(LtBusDriver.LT_BUS_PACKET_DATA_START, LtBusDriver.LT_BUS_PACKET_DATA_START + __pool_data_size);
-        const fltsq_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0, 0x078), data_buffer.slice(0x07A, 0x08A)]); // OFFSET-CALC
 
-        const decode_result = LtBusDriver.decode_fltsq(response_sn, fltsq_data_buffer, __pool_msg_config);
-        if (decode_result.err) {
-            mw_logger({ level: 'ERROR', msg: decode_result.err });
+        // parse f32 sequence
+        const f32_seq_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0, 0x078), data_buffer.slice(0x07A, 0x08A)]); // OFFSET_CALC_LT-RE850
+        const f32_seq_decode_result = LtBusDriver.decode_f32_seq(response_sn, f32_seq_data_buffer, __f32_pool_msg_config);
+        if (f32_seq_decode_result.err) {
+            mw_logger({ level: 'ERROR', msg: f32_seq_decode_result.err });
             continue;
         }
+        const f32_seq_decoded_msg_list = f32_seq_decode_result.ok as LTBusDeviceMsg[];
+        for (const device_msg of f32_seq_decoded_msg_list)
+            mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
 
-        const decoded_msg_list = decode_result.ok as LTBusDeviceMsg[];
-        for (const device_msg of decoded_msg_list)
+        // parse u16 sequence
+        const u16_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0x078, 0x078 + 2), data_buffer.slice(0x08A, 0x08A + 4)]); // OFFSET_CALC_LT-RE850
+        const u16_decode_result = LtBusDriver.decode_u16_seq(response_sn, u16_data_buffer, __u16_pool_msg_config);
+        if (u16_decode_result.err) {
+            mw_logger({ level: 'ERROR', msg: u16_decode_result.err });
+            continue;
+        }
+        const u16_decoded_msg_list = u16_decode_result.ok as LTBusDeviceMsg[];
+        for (const device_msg of u16_decoded_msg_list)
             mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
 
         await LtBusDriver.async_sleep(__pool_freq_ms);

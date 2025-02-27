@@ -183,24 +183,46 @@ export class LtBusDriver {
         }).catch(err => _logger({ level: 'ERROR', msg: `Can not Scan Devices, Error: ${err}` }));
     }
 
-    static decode_fltsq(sn: number, fltsq_buffer: Uint8Array, fltsq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
-        if (fltsq_msg_config.length !== fltsq_buffer.length / 4)
-            return { err: 'Invalid Float Sequence Buffer Size' };
+    static decode_f32_seq(sn: number, f32_seq_buffer: Uint8Array, f32_seq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
+        if (f32_seq_msg_config.length !== f32_seq_buffer.length / 4)
+            return { err: 'Invalid Float32 Sequence Buffer Size' };
 
         const device_msg_list: LTBusDeviceMsg[] = [];
-        for (let i = 0; i < fltsq_msg_config.length; i++) {
+        for (let i = 0; i < f32_seq_msg_config.length; i++) {
             const ith_buffer_seg_offset = i * 4;
             const ith_buffer_seg_end = ith_buffer_seg_offset + 4;
-            const buffer_seg = fltsq_buffer.slice(ith_buffer_seg_offset, ith_buffer_seg_end);
+            const buffer_seg = f32_seq_buffer.slice(ith_buffer_seg_offset, ith_buffer_seg_end);
             const msg_value = Number(new Float32Array(buffer_seg.buffer)[0].toFixed(2));
             const b64_msg_value = btoa(String.fromCharCode.apply(null, Array.from(buffer_seg)));
             device_msg_list.push({
-                config: fltsq_msg_config[i],
+                config: f32_seq_msg_config[i],
                 seq_number: sn,
                 msg_value,
                 b64_msg_value,
             });
         }
+
+        return { ok: device_msg_list };
+    }
+
+    static decode_u16_seq(sn: number, u16_seq_buffer: Uint8Array, u16_seq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
+        if (u16_seq_msg_config.length !== u16_seq_buffer.length / 2)
+            return { err: 'Invalid Uint16 Sequence Buffer Size' };
+
+        const device_msg_list: LTBusDeviceMsg[] = [];
+        for (let i = 0; i < u16_seq_msg_config.length; i++) {
+            const ith_buffer_seg_offset = i * 2;
+            const ith_buffer_seg_end = ith_buffer_seg_offset + 2;
+            const buffer_seg = u16_seq_buffer.slice(ith_buffer_seg_offset, ith_buffer_seg_end);
+            const msg_value = new Uint16Array(buffer_seg.buffer)[0];
+            device_msg_list.push({
+                config: u16_seq_msg_config[i],
+                seq_number: sn,
+                msg_value,
+                b64_msg_value: '',
+            });
+        }
+
         return { ok: device_msg_list };
     }
 
@@ -242,7 +264,8 @@ export class LtBusDriver {
                 if (buffer[0] === 0x7B && buffer[buffer.length - 1] === 0x7D)
                     __resolve({ ok: Uint8Array.from(buffer) });
                 else
-                    __resolve({ err: 'Invalid Response Packet Format' });
+                    debugger;
+                __resolve({ err: 'Invalid Response Packet Format' });
             }
         }
 
@@ -290,7 +313,7 @@ export class LtBusDriver {
         return { ok: { response_sn, response_packet } };
     }
 
-    write_register(reg_address: number, reg_type: LTBusDataType, value: number): Uint8Array {
+    async write_register(reg_address: number, reg_type: LTBusDataType, value: number): Promise<Result<Uint8Array>> {
         const packet_header = new Uint8Array([0x7B, this.slave_id, LtBusFunctionCode.WRITE]);
         const reg_address_bytes = LtBusDriver.u16_to_2u8(reg_address);
         const [BinaryParser, reg_size] = LtBusDriver.BINARY_PARSERS[reg_type];
@@ -302,7 +325,13 @@ export class LtBusDriver {
         const packet = LtBusDriver.concat_uint8_arrays([packet_header, reg_address_bytes, size_bytes, data_u8_buffer]);
         const crc16_bytes = LtBusDriver.u16_to_2u8(LtBusDriver.compute_crc16(packet));
         const packet_to_send = LtBusDriver.concat_uint8_arrays([packet, crc16_bytes, new Uint8Array([0x7D])]);
-        this.serial_port.write(packet_to_send);
-        return packet_to_send;
+
+        return new Promise((resolve, reject) => {
+            this.serial_port.write(packet_to_send, err => {
+                if (err)
+                    reject({ err });
+                resolve({ ok: packet_to_send });
+            });
+        });
     }
 };

@@ -11,6 +11,7 @@ from e2e.lt_bus_vspi.lt_bus_utils import (
     READ_RESP_FC,
     u16_to_2u8,
     READ_FC,
+    WRITE_FC,
     LT_BUS_PACKET_DATA_START,
 )
 
@@ -302,17 +303,27 @@ class LTBusVSPI:
         request_buffer = b''
         while True:
             if self.comm_mode == LTBusVSPICommMode.NETWORK:
-                byte = self.v_socket.recv(1)
+                packet_header = self.v_socket.recv(7)
             elif self.comm_mode == LTBusVSPICommMode.WIRED:
                 pass  # IGNORE
 
-            if not byte:
+            if packet_header[0] != ord('{'):
+                print(self.log_tag, '[WARN]', f"Ignored Packet Header: {packet_header}")
                 continue
 
-            request_buffer += byte
+            packet_fc = packet_header[2]
+            if packet_fc == READ_FC:
+                packet_remain = self.v_socket.recv(3)
+                request_buffer = packet_header + packet_remain
+
+            elif packet_fc == WRITE_FC:
+                data_size = int.from_bytes(packet_header[-2:], 'little')
+                packet_remain = self.v_socket.recv(data_size + 3)
+                request_buffer = packet_header + packet_remain
+
             if request_buffer[-1] == ord('}'):
-                if request_buffer[0] == ord('{'):
-                    self.handle_lt_bus_request(request_buffer)
-                else:
-                    print(self.log_tag, '[WARN]', f"Ignored Packet: {request_buffer}")
-                request_buffer = b''
+                self.handle_lt_bus_request(request_buffer)
+            else:
+                print(self.log_tag, '[WARN]', f"Ignored Packet: {request_buffer}")
+
+            request_buffer = b''

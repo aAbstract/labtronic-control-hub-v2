@@ -37,11 +37,17 @@ lt_re850_device_data_registers_config = [
     DeviceRegisterConfig('HEATER_POWER', 0x07E, 'f32'),
     DeviceRegisterConfig('HEATER_TMP_SETPOINT', 0x082, 'f32'),
     DeviceRegisterConfig('THERMOSTAT_SETPOINT', 0x086, 'f32'),
-    DeviceRegisterConfig('CTRL_BTN_REG', 0x08A, 'f32'),
-    DeviceRegisterConfig('FAULT_BTN_REG', 0x08C, 'f32'),
+    DeviceRegisterConfig('CTRL_BTN_REG', 0x08A, 'u16'),
+    DeviceRegisterConfig('FAULT_BTN_REG', 0x08C, 'u16'),
 ]
 lt_re850_data_buffer = DeviceBuffer(0xD000, lt_re850_device_data_registers_config)
 for lt_re850_register_config in lt_re850_device_data_registers_config:
     __conf = lt_re850_register_config
     if __conf.data_type == 'f32':
         lt_re850_data_buffer.write_register(__conf.register_name, __conf.offset / 10)
+
+    if __conf.register_name == 'INPUT_REG':
+        lt_re850_data_buffer.write_register(__conf.register_name, 3)
+
+    if __conf.register_name == 'CTRL_BTN_REG':
+        lt_re850_data_buffer.write_register(__conf.register_name, 1)

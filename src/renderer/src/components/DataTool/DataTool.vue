@@ -162,8 +162,11 @@ function start_data_recording() {
     if (is_recording)
         return;
 
+    // reset recording clock if previous state was RecordingState.STOPPED
+    if (recording_state.value === RecordingState.STOPPED)
+        start_epoch = new Date().getTime();
+
     set_recording_state(RecordingState.RUNNING);
-    start_epoch = new Date().getTime();
 
     if (sampling_dt.value < RT_SAMPLING_DT_LIMIT)
         return;

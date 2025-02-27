@@ -86,8 +86,8 @@ electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_model
                 <div class="dashboard_container">
                     <Dashboard :full_screen="lt_re850_control_panel_pos === 'absolute'" />
                 </div>
-
             </TabPanel>
+
             <TabPanel header="T-S Chart" :pt="tabpanel_pt">
                 <LT_RE850_Chart type="linear" :x_dataset="S_set" :y1_dataset="TS1" :y2_dataset="TS2" />
             </TabPanel>
@@ -96,12 +96,9 @@ electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_model
                 <LT_RE850_Chart type="logarithmic" :x_dataset="H_set" :y1_dataset="PH1" :y2_dataset="PH2" />
             </TabPanel>
 
-
-            <TabPanel header="Controls" :pt="tabpanel_pt" ac>
+            <TabPanel header="Controls" :pt="tabpanel_pt">
                 <Controls :full_screen="lt_re850_control_panel_pos === 'absolute'" />
             </TabPanel>
-
-
         </TabView>
     </div>
 </template>
