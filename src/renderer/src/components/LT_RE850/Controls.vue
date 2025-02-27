@@ -7,6 +7,7 @@ import { useToast } from 'primevue/usetoast';
 
 import { electron_renderer_send } from '@renderer/lib/util';
 import { LTBusDeviceMsg } from '@common/models';
+import { subscribe } from '@common/mediator';
 
 const device_model = inject('device_model');
 const toast_service = useToast();
@@ -140,7 +141,7 @@ const fault_buttons_labels = new Array(10).fill(0).map((_m, idx) => `F${idx + 1}
 const fault_buttons_state = shallowRef(new Array(10).fill(false));
 
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: LTBusDeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         const { msg_value } = device_msg;

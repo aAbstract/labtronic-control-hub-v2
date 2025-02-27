@@ -157,7 +157,7 @@ function update_position_chart() {
 const P_HEATER_MASG_TYPE = 13;
 const cfg2_set = new Set([0xA0, 0xA1, 0xA2, 0xA3, 0xA4]);
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type, cfg2 } = device_msg.config;
         const { seq_number, msg_value } = device_msg;
@@ -178,7 +178,7 @@ onMounted(() => {
         }
     });
 
-    subscribe('device_config_ready', `device_config_ready_${device_model}`, () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
                 return;

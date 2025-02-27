@@ -22,7 +22,7 @@ onMounted(() => {
         img_src.value = base64_src;
     });
 
-    subscribe('show_device_model_details', 'show_device_model_details_lt_ev574', () => dialog_visible.value = true);
+    subscribe('show_device_model_details', () => dialog_visible.value = true);
 });
 
 </script>

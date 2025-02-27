@@ -135,7 +135,7 @@ onMounted(() => {
     const chart_grid_color = document.documentElement.style.getPropertyValue('--empty-gauge-color');
     chart_opts.value = create_chart_options(chart_font_color, chart_grid_color);
 
-    subscribe('toggle_data_panel', 'toggle_data_panel_visi', _ => {
+    subscribe('toggle_data_panel', _ => {
         const values_map = {
             '8px': '-50vw',
             '-50vw': '8px',
@@ -143,9 +143,9 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_data_panel', 'hide_data_panel', _ => panel_pos.value = '-50vw');
+    subscribe('hide_data_panel', _ => panel_pos.value = '-50vw');
 
-    subscribe('nav_bar_exit', 'nav_bar_exit_data_panel', () => {
+    subscribe('nav_bar_exit', () => {
         if (data_cache.length === 0) {
             electron_renderer_send('exit', {});
             return;
@@ -162,7 +162,7 @@ onMounted(() => {
         post_event('show_alert', { dialog_config });
     });
 
-    // window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    // subscribe('device_msg', data => {
     //     const device_msg: DeviceMsg = data.device_msg;
     //     data_cache.push({
     //         sn: device_msg.seq_number,

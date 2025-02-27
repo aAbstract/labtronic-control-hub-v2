@@ -51,11 +51,11 @@ function save_series_btn_click() {
 }
 
 onMounted(() => {
-    subscribe('show_series_config_dialog', 'show_series_config_dialog', _ => {
+    subscribe('show_series_config_dialog', _ => {
         dialog_visible.value = true;
     });
 
-    subscribe('device_config_ready', 'device_config_ready_SeriesConfigDialog', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;

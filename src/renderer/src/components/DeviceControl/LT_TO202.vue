@@ -73,7 +73,7 @@ function map_t_heater_color_code(t_heater: number): string {
 onMounted(() => {
     post_event('update_device_model_cont_width', { width: '70%', margin_bottom: '0px' });
 
-    subscribe('device_config_ready', `device_config_ready_${device_model}`, () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;
@@ -82,7 +82,7 @@ onMounted(() => {
         });
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         const { msg_value } = device_msg;
@@ -90,7 +90,7 @@ onMounted(() => {
             t_heater.value = msg_value;
     });
 
-    subscribe('record_data_point', 'record_data_point_lt_to202_chart', args => {
+    subscribe('record_data_point', args => {
         const _data_point: Record<string, number> = args._data_point;
         chart_data.value.labels?.push(_data_point.time_ms / 1000);
         Object.keys(_data_point).forEach(_dp_key => {
@@ -104,7 +104,7 @@ onMounted(() => {
         };
     });
 
-    subscribe('clear_recorded_data', 'clear_recorded_data_lt_to202_chart', () => {
+    subscribe('clear_recorded_data', () => {
         chart_data.value = {
             labels: [],
             datasets: [],

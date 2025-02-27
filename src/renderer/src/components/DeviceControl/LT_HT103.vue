@@ -200,7 +200,7 @@ onMounted(() => {
 
     post_event('update_device_model_cont_width', { width: '80%' });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         if (msg_type === 5)
@@ -224,13 +224,13 @@ onMounted(() => {
     });
 
     // handle chx script injected parameters
-    subscribe('chx_script_ip_lt_ht103_Q_L_F1', '', args => {
+    subscribe('chx_script_ip_lt_ht103_Q_L_F1', args => {
         const _Q_L_F1 = args.pv;
         Q_L_F1.value = _Q_L_F1;
         electron_renderer_send(`${device_model}_set_device_config`, { config_name: 'Q_L_F1', config_value: _Q_L_F1 });
         toast_service.add({ severity: 'success', summary: 'CHX Script', detail: 'Calculated Q_L Linear Model Intercept', life: 3000 });
     });
-    subscribe('chx_script_ip_lt_ht103_Q_L_F2', '', args => {
+    subscribe('chx_script_ip_lt_ht103_Q_L_F2', args => {
         const _Q_L_F2 = args.pv;
         Q_L_F2.value = _Q_L_F2;
         electron_renderer_send(`${device_model}_set_device_config`, { config_name: 'Q_L_F2', config_value: _Q_L_F2 });

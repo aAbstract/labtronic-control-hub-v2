@@ -46,17 +46,17 @@ function submit_cmd() {
 }
 
 onMounted(() => {
-    subscribe('toggle_control_panel', 'toggle_control_panel_visi', _ => {
+    subscribe('toggle_control_panel', _ => {
         const values_map = {
             '8px': '-50vw',
             '-50vw': '8px',
         };
         panel_pos.value = values_map[panel_pos.value];
     });
-    subscribe('hide_control_panel', 'hide_control_panel', _ => panel_pos.value = '-50vw');
+    subscribe('hide_control_panel', _ => panel_pos.value = '-50vw');
     add_log({ level: 'INFO', msg: 'Type HELP to List Available Commands' });
 
-    subscribe('device_config_ready', 'device_config_ready_TerminalPanel', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<boolean>('get_chx_advanced').then(_chx_advanced_mode => chx_advanced_mode.value = _chx_advanced_mode ?? false);
     });
 });

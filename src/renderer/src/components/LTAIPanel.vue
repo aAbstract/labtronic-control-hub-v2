@@ -53,7 +53,7 @@ function submit_ltai_query() {
 }
 
 onMounted(() => {
-    subscribe('toggle_ltai_panel', 'toggle_ltai_panel_visi', _ => {
+    subscribe('toggle_ltai_panel', _ => {
         const values_map = {
             '8px': '-50vw',
             '-50vw': '8px',

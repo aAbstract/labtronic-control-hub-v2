@@ -99,7 +99,7 @@ function start_data_recording() {
 }
 
 onMounted(() => {
-    subscribe('toggle_data_tool', 'toggle_data_tool_visi', _ => {
+    subscribe('toggle_data_tool', _ => {
         const values_map = {
             '8px': '-50vw',
             '-50vw': '8px',
@@ -107,7 +107,7 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_data_tool', 'hide_data_tool', _ => panel_pos.value = '-50vw');
+    subscribe('hide_data_tool', _ => panel_pos.value = '-50vw');
 
     electron_renderer_invoke<CHXSeries[]>('get_chx_series').then(_chx_series => {
         if (!_chx_series)
@@ -115,7 +115,7 @@ onMounted(() => {
         chx_series.value = _chx_series;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         const { seq_number, msg_value } = device_msg;
@@ -128,7 +128,7 @@ onMounted(() => {
         }
     });
 
-    subscribe('device_config_ready', 'device_config_ready_RLDataTool', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;

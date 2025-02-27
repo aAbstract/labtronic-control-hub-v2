@@ -40,7 +40,7 @@ function compute_packet() {
 }
 
 onMounted(() => {
-    subscribe('record_data_point', 'record_data_point_lt_ev574_faults_panel', args => {
+    subscribe('record_data_point', args => {
         const _data_point: Record<string, number> = args._data_point;
         const bat_v = _data_point[0];
         const bat_i = _data_point[1];
@@ -52,7 +52,7 @@ onMounted(() => {
             rv_enrg.value += enrg;
     });
 
-    subscribe('reset_recording_state', 'reset_recording_state_lt_ev574_faults_panel', () => {
+    subscribe('reset_recording_state', () => {
         cs_enrg.value = 0;
         rv_enrg.value = 0;
     });

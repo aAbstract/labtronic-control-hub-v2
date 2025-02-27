@@ -13,7 +13,7 @@ const device_model = inject('device_model');
 const err_msg = ref('');
 
 onMounted(() => {
-    subscribe('toggle_device_manual_panel', 'toggle_device_manual_panel_visi', _ => {
+    subscribe('toggle_device_manual_panel', _ => {
         const values_map = {
             '0px': '-60vw',
             '-60vw': '0px',
@@ -21,9 +21,9 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_device_manual_panel', 'hide_device_manual_panel', _ => panel_pos.value = '-60vw');
+    subscribe('hide_device_manual_panel', _ => panel_pos.value = '-60vw');
 
-    subscribe('chx_settings_loaded', 'chx_settings_loaded_device_manual_panel', _ => {
+    subscribe('chx_settings_loaded', _ => {
         get_manual(device_model as string).then(res => {
             if (res.err) {
                 err_msg.value = res.err;

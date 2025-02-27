@@ -80,7 +80,7 @@
 // if (this.current_msg_patch[0].seq_number !== valid_sn)
 //     return { err: 'Patch Sequence Number Mismatch' };
 
-// window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+// subscribe('device_msg', data => {
 //     const device_msg: DeviceMsg = data.device_msg;
 //     const msg_type = device_msg.config.msg_type;
 //     const msg_value = device_msg.msg_value;

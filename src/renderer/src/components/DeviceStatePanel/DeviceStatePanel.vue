@@ -134,7 +134,7 @@ function set_multi_chart_y_min_max() {
 }
 
 onBeforeMount(() => {
-    subscribe('device_config_ready', 'device_config_ready_DeviceStatePanel', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<any>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
                 return;
@@ -143,7 +143,7 @@ onBeforeMount(() => {
         });
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         msg_values_cache[msg_type] = device_msg.msg_value.toFixed(1);

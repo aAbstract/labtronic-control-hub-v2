@@ -46,7 +46,7 @@ function canvas_setup() {
 }
 
 onMounted(() => {
-    subscribe('update_device_model_panel', 'update_device_model_panel', args => {
+    subscribe('update_device_model_panel', args => {
         const _msg_values_cache: Record<number, string> = args._msg_values_cache;
         Object.entries(_msg_values_cache).forEach(([_msg_type, _msg_value]) => {
             const msg_type = Number(_msg_type);
@@ -65,7 +65,7 @@ onMounted(() => {
         device_model_labeled_img.value = base64_src;
     });
 
-    subscribe('change_device_model_asset', 'change_device_model_asset', args => {
+    subscribe('change_device_model_asset', args => {
         const _asset = args._asset;
         const asset_path = `etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`;
         electron_renderer_invoke<string>('load_devie_asset', { asset_path }).then(base64_src => {
@@ -77,7 +77,7 @@ onMounted(() => {
         // device_model_labeled_img.value = new URL(`../../device_assets/etc/${device_model.toLowerCase().replace('-', '_')}/${_asset}.png`, import.meta.url).href;
     });
 
-    subscribe('update_device_model_cont_width', 'update_device_model_cont_width', args => {
+    subscribe('update_device_model_cont_width', args => {
         const wdith: string = args.width;
         const margin_bottom: string = args.margin_bottom;
         if (wdith)
@@ -86,7 +86,7 @@ onMounted(() => {
             device_model_cont_margin_bottom.value = margin_bottom;
     });
 
-    subscribe('show_device_model_panel_msg', 'show_device_model_panel_msg', args => {
+    subscribe('show_device_model_panel_msg', args => {
         const severity: string = args.severity;
         const content: string = args.content;
         device_model_panel_severity.value = severity;

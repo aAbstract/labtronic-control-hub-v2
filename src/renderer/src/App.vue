@@ -57,13 +57,15 @@ onBeforeMount(() => {
     post_event('chx_settings_loaded', {});
   });
 
-  subscribe('remove_ui_springs', 'remove_ui_springs', _ => spring_display.value = 'none');
+  subscribe('remove_ui_springs', _ => spring_display.value = 'none');
 
   // update ui params for dynamic msg_types like computed parameters
   window.electron?.ipcRenderer.on(`${DEVICE_MODEL}_device_config_ready`, () => {
     electron_renderer_invoke<MsgTypeConfig>(`${DEVICE_MODEL}_get_device_config`).then(device_config => post_event(`${DEVICE_MODEL}_update_ui_params`, { device_config }));
     post_event('device_config_ready', {});
   });
+
+  window.electron?.ipcRenderer.on(`${DEVICE_MODEL}_device_msg`, (_, data) => post_event('device_msg', data));
 
   window.electron?.ipcRenderer.on('show_system_notif', (_, data) => toast_service.add(data.notif));
 });

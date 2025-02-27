@@ -18,7 +18,7 @@ const device_status = ref<DeviceStatus>('UNKNOWN');
 const device_model = inject('device_model');
 
 onMounted(() => {
-    subscribe('set_device_status', 'set_device_status', args => device_status.value = args.device_status);
+    subscribe('set_device_status', args => device_status.value = args.device_status);
     window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => device_status.value = 'OK');
 });
 

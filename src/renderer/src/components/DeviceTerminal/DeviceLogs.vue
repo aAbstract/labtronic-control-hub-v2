@@ -26,7 +26,7 @@ function recover_device() {
 }
 
 onBeforeMount(() => {
-    subscribe('add_sys_log', 'add_sys_log', args => {
+    subscribe('add_sys_log', args => {
         const log_msg: LogMsg = args;
         log_msg.datetime = moment().format().split('+')[0];
         logs_cache.push(log_msg);

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 
-import { ref, onMounted, inject, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
+import { subscribe } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
 
-const device_model = inject('device_model');
 const active_quad_idx = ref(1);
 
 const quad_1_src = ref('');
@@ -60,7 +60,7 @@ onMounted(() => {
         quad_4_src.value = base64_src;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         const { seq_number, msg_value } = device_msg;

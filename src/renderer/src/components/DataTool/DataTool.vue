@@ -245,16 +245,16 @@ function validate_sampling_dt() {
 }
 
 onBeforeMount(() => {
-    subscribe('lock_sampling_dt', 'lock_sampling_dt', () => lock_sampling_dt.value = true);
+    subscribe('lock_sampling_dt', () => lock_sampling_dt.value = true);
 
-    subscribe('set_default_sampling_dt', 'set_default_sampling_dt', args => {
+    subscribe('set_default_sampling_dt', args => {
         const { _sampling_dt } = args;
         sampling_dt.value = _sampling_dt;
     });
 });
 
 onMounted(() => {
-    subscribe('toggle_data_tool', 'toggle_data_tool_visi', _ => {
+    subscribe('toggle_data_tool', _ => {
         const values_map = {
             '0px': '-60vw',
             '-60vw': '0px',
@@ -262,9 +262,9 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_data_tool', 'hide_data_tool', _ => panel_pos.value = '-60vw');
+    subscribe('hide_data_tool', _ => panel_pos.value = '-60vw');
 
-    subscribe('device_config_ready', 'device_config_ready_DataTool', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<CHXSeries[]>(`${device_model}_get_chx_series`).then(_chx_series => {
             if (!_chx_series)
                 return;
@@ -306,7 +306,7 @@ onMounted(() => {
         chx_eqs.value = _chx_eqs;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         if (!is_recording)
             return;
         const device_msg: DeviceMsg = data.device_msg;
@@ -364,7 +364,7 @@ onMounted(() => {
         recorded_data_points.forEach(_data_point => post_event('record_data_point', { _data_point }));
     });
 
-    subscribe('nav_bar_exit', 'nav_bar_exit_data_panel', () => {
+    subscribe('nav_bar_exit', () => {
         if (recorded_data_points.length === 0) {
             electron_renderer_send('exit', {});
             return;
@@ -381,11 +381,11 @@ onMounted(() => {
         post_event('show_alert', { dialog_config });
     });
 
-    subscribe('data_tool_start_data_recording', 'data_tool_start_data_recording', () => start_data_recording());
-    subscribe('data_tool_pause_data_recording', 'data_tool_pause_data_recording', () => pause_data_recording());
-    subscribe('data_tool_stop_data_recording', 'data_tool_stop_data_recording', () => stop_data_recording());
-    subscribe('data_tool_import_device_data', 'data_tool_import_device_data', () => import_device_data());
-    subscribe('data_tool_export_device_data', 'data_tool_export_device_data', () => export_device_data());
+    subscribe('data_tool_start_data_recording', () => start_data_recording());
+    subscribe('data_tool_pause_data_recording', () => pause_data_recording());
+    subscribe('data_tool_stop_data_recording', () => stop_data_recording());
+    subscribe('data_tool_import_device_data', () => import_device_data());
+    subscribe('data_tool_export_device_data', () => export_device_data());
 });
 
 </script>
