@@ -20,8 +20,7 @@ const tag_color_map = {
 };
 
 function recover_device() {
-    const device_status: DeviceStatus = 'UNKNOWN';
-    post_event('set_device_status', { device_status });
+    post_event('set_device_status', { device_status: DeviceStatus.UNKNOWN });
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: 'RECOVER' });
 }
 
@@ -58,8 +57,7 @@ onBeforeMount(() => {
             ],
         };
         post_event('show_alert', { dialog_config });
-        const device_status: DeviceStatus = 'ERROR';
-        post_event('set_device_status', { device_status });
+        post_event('set_device_status', { device_status: DeviceStatus.ERROR });
     });
 });
 

@@ -85,16 +85,25 @@ class DeviceBuffer:
 
     def read_region(self, start_address: int, size: int) -> bytes:
         offset = start_address - self.base_address
-        return self.buffer[offset: offset + size]
+        buffer_data = self.buffer[offset: offset + size]
+        # # TODO: handle device error message ACK packet
+        # if offset == 0x007:
+        #     self.buffer[offset: offset + size] = bytes(size)
+        #     self.write_register('msg_counter', 0)
+        return buffer_data
 
     def write_region(self, start_address: int, data: bytes):
         offset = start_address - self.base_address
         self.buffer[offset: offset + len(data)] = data
 
-    def write_register(self, register_name: str, value: int | float) -> int | float:
+    def write_register(self, register_name: str, value: int | float | bytes) -> int | float | bytes:
         register_config = self.registers_config.get(register_name, None)
         if not register_config:
             raise Exception('Register Name not Found')
+
+        if register_config.data_type == 'u8[]':
+            self.buffer[register_config.offset:register_config.offset + len(value)] = value
+            return value
 
         value_buffer = struct.pack(register_config.binary_decoder, value)
         self.buffer[register_config.offset:register_config.offset + register_config.size] = value_buffer

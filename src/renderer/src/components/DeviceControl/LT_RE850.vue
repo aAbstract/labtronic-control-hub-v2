@@ -1,16 +1,23 @@
 <script setup lang="ts">
 
+import { ref, computed, onMounted, inject } from 'vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
+
 import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 import LT_RE850_Chart from '@renderer/components/LT_RE850/Chart.vue';
-import { ref, computed, onMounted, inject } from 'vue';
 import { cleaned_R410A_Property_Table } from '@renderer/lib/static';
 import Dashboard from '../LT_RE850/Dashboard.vue';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import Controls from '../LT_RE850/Controls.vue';
+import { LTBusDeviceErrorMsg } from '@common/models';
+import DeviceErrorAlert from '@renderer/components/DeviceErrorAlert.vue';
+
+const device_model = inject('device_model') as string
+const toast_service = useToast();
 
 enum LT_RE850_ScreenMode {
     W1280 = 1,
@@ -66,20 +73,26 @@ onMounted(() => {
     post_event('update_device_model_cont_width', { width: '70%', margin_bottom: '0px' });
     post_event('remove_ui_springs', {});
     post_event('set_default_sampling_dt', { _sampling_dt: 0 });
+
+    window.electron?.ipcRenderer.on(`${device_model}_device_error_msg`, (_, data) => {
+        const device_error_msg = data.device_error_msg as LTBusDeviceErrorMsg;
+        if (!device_error_msg.user_ack)
+            toast_service.add({ severity: 'warn', summary: 'Safety Warning', detail: device_error_msg.error_text, life: 5000 });
+    });
 });
 
 const device_model_img = ref()
-
-const device_model = inject('device_model') as string
 electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
     if (!base64_src)
         return;
     device_model_img.value = base64_src;
 });
+
 </script>
 
 <template>
     <div id="lt_re850_control_main_cont" v-on="screenshot_handlers">
+        <DeviceErrorAlert />
         <Button icon="pi pi-expand" id="expand_btn" title="Toggle Full Screen" rounded text @click="toggle_fullscreen()" />
         <TabView id="lt_re850_tabview" :pt="tabview_pt" :active-index="3">
             <TabPanel header="Dashboard" :pt="tabpanel_pt">

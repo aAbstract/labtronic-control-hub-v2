@@ -33,7 +33,6 @@ export class LtBusDriver {
 
     is_connected: boolean;
 
-    private seq_number: number;
     private device_model: string;
     private slave_id: number;
     private serial_port: SerialPort;
@@ -55,7 +54,6 @@ export class LtBusDriver {
     ) {
         this.is_connected = false;
 
-        this.seq_number = 0;
         this.device_model = _device_model;
         this.slave_id = slave_id;
         this.request_pool_freq_ms = _request_pool_freq_ms;
@@ -183,7 +181,7 @@ export class LtBusDriver {
         }).catch(err => _logger({ level: 'ERROR', msg: `Can not Scan Devices, Error: ${err}` }));
     }
 
-    static decode_f32_seq(sn: number, f32_seq_buffer: Uint8Array, f32_seq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
+    static decode_f32_seq(f32_seq_buffer: Uint8Array, f32_seq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
         if (f32_seq_msg_config.length !== f32_seq_buffer.length / 4)
             return { err: 'Invalid Float32 Sequence Buffer Size' };
 
@@ -193,11 +191,11 @@ export class LtBusDriver {
             const ith_buffer_seg_end = ith_buffer_seg_offset + 4;
             const buffer_seg = f32_seq_buffer.slice(ith_buffer_seg_offset, ith_buffer_seg_end);
             const msg_value = Number(new Float32Array(buffer_seg.buffer)[0].toFixed(2));
-            const b64_msg_value = btoa(String.fromCharCode.apply(null, Array.from(buffer_seg)));
+            const b64_msg_value = msg_value === -9999 ? '' : btoa(String.fromCharCode.apply(null, Array.from(buffer_seg)));
             device_msg_list.push({
                 config: f32_seq_msg_config[i],
-                seq_number: sn,
-                msg_value,
+                seq_number: -1,
+                msg_value: msg_value === -9999 ? NaN : msg_value,
                 b64_msg_value,
             });
         }
@@ -205,7 +203,7 @@ export class LtBusDriver {
         return { ok: device_msg_list };
     }
 
-    static decode_u16_seq(sn: number, u16_seq_buffer: Uint8Array, u16_seq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
+    static decode_u16_seq(u16_seq_buffer: Uint8Array, u16_seq_msg_config: LTBusMsgConfig[]): Result<LTBusDeviceMsg[]> {
         if (u16_seq_msg_config.length !== u16_seq_buffer.length / 2)
             return { err: 'Invalid Uint16 Sequence Buffer Size' };
 
@@ -217,7 +215,7 @@ export class LtBusDriver {
             const msg_value = new Uint16Array(buffer_seg.buffer)[0];
             device_msg_list.push({
                 config: u16_seq_msg_config[i],
-                seq_number: sn,
+                seq_number: -1,
                 msg_value,
                 b64_msg_value: '',
             });
@@ -296,21 +294,14 @@ export class LtBusDriver {
         this.ipc_handler(`${this.device_model}_device_disconnected`, {});
     }
 
-    async read_registers(base_address: number, size: number): Promise<Result<any>> {
+    async read_registers(base_address: number, size: number): Promise<Result<Uint8Array>> {
         const packet_header = new Uint8Array([0x7B, this.slave_id, LtBusFunctionCode.READ]);
         const base_address_bytes = LtBusDriver.u16_to_2u8(base_address);
         const size_bytes = LtBusDriver.u16_to_2u8(size);
         const packet = LtBusDriver.concat_uint8_arrays([packet_header, base_address_bytes, size_bytes]);
         const crc16_bytes = LtBusDriver.u16_to_2u8(LtBusDriver.compute_crc16(packet));
         const packet_to_send = LtBusDriver.concat_uint8_arrays([packet, crc16_bytes, new Uint8Array([0x7D])]);
-        const response_packet_result = await this.lt_bus_request(packet_to_send, size);
-        if (response_packet_result.err)
-            return response_packet_result;
-
-        const response_packet = response_packet_result.ok;
-        const response_sn = this.seq_number;
-        this.seq_number++;
-        return { ok: { response_sn, response_packet } };
+        return await this.lt_bus_request(packet_to_send, size);
     }
 
     async write_register(reg_address: number, reg_type: LTBusDataType, value: number): Promise<Result<Uint8Array>> {

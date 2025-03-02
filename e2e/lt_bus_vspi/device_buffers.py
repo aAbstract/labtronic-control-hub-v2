@@ -19,6 +19,8 @@ lt_re850_config_buffer = DeviceBuffer(0xA000, [
     DeviceRegisterConfig('msg_buffer', 0x007, 'u8[]', 255),
 ])
 lt_re850_config_buffer.write_register('device_id', 0x1000)
+lt_re850_config_buffer.write_register('msg_counter', 5)
+lt_re850_config_buffer.write_register('msg_buffer', b'\x01\x02\x03\x04\x05')
 
 lt_re850_device_data_registers_config = [
     DeviceRegisterConfig('FLOW', 0x000, 'f32'),

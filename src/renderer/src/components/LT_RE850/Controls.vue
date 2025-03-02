@@ -14,7 +14,6 @@ const toast_service = useToast();
 const fan_speed = ref(0)
 const heat_power = ref(0)
 
-
 const fan_speed_slide = ref(0)
 const heat_power_slide = ref(0)
 
@@ -22,7 +21,7 @@ const heater_tmp = ref(2)
 const thermo_tmp = ref(1)
 
 const level_reg = ref(0);
-const level_bits = computed(() => [...level_reg.value.toString(2).padStart(3, '0')].toReversed().join(''));
+const level_bits = computed(() => level_reg.value.toString(2).padStart(3, '0'));
 const ctrl_reg = ref(0);
 const crtl_bits = computed(() => [...ctrl_reg.value.toString(2).padStart(10, '0')].toReversed().join(''));
 
@@ -77,8 +76,8 @@ function submit_thermostat_setpoint() {
 function submit_ctrl_reg() {
     let ctrl_reg_bits = control_buttons.map(x => x.value ? '1' : '0').toReversed().join('');
     ctrl_reg_bits.padStart(16, '0');
-    const ctrl_reg = parseInt(ctrl_reg_bits, 2);
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD08A U16 ${ctrl_reg}` }); // OFFSET_CALC_LT-RE850
+    ctrl_reg.value = parseInt(ctrl_reg_bits, 2);
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD08A U16 ${ctrl_reg.value}` }); // OFFSET_CALC_LT-RE850
 }
 
 function submit_fault_reg(fault_idx: number) {
@@ -171,13 +170,13 @@ onMounted(() => {
         <div class="lt_re850_control_row" title="Heater Power (W)">
             <span class="lt_re850_control_lbl">Fan Speed (%)</span>
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="fan_speed_slide" @slideend="fan_speed = fan_speed_slide" />
-            <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="fan_speed" @keyup.enter="submit_fan_speed_val">
+            <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="fan_speed" @keyup.enter="submit_fan_speed_val()">
         </div>
 
         <div class="lt_re850_control_row" title="Heater Power (W)">
             <span class="lt_re850_control_lbl">Heat Power (%)</span>
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="heat_power_slide" @slideend="heat_power = heat_power_slide" />
-            <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="heat_power" @keyup.enter="submit_heat_power_val">
+            <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="heat_power" @keyup.enter="submit_heat_power_val()">
         </div>
         <div class=" lt_re850_temps">
             <div class="lt_re850_temps">

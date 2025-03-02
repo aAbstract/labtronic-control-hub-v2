@@ -120,7 +120,11 @@ export interface AlertConfig {
     btns_config: AlertButtonConfig[];
 };
 
-export type DeviceStatus = 'OK' | 'ERROR' | 'UNKNOWN';
+export enum DeviceStatus {
+    OK = 0,
+    ERROR = 1,
+    UNKNOWN = 2,
+};
 
 export enum VceParamType {
     VCE_CONST = 0,
@@ -247,4 +251,10 @@ export enum RecordingState {
     RUNNING = 0,
     PAUSED = 1,
     STOPPED = 2,
+};
+
+export interface LTBusDeviceErrorMsg {
+    error_code: number;
+    error_text: string;
+    user_ack: boolean;
 };
