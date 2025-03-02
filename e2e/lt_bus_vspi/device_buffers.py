@@ -5,7 +5,6 @@ sys.path.append(os.getcwd())
 from e2e.lt_bus_vspi.lt_bus_vspi import (
     DeviceBuffer,
     DeviceRegisterConfig,
-    LTBusVSPI,
 )
 # autopep8: on
 
@@ -49,7 +48,7 @@ for lt_re850_register_config in lt_re850_device_data_registers_config:
         lt_re850_data_buffer.write_register(__conf.register_name, __conf.offset / 10)
 
     if __conf.register_name == 'INPUT_REG':
-        lt_re850_data_buffer.write_register(__conf.register_name, 3)
+        lt_re850_data_buffer.write_register(__conf.register_name, 6)
 
     if __conf.register_name == 'CTRL_BTN_REG':
         lt_re850_data_buffer.write_register(__conf.register_name, 1)

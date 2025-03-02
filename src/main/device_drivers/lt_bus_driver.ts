@@ -46,11 +46,10 @@ export class LtBusDriver {
         slave_id: number,
 
         _device_model: string = '',
-        _request_pool_freq_ms: number = 10,
-        _request_timeout: number = 1000,
         _ipc_handler: (channel: string, data: any) => void,
         _logger: (log_msg: LogMsg) => void = (log_msg) => console.log(log_msg.msg),
-
+        _request_pool_freq_ms: number = 1,
+        _request_timeout: number = 1000,
     ) {
         this.is_connected = false;
 
@@ -234,7 +233,6 @@ export class LtBusDriver {
 
     private async lt_bus_request(request_packet: Uint8Array, response_data_size: number): Promise<Result<Uint8Array>> {
         const response_packet_size = LtBusDriver.REQUEST_PACKET_MIN_SIZE + response_data_size;
-        const buffer: number[] = [];
         let __resolve: (value: Result<Uint8Array>) => void = (_x) => { };
         let __iid: NodeJS.Timeout | null = null;
         let __t = 0;
@@ -249,22 +247,17 @@ export class LtBusDriver {
                 __resolve({ err: 'LT_BUS REQUEST TIMEOUT' });
             }
 
-            let byte = __this.serial_port.read(1);
-            if (byte === null)
+            const response_packet_buffer = __this.serial_port.read(response_packet_size);
+            if (!response_packet_buffer)
                 return;
-            byte = byte[0];
-            buffer.push(byte);
 
-            if (buffer.length === response_packet_size) {
-                if (__iid)
-                    clearInterval(__iid);
+            if (__iid)
+                clearInterval(__iid);
 
-                if (buffer[0] === 0x7B && buffer[buffer.length - 1] === 0x7D)
-                    __resolve({ ok: Uint8Array.from(buffer) });
-                else
-                    debugger;
+            if (response_packet_buffer[0] === 0x7B && response_packet_buffer[response_packet_buffer.length - 1] === 0x7D)
+                __resolve({ ok: response_packet_buffer });
+            else
                 __resolve({ err: 'Invalid Response Packet Format' });
-            }
         }
 
         return new Promise((resolve, _reject) => {

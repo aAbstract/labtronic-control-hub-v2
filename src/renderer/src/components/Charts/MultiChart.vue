@@ -13,6 +13,7 @@ import { DeviceMsg } from '@common/models';
 
 // @ts-ignore
 const CHART_POINTS_LIMIT = 32;
+const x_axis_default_sequence = new Array(CHART_POINTS_LIMIT / 2).fill(0).map((_, idx) => idx);
 let points_data: Record<number, PlotSeries> = {};
 let points_changed: boolean = false;
 const device_model = inject('device_model');
@@ -98,7 +99,7 @@ onMounted(() => {
             });
             const chart_params = read_config.map(x => props.device_ui_config.get_chart_params(x.msg_type)) as ChartParams[];
             const new_chart_data: ChartData = {
-                labels: [],
+                labels: x_axis_default_sequence,
                 datasets: chart_params,
             };
             chart_data.value = new_chart_data;

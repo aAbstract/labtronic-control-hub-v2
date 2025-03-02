@@ -13,6 +13,7 @@ import { DeviceMsg } from '@common/models';
 
 // @ts-ignore
 const CHART_POINTS_LIMIT = 32;
+const x_axis_default_sequence = new Array(CHART_POINTS_LIMIT / 2).fill(0).map((_, idx) => idx);
 let points_data: Record<number, PlotSeries> = {};
 let points_changed: boolean = false;
 const device_model = inject('device_model');
@@ -67,7 +68,8 @@ function render_chart() {
         labels: [],
         datasets: [chart_params],
     };
-    new_chart_data.labels = points_data[active_msg_type].x;
+    const active_x_axis = points_data[active_msg_type].x;
+    new_chart_data.labels = active_x_axis.length === 0 ? x_axis_default_sequence : active_x_axis;
     new_chart_data.datasets[0].data = points_data[active_msg_type].y;
     chart_data.value = new_chart_data;
 }

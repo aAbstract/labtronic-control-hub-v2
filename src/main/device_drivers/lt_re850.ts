@@ -437,7 +437,7 @@ export function init_lt_re850_serial_adapter(_main_window: BrowserWindow) {
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, (_, data) => {
         const { port_name } = data;
-        lt_bus_driver = new LtBusDriver(port_name, LT_RE850_SLAVE_ID, DEVICE_MODEL, 1, 1000, mw_ipc_handler, mw_logger);
+        lt_bus_driver = new LtBusDriver(port_name, LT_RE850_SLAVE_ID, DEVICE_MODEL, mw_ipc_handler, mw_logger);
         lt_bus_driver.connect();
         __enable_pool = true;
         __pool_task().then(() => mw_logger({ level: 'WARN', msg: 'Data Pool Task Stopped' }));
