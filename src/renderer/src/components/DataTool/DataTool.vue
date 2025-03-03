@@ -240,8 +240,6 @@ function sampling_dt_focused() {
 
 function validate_sampling_dt() {
     sampling_dt.value = Math.round(sampling_dt.value);
-    if (sampling_dt.value < RT_SAMPLING_DT_LIMIT)
-        sampling_dt.value = RT_SAMPLING_DT_LIMIT;
 }
 
 onBeforeMount(() => {
@@ -309,6 +307,10 @@ onMounted(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         if (!is_recording)
             return;
+
+        const time_ms = new Date().getTime() - start_epoch;
+        time_fmt.value = fmt_time(time_ms);
+
         const device_msg: DeviceMsg = data.device_msg;
         const { seq_number } = device_msg;
 
