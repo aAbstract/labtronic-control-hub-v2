@@ -4,6 +4,7 @@ import ToggleButton from 'primevue/togglebutton';
 import Slider from 'primevue/slider';
 import { ref, reactive, inject, onMounted, computed, watch, shallowRef } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import Button from 'primevue/button';
 
 import { electron_renderer_send } from '@renderer/lib/util';
 import { LTBusDeviceMsg } from '@common/models';
@@ -17,8 +18,8 @@ const heat_power = ref(0)
 const fan_speed_slide = ref(0)
 const heat_power_slide = ref(0)
 
-const heater_tmp = ref(2)
-const thermo_tmp = ref(1)
+const heater_tmp = ref(0)
+const thermo_tmp = ref(0)
 
 const level_reg = ref(0);
 const level_bits = computed(() => level_reg.value.toString(2).padStart(3, '0'));
@@ -82,13 +83,20 @@ function submit_ctrl_reg() {
 
 function submit_fault_reg(fault_idx: number) {
     const _fault_buttons_state = new Array(10).fill(false);
-    _fault_buttons_state[fault_idx] = true;
+    _fault_buttons_state[fault_idx] = fault_buttons_state.value[fault_idx];
     fault_buttons_state.value = _fault_buttons_state;
 
     // encode faults register bits
     let fault_reg_bits = _fault_buttons_state.map(x => x ? '1' : '0').toReversed().join('');
     const fault_reg = parseInt(fault_reg_bits, 2);
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD08C U16 ${fault_reg}` }); // OFFSET_CALC_LT-RE850
+}
+
+function device_power_off() {
+    control_buttons.forEach(ctrl_btn => ctrl_btn.value = false);
+    fault_buttons_state.value = new Array(10).fill(false);
+    submit_ctrl_reg();
+    submit_fault_reg(0);
 }
 
 const control_buttons = reactive([
@@ -178,8 +186,8 @@ onMounted(() => {
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="heat_power_slide" @slideend="heat_power = heat_power_slide" />
             <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="heat_power" @keyup.enter="submit_heat_power_val()">
         </div>
-        <div class=" lt_re850_temps">
-            <div class="lt_re850_temps">
+        <div class="lt_re850_temps">
+            <div>
                 <span class="lt_re850_control_lbl">Heater TMP (C)</span>
                 <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="heater_tmp" @keyup.enter="submit_heater_tmp_setpoint()">
             </div>
@@ -187,6 +195,7 @@ onMounted(() => {
                 <span class="lt_re850_control_lbl">Thermostat (C)</span>
                 <input style="width: 50px;" class="lt_re850_inp" type="text" v-model="thermo_tmp" @keyup.enter="submit_thermostat_setpoint()">
             </div>
+            <Button style="width: 32px; height: 32px;" text outlined rounded icon="pi pi-power-off" @click="device_power_off()" />
         </div>
 
         <div class="lt_re850_buttons">
@@ -262,6 +271,7 @@ onMounted(() => {
 .lt_re850_temps {
     display: flex;
     justify-content: space-around;
+    align-items: center;
 }
 
 .lt_re850_control_lbl {
