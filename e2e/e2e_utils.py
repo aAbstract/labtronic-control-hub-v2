@@ -1,4 +1,5 @@
 import socket
+import base64
 import colorama
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -212,12 +213,21 @@ def check_chx_device_state(driver: webdriver.Chrome, device_vspi: VSPI, func_id:
             device_vspi.write_msg(state.key_msg_type, state.value)
 
     #   some times the values delay until being updated so ,sleep 5 seconds
-    time.sleep(5)
+    time.sleep(1)
     chx_device_state = get_chx_device_state(driver)
 
     for state in states_check_arr:
         if chx_device_state[state.key] != state.value:
-            print(state.key, chx_device_state[state.key], state.value)
             return 1
 
+    return 0
+
+
+def test_screenshot(element: WebElement, image_path: str) -> int:
+    # this function takes element from web and compare it to image saved on the file
+    comp_as_base64 = element.screenshot_as_base64
+    with open(image_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        if encoded_string != comp_as_base64:
+            return 1
     return 0

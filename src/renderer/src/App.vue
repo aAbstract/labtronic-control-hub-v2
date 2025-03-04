@@ -22,7 +22,7 @@ import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
-import LT_RE850 from '@renderer/components/DeviceControl/LT_RE850.vue';
+import LT_TO202 from '@renderer/components/DeviceControl/LT_TO202.vue';
 
 const APP_THEME = {
   '--dark-bg-color': '#0B0E1F',
@@ -32,7 +32,7 @@ const APP_THEME = {
   '--accent-color': '#29B2F8',
   '--empty-gauge-color': '#2D3A4B',
 };
-const DEVICE_MODEL = 'LT-RE850';
+const DEVICE_MODEL = 'LT-TO202';
 const toast_service = useToast();
 const spring_display = ref<string>('block');
 
@@ -85,7 +85,7 @@ onBeforeMount(() => {
         <div id="model_control_cont">
           <div class="ui_spring"></div>
           <DeviceModelPanel :device_ui_config="DEVICE_UI_CONFIG_MAP[DEVICE_MODEL]" />
-          <LT_RE850 />
+          <LT_TO202 />
           <div class="ui_spring"></div>
         </div>
         <TerminalPanel />

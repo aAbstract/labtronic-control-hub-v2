@@ -149,7 +149,7 @@ export interface CHXCloudSettings {
 
 export interface CHXComputedParam {
     param_name: string;
-    expr: string;
+    expr?: string;
     unit?: string;
     msg_type?: number;
 };
@@ -192,6 +192,12 @@ export interface CHXSettings {
 export enum LT_HT103_DeviceOperationMode {
     CALIBRATION = 0,
     EXPERIMENT = 1,
+};
+
+export enum LT_HT004_DeviceOperationMode {
+    PLATE = 0,
+    HEATER = 1,
+    BUNDLE = 2,
 };
 
 export interface LT_HT103_DeviceConfig {
