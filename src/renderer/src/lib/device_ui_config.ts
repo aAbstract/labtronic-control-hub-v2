@@ -244,6 +244,19 @@ export const LT_EV574_DUIC = new DeviceUIConfig(
     'LT-EV574',
 );
 
+export const LT_EE759_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {
+        0: new ChartParams('V', '#9C27B0'), // READ_V
+        1: new ChartParams('I', '#00BCD4'), // READ_I
+
+        16: new ChartParams('P', '#009688'), // VCE: P
+        17: new ChartParams('E_wh', '#CDDC39'), // VCE: E_wh
+    },
+    'LT-EE759',
+);
+
 export const LT_RE849_DUIC = new DeviceUIConfig(
     {},
     {},
@@ -274,4 +287,6 @@ export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-RE850': LT_RE850_DUIC,
 
     'LT-EV574': LT_EV574_DUIC,
+
+    'LT-EE759': LT_EE759_DUIC,
 };
