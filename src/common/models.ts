@@ -18,6 +18,18 @@ export interface MsgTypeConfig {
     cfg2: number;
 };
 
+export interface LTBusMsgConfig {
+    msg_type: number;
+    msg_name: string;
+};
+
+export interface LTBusDeviceMsg {
+    config: LTBusMsgConfig;
+    seq_number: number;
+    msg_value: number;
+    b64_msg_value: string;
+};
+
 export interface DeviceMsg {
     config: MsgTypeConfig;
     seq_number: number;
@@ -108,7 +120,11 @@ export interface AlertConfig {
     btns_config: AlertButtonConfig[];
 };
 
-export type DeviceStatus = 'OK' | 'ERROR' | 'UNKNOWN';
+export enum DeviceStatus {
+    OK = 0,
+    ERROR = 1,
+    UNKNOWN = 2,
+};
 
 export enum VceParamType {
     VCE_CONST = 0,
@@ -235,4 +251,10 @@ export enum RecordingState {
     RUNNING = 0,
     PAUSED = 1,
     STOPPED = 2,
+};
+
+export interface LTBusDeviceErrorMsg {
+    error_code: number;
+    error_text: string;
+    user_ack: boolean;
 };

@@ -107,7 +107,7 @@ watch([sample_shape, sample_material], () => {
     }
 
     // Groove - 40mm
-    if (sample_shape.value == 3) {
+    if (sample_shape.value === 3) {
         post_event('change_device_model_asset', { _asset: 'lt_ht103_grooved_aluminum' });
         electron_renderer_send(`${device_model}_load_vce_sample_length`, { sample_length: 40 });
         return;
@@ -121,7 +121,7 @@ watch([sample_shape, sample_material], () => {
         electron_renderer_send(`${device_model}_load_vce_sample_length`, { sample_length: 40 });
 
     let _sample_shape = 'short';
-    if (sample_shape.value == 1)
+    if (sample_shape.value === 1)
         _sample_shape = 'long';
 
     let _sample_material = 0;

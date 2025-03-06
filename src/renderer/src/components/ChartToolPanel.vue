@@ -79,16 +79,19 @@ const chart_tool_op = ref();
 const chart_cursor_info_op = ref();
 const chart_cursor_info_values = shallowRef<Record<number, number>>({});
 
+const data_points_x_sn_map: Record<number, number> = {};
 function on_chart_click(chart_event: ChartEvent) {
     if (!chart_data.value.labels)
         return;
+
     const _chart: _Chart = (chart_event as any).chart;
-    const x_idx = _chart.scales.x.getValueForPixel(chart_event.x as number) as number;
-    const x_offset = _chart.scales.x.getPixelForValue(x_idx) as number;
-    if (sorted_cache.length === 0)
+    const x_value = Number((_chart.scales.x.getValueForPixel(chart_event.x as number) as number).toFixed(1));
+    const x_offset = _chart.scales.x.getPixelForValue(x_value) as number;
+    const msg_sn = data_points_x_sn_map[x_value];
+    const data_point = data_points_cache[msg_sn];
+    if (!data_point)
         return;
 
-    const data_point = sorted_cache[x_idx];
     const _cursor_info: Record<number, number> = {};
     Object.keys(data_point).forEach(msg_type => _cursor_info[msg_type] = data_point[msg_type]);
     chart_cursor_info_values.value = _cursor_info;
@@ -110,13 +113,15 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
         aspectRatio: 2,
         color: font_color,
         scales: {
-            x: { ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? 'Time [s]', display: true, color: font_color } },
+            x: { type: 'linear', ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? 'Time [s]', display: true, color: font_color } },
             y: _y_min === -1 && _y_max === -1 ?
                 {
+                    type: 'linear',
                     ticks: { color: font_color },
                     grid: { color: grid_color },
                 } :
                 {
+                    type: 'linear',
                     ticks: { color: font_color },
                     grid: { color: grid_color },
                     min: _y_min,
@@ -169,14 +174,17 @@ function set_chart_x_y_msg_type() {
 }
 
 function set_chart_tool_state(_state: CHXChartState) {
-    chart_state.value = _state;
-    if (_state === CHXChartState.STOPPED) {
-        data_points_cache = {};
-        points_changed = true;
+    if (chart_state.value === CHXChartState.STOPPED && _state === CHXChartState.RECORDING) {
+        start_epoch = new Date().getTime();
     }
 
-    else if (_state === CHXChartState.RECORDING)
-        start_epoch = new Date().getTime();
+    else if (_state === CHXChartState.STOPPED) {
+        data_points_cache = {};
+        points_changed = true;
+        return;
+    }
+
+    chart_state.value = _state;
 }
 
 onBeforeMount(() => {
@@ -196,11 +204,9 @@ function __msg_type_color(msg_type: number): string {
     return chart_params.value[msg_type]?.borderColor ?? accent_color;
 }
 
-let sorted_cache: DataPointType[] = [];
 function render_chart() {
     const __x = chart_x_msg_type.value;
-    const _data_points = Object.values(data_points_cache).filter(dp => !isNaN(dp[__x])).sort((a, b) => a[__x] - b[__x]);
-    sorted_cache = _data_points;
+    const _data_points = Object.values(data_points_cache).filter(dp => !isNaN(dp[__x]));
     const x_series = _data_points.map(x => x[__x]);
     const _datasets: ChartParams[] = [];
     chart_y_msg_type_arr.value.forEach(__y => {
@@ -214,6 +220,9 @@ function render_chart() {
         labels: x_series,
         datasets: _datasets,
     };
+
+    console.log(x_series);
+    console.log(_datasets);
 }
 
 onMounted(() => {
@@ -259,9 +268,16 @@ onMounted(() => {
         const { msg_value, seq_number } = device_msg;
         const _msg_value = Number(msg_value.toFixed(2));
 
+        const t = __time_s();
         if (!data_points_cache[seq_number])
-            data_points_cache[seq_number] = { [-1]: __time_s() };
+            data_points_cache[seq_number] = { [-1]: t };
         data_points_cache[seq_number][msg_type] = _msg_value;
+
+        // map selected x values to msg seq_number to optimize search
+        if (chart_x_msg_type.value === -1)
+            data_points_x_sn_map[t] = seq_number;
+        if (chart_x_msg_type.value === msg_type)
+            data_points_x_sn_map[_msg_value] = seq_number;
 
         points_changed = true;
     });

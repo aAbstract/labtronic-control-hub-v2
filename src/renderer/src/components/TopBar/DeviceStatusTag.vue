@@ -9,17 +9,21 @@ import { DeviceStatus } from '@common/models';
 defineProps<{ tag_height: string, icon_size: string }>();
 
 const STATUS_COLOR_MAP: Record<DeviceStatus, string> = {
-    'OK': '#64DD17',
-    'ERROR': '#DD2C00',
-    'UNKNOWN': '#FFAB00',
-
+    [DeviceStatus.OK]: '#64DD17',
+    [DeviceStatus.ERROR]: '#DD2C00',
+    [DeviceStatus.UNKNOWN]: '#FFAB00',
 };
-const device_status = ref<DeviceStatus>('UNKNOWN');
+const STATUS_MSG_MAP: Record<DeviceStatus, string> = {
+    [DeviceStatus.OK]: 'OK',
+    [DeviceStatus.ERROR]: 'ERROR',
+    [DeviceStatus.UNKNOWN]: '--',
+};
+const device_status = ref<DeviceStatus>(DeviceStatus.UNKNOWN);
 const device_model = inject('device_model');
 
 onMounted(() => {
     subscribe('set_device_status', 'set_device_status', args => device_status.value = args.device_status);
-    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => device_status.value = 'OK');
+    window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => device_status.value = DeviceStatus.OK);
 });
 
 </script>
@@ -27,7 +31,7 @@ onMounted(() => {
 <template>
     <div id="dev_status_tag">
         <PulseIcon id="pulse_icon" :fill_color="STATUS_COLOR_MAP[device_status]" />
-        <span>{{ device_status === 'UNKNOWN' ? '--' : device_status }}</span>
+        <span>{{ STATUS_MSG_MAP[device_status] }}</span>
     </div>
 </template>
 

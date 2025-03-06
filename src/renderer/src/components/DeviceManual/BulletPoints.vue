@@ -9,8 +9,8 @@ defineProps<{
 
 <template>
     <div class="bps_main_cont">
-        <span v-if="list_type == 'UL'" v-for="point in points" class="bps_item">{{ `- ${point}` }}</span>
-        <span v-else-if="list_type == 'OL'" v-for="(point, index) in points" class="bps_item">{{ `${index + 1}- ${point}` }}</span>
+        <span v-if="list_type === 'UL'" v-for="point in points" class="bps_item">{{ `- ${point}` }}</span>
+        <span v-else-if="list_type === 'OL'" v-for="(point, index) in points" class="bps_item">{{ `${index + 1}- ${point}` }}</span>
         <span v-else class="bps_item">{{ `Unknown List Type: ${list_type}, Choose UL for Unordered Lists and OL for Ordered Ones` }}</span>
     </div>
 </template>

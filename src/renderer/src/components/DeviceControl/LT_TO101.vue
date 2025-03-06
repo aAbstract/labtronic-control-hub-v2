@@ -37,7 +37,7 @@ onMounted(() => {
         if (cfg2 === 0xA1 && device_mode.value !== LT_TO101_DeviceMode.BOYLE) {
             device_mode.value = LT_TO101_DeviceMode.BOYLE;
             post_event('change_device_model_asset', { _asset: 'lt_to101_boyle' });
-        } else if (cfg2 == 0xA2 && device_mode.value !== LT_TO101_DeviceMode.GLUSS) {
+        } else if (cfg2 === 0xA2 && device_mode.value !== LT_TO101_DeviceMode.GLUSS) {
             device_mode.value = LT_TO101_DeviceMode.GLUSS;
             post_event('change_device_model_asset', { _asset: 'lt_to101_gluss' });
         }

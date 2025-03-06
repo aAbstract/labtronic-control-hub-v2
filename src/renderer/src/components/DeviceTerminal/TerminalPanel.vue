@@ -15,9 +15,23 @@ const device_model = inject('device_model');
 const panel_pos = ref('-50vw');
 const cmd = ref('');
 
+let cmd_history: string[] = [];
+let hint_cycle: string[] = [];
+let hint_idx = 0;
+function show_cmd_hint() {
+    hint_idx = (hint_idx + 1) % (cmd_history.length + 1);
+    if (hint_idx === 0)
+        cmd.value = '';
+    else
+        cmd.value = hint_cycle[hint_idx];
+}
+
 function submit_cmd() {
     const _cmd = cmd.value.toUpperCase();
+    cmd_history.push(_cmd);
+    hint_cycle = ['', ...cmd_history.toReversed()];
     cmd.value = '';
+
     if (_cmd === 'HELP') {
         // write help logs to logs panel without tracking it
         electron_renderer_invoke<string[]>(`${device_model}_get_device_cmd_help`).then(cmd_help => {
@@ -27,6 +41,7 @@ function submit_cmd() {
         });
         return;
     }
+
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: _cmd });
 }
 
@@ -59,7 +74,7 @@ onMounted(() => {
         <DeviceLogs />
         <div id="control_cmd_cont">
             <input type="text" style="width: 120px; margin-right: 4px;" readonly value="CHX (local)> " />
-            <input type="text" v-model="cmd" style="flex-grow: 1;" @keyup.enter="submit_cmd()" />
+            <input type="text" v-model="cmd" style="flex-grow: 1;" @keyup.enter="submit_cmd()" @keyup.up="show_cmd_hint()" />
         </div>
     </div>
 </template>
