@@ -49,7 +49,7 @@ export class LtBusDriver {
         _ipc_handler: (channel: string, data: any) => void,
         _logger: (log_msg: LogMsg) => void = (log_msg) => console.log(log_msg.msg),
         _request_pool_freq_ms: number = 1,
-        _request_timeout: number = 1000,
+        _request_timeout: number = 50,
     ) {
         this.is_connected = false;
 

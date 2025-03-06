@@ -14,17 +14,11 @@ interface point {
 const x_coordinate = ref()
 const y_coordinate = ref()
 const student_points = ref<point[]>([])
-onMounted(() => {
-
-    chartOptions.value = setChartOptions();
-    chartData.value = setChartData() as ChartData
-})
 const chartOptions = shallowRef();
 const chartData = shallowRef<ChartData>();
 
 
 const setChartData = () => {
-
     return {
         labels: props.x_dataset,
         datasets: [
@@ -82,7 +76,7 @@ const setChartOptions = () => {
                     color: documentStyle.getPropertyValue('--font-color'),
                 },
                 grid: {
-                    display: false
+                    color: documentStyle.getPropertyValue('--empty-gauge-color'),
                 }
             },
             y: {
@@ -94,7 +88,6 @@ const setChartOptions = () => {
                 },
                 grid: {
                     color: documentStyle.getPropertyValue('--empty-gauge-color'),
-
                 }
             },
 
@@ -102,6 +95,7 @@ const setChartOptions = () => {
         }
     };
 }
+
 function add_point() {
     student_points.value.push({ x: x_coordinate.value, y: y_coordinate.value })
 
@@ -117,6 +111,7 @@ function add_point() {
     x_coordinate.value = null
     y_coordinate.value = null
 }
+
 function remove_point(index: number) {
     student_points.value.splice(index, 1)
     let o1 = chartData.value
@@ -128,149 +123,116 @@ function remove_point(index: number) {
         datasets: o1.datasets
     }
     chartData.value = o2
-
 }
+
 const overlay_panel_pt = {
     root: { style: 'max-height: 280px; overflow-y: scroll;' },
-    content: { style: 'padding: 8px;' },
+    content: { style: 'padding: 8px 8px 0px 8px;' },
 };
-
 const add_point_overlay_ref = ref()
-
-
 function show_chart_cursor_info_op_overlay_panel(_event: MouseEvent) {
     add_point_overlay_ref.value.toggle(_event);
 }
 
+onMounted(() => {
+    chartOptions.value = setChartOptions();
+    chartData.value = setChartData() as ChartData
+})
+
 </script>
 
 <template>
-    <div class="re850_chart_container">
-        <Button icon="pi pi-plus" class="add_point_overlay_button" title="Add Point" @click="show_chart_cursor_info_op_overlay_panel"  text/>
+    <div id="re850_chart_container">
+        <Button icon="pi pi-cog" id="add_point_overlay_button" rounded outlined text @click="show_chart_cursor_info_op_overlay_panel" />
 
-
-        <OverlayPanel ref="add_point_overlay_ref" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;" :dismissable="false">
-            <div class="student_points_container">
-                <div class="data_wrapper ">
-                    <div class="points_container data_preview_table_header">
+        <OverlayPanel ref="add_point_overlay_ref" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+            <div id="student_points_container">
+                <div id="data_wrapper ">
+                    <div id="data_preview_table_header" class="points_container">
                         <div class="point_wrapper ">
-                            <p> X </p>
-                            <p> Y </p>
+                            <p class="point_text"> X </p>
+                            <p class="point_text"> Y </p>
                         </div>
-                        <p> - </p>
-
+                        <p class="point_text"> - </p>
                     </div>
+                    <div style="height: 4px;"></div>
 
                     <div class="points_container" v-for="(point, i) in student_points">
-
                         <div class="point_wrapper">
-                            <p> {{ point.x }}</p>
-                            <p> {{ point.y }}</p>
+                            <p class="point_text"> {{ point.x }}</p>
+                            <p class="point_text"> {{ point.y }}</p>
                         </div>
-
-                        <Button title="Delete" class="pi pi-times" style="border: none; font-size: 12px;color: #DD2C00;" @click="remove_point(i)"  text :pt="{label:{style:'display:none'}}"/>
+                        <div style="width: 24px;"></div>
+                        <Button style="color: #DD2C00;" class="small_btn" icon="pi pi-times" outlined rounded text @click="remove_point(i)" />
                     </div>
                 </div>
 
-
-
-
-
-                <div class="points_container">
+                <div style="margin-top: 16px; margin-bottom: 8px;" class="points_container">
                     <div class="point_wrapper">
-                        <input class="input" v-model="x_coordinate" />
-                        <input class="input" v-model="y_coordinate" />
+                        <input class="dt_tf" v-model="x_coordinate" @keyup.enter="add_point()" />
+                        <input class="dt_tf" v-model="y_coordinate" @keyup.enter="add_point()" />
                     </div>
-
-                    <Button style="padding: 0;margin: 0;width:100%;text-align: end;" icon="pi pi-plus"  @click="add_point" text/>
+                    <div style="width: 24px;"></div>
+                    <Button class="small_btn" outlined rounded text icon="pi pi-plus" @click="add_point()" />
                 </div>
-
             </div>
-
         </OverlayPanel>
 
 
-        <Chart class="lt_re850_chart" :data="chartData" :options="chartOptions"  />
+        <Chart id="lt_re850_chart" :data="chartData" :options="chartOptions" />
     </div>
 </template>
 
 <style scoped>
-.points_container>*:last-child{
-    width: 100%;
-    padding-inline: 8px;
-    text-align: end;
-
+.small_btn {
+    width: 26px;
+    height: 26px;
 }
-p{
+
+.point_text {
     width: 60px;
     text-align: center;
     color: var(--font-color);
     font-weight: bold;
     font-size: 14px;
-}
-.add_point {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-}
-button{
-    padding: 0;
-    margin: 0;
-    border: none;
+    margin: 0px;
 }
 
-.data_preview_table_header {
-    position: sticky;
-    top: 0px;
+#data_preview_table_header {
     border-bottom: 2px solid var(--font-color);
-    background-color: #1f2937;
-    z-index: 2;
 }
 
 
-.add_point_overlay_button {
+#add_point_overlay_button {
     position: absolute;
-    border-radius: 100%;
-    position: absolute;
+    right: 8px;
     z-index: 1;
     width: 32px;
     height: 32px;
     color: var(--accent-color);
-    background-color: transparent;
-    border: none;
-    right: 8px;
-    top: 8px;
 }
 
-p {
-    margin: 0;
-    padding: 0;
-}
-.data_wrapper{
-    height: 120px;
+#data_wrapper {
+    height: fit-content;
     width: 200px;
     margin-bottom: 12px;
-    overflow-y: scroll;
     position: relative;
 }
-input {
+
+.dt_tf {
     font-family: "Lucida Console", "Courier New", monospace;
+    width: 60px;
     color: var(--font-color);
     border: none;
     background-color: var(--dark-bg-color);
     font-size: 12px;
     font-weight: bold;
     padding: 4px;
-    width: 60px;
 }
 
-.point_part {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-    align-items: center;
+.dt_tf:focus {
+    outline: none;
+    border: 1px solid var(--accent-color);
 }
 
 .point_wrapper {
@@ -280,21 +242,20 @@ input {
 
 .points_container {
     display: flex;
-    gap: 8px;
     align-items: center;
 }
 
-.student_points_container {
+#student_points_container {
     display: flex;
     flex-direction: column;
-
+    max-height: 100px;
 }
 
-.re850_chart_container {
+#re850_chart_container {
     position: relative;
 }
 
-.lt_re850_chart {
+#lt_re850_chart {
     height: 35vh;
     width: calc(100% - 16px);
     margin: 8px;

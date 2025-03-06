@@ -1210,4 +1210,42 @@ export const cleaned_R410A_Property_Table = {
         1.6424,
         1.638
     ]
-}
+};
+
+export const _msg_type_chart_name_map: Record<number, string> = {
+    [-1]: "Time [s]",
+    0: "Flow [m/s]",
+    1: "Pressure 1 [bar]",
+    2: "Pressure 2 [bar]",
+    3: "Humidity 1 [%]",
+    4: "Humidity 2 [%]",
+    5: "Pump 1 Current [A]",
+    6: "Pump 2 Current [A]",
+    7: "Compressor Current [A]",
+    8: "Temperature 1 [C]",
+    9: "Temperature 2 [C]",
+    10: "Temperature 3 [C]",
+    11: "Temperature 4 [C]",
+    12: "Temperature 5 [C]",
+    13: "Temperature 6 [C]",
+    14: "Temperature 7 [C]",
+    15: "Temperature 8 [C]",
+    16: "Temperature 9 [C]",
+    17: "Temperature 10 [C]",
+    18: "Temperature 11 [C]",
+    19: "Temperature 12 [C]",
+    20: "Temperature 13 [C]",
+    21: "Temperature 14 [C]",
+    22: "Temperature 15 [C]",
+    23: "Temperature 16 [C]",
+    24: "Temperature 17 [C]",
+    25: "Temperature 18 [C]",
+    26: "Temperature 19 [C]",
+    27: "Temperature 20 [C]",
+    28: "Pressure 3 [bar]",
+    29: "Pressure 4 [bar]",
+    31: "Fan Speed [rpm]",
+    32: "Heater Power [%]",
+    33: "Heater Setpoint [C]",
+    34: "Thermostat Setpoint [C]",
+};

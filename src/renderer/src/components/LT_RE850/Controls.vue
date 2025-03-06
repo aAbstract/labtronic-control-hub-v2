@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import ToggleButton from 'primevue/togglebutton';
+import InputSwitch from 'primevue/inputswitch';
 import Slider from 'primevue/slider';
 import { ref, reactive, inject, onMounted, computed, watch, shallowRef } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -81,6 +81,13 @@ function submit_ctrl_reg() {
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD08A U16 ${ctrl_reg.value}` }); // OFFSET_CALC_LT-RE850
 }
 
+function __any_true(arr: boolean[]): boolean {
+    for (const x of arr)
+        if (x === true)
+            return true;
+    return false;
+}
+const fault_btns_disabled = computed(() => __any_true(fault_buttons_state.value));
 function submit_fault_reg(fault_idx: number) {
     const _fault_buttons_state = new Array(10).fill(false);
     _fault_buttons_state[fault_idx] = fault_buttons_state.value[fault_idx];
@@ -113,7 +120,7 @@ const control_buttons = reactive([
         value: false,
     },
     {
-        name: 'CompMode',
+        name: 'CompAuto',
         value: false,
     },
     {
@@ -145,6 +152,10 @@ const control_buttons = reactive([
 const fault_buttons_labels = new Array(10).fill(0).map((_m, idx) => `F${idx + 1}`);
 const fault_buttons_state = shallowRef(new Array(10).fill(false));
 
+function load_fault_reg(fault_reg: number) {
+    fault_buttons_state.value = [...fault_reg.toString(2).padStart(10, '0')].map(x => x === '1' ? true : false).toReversed();
+}
+
 onMounted(() => {
     window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         const device_msg: LTBusDeviceMsg = data.device_msg;
@@ -154,8 +165,11 @@ onMounted(() => {
         if (msg_type === 30)
             level_reg.value = msg_value;
 
-        if (msg_type == 35)
+        if (msg_type === 35)
             ctrl_reg.value = msg_value;
+
+        if (msg_type === 36)
+            load_fault_reg(msg_value);
     });
 });
 
@@ -202,14 +216,14 @@ onMounted(() => {
             <div class="control_buttons">
                 <div class="button_text" v-for="button in control_buttons">
                     <span>{{ button.name }}</span>
-                    <ToggleButton class="button" v-model="button.value" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size: 12px; border-radius: 4px;' } }" @change="submit_ctrl_reg()" />
+                    <InputSwitch v-model="button.value" @change="submit_ctrl_reg()" />
                 </div>
             </div>
             <div style="min-height: 100%; width: 4px;border-radius: 8px; background-color: var(--empty-gauge-color);"></div>
             <div class="fault_buttons">
                 <div class="button_text" v-for="(fault_name, idx) in fault_buttons_labels">
                     <span>{{ fault_name }}</span>
-                    <ToggleButton class="button" v-model:modelValue="fault_buttons_state[idx]" offLabel="OFF" onLabel="ON" :pt="{ box: { style: 'font-size: 12px; border-radius: 4px;' } }" @change="submit_fault_reg(idx)" />
+                    <InputSwitch v-model:modelValue="fault_buttons_state[idx]" :disabled="fault_buttons_state[idx] ? false : fault_btns_disabled" @change="submit_fault_reg(idx)" />
                 </div>
             </div>
         </div>
@@ -222,6 +236,10 @@ onMounted(() => {
 
 
 <style scoped>
+.p-inputswitch .p-inputswitch-slider:before {
+    background-color: red !important;
+}
+
 .water_level_bar_seg_off {
     border: 2px solid var(--font-color);
     background-color: transparent;

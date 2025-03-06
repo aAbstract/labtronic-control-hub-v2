@@ -9,7 +9,7 @@ import { useToast } from 'primevue/usetoast';
 import { post_event } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 import LT_RE850_Chart from '@renderer/components/LT_RE850/Chart.vue';
-import { cleaned_R410A_Property_Table } from '@renderer/lib/static';
+import { cleaned_R410A_Property_Table, _msg_type_chart_name_map } from '@renderer/lib/lt_re850_static';
 import Dashboard from '../LT_RE850/Dashboard.vue';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import Controls from '../LT_RE850/Controls.vue';
@@ -69,7 +69,10 @@ function toggle_fullscreen() {
         post_event('change_lt_re850_screen_mode', { _screen_mode: LT_RE850_ScreenMode.W1920 });
 }
 
+
+
 onMounted(() => {
+    post_event('set_chart_msg_type_name_map', { _msg_type_chart_name_map });
     post_event('update_device_model_cont_width', { width: '70%', margin_bottom: '0px' });
     post_event('remove_ui_springs', {});
     post_event('set_default_sampling_dt', { _sampling_dt: 0 });
