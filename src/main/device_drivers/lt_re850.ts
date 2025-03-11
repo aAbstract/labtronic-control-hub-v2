@@ -381,6 +381,10 @@ async function __pool_task() {
         }
         const f32_seq_decoded_msg_list = f32_seq_decode_result.ok as LTBusDeviceMsg[];
         for (const device_msg of f32_seq_decoded_msg_list) {
+            // calibrate FLOW sensor
+            if (device_msg.config.msg_type === 0)
+                device_msg.msg_value *= 0.7;
+
             device_msg.seq_number = __sn;
             mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
         }

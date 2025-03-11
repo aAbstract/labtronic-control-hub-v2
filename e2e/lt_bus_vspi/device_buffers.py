@@ -55,3 +55,6 @@ for lt_re850_register_config in lt_re850_device_data_registers_config:
 
     if __conf.register_name == 'FAULT_BTN_REG':
         lt_re850_data_buffer.write_register(__conf.register_name, 1)
+
+    if __conf.register_name == 'FLOW':
+        lt_re850_data_buffer.write_register(__conf.register_name, 12.34)
