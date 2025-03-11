@@ -215,6 +215,22 @@ export enum LT_HT107_DeviceMode {
 };
 // device models - LT_HT107
 
+// device models - LT_HT004
+export enum LT_HT004_DeviceOperationMode {
+    PLATE = 0,
+    HEATER = 1,
+    BUNDLE = 2,
+};
+
+export interface LT_HT004_DeviceConfig {
+    PT1000_In: number;
+    PT1000_Out: number;
+    PT1000_Heater: number;
+    P_Heater: number;
+    AirFlow: number;
+};
+// device models - LT_HT004
+
 // device models - LT_TO101
 export enum LT_TO101_DeviceMode {
     BOYLE = 0,

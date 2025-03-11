@@ -63,6 +63,8 @@ const LT_HT004_DRIVER_CONFIG: MsgTypeConfig[] = [
         cfg2: 0,
     },
 ];
+
+// changed PT1000_In to PT1000_Out
 const DEVICE_SERIES: CHXSeries[] = [
     {
         series_name: 'time - PT1000_In',
@@ -70,7 +72,7 @@ const DEVICE_SERIES: CHXSeries[] = [
         y_param: 0,
     },
     {
-        series_name: 'time - PT1000_In',
+        series_name: 'time - PT1000_Out',
         x_param: -1,
         y_param: 1,
     },
@@ -80,7 +82,6 @@ const LT_HT004_VCE_CONFIG = VirtualComputeEngine.map_driver_config_to_vce_param_
     [0, 1, 2, 3, 5],
     [4],
 )
-
 let serial_adapter: SerialAdapter | null = null;
 let main_window: BrowserWindow | null = null;
 
