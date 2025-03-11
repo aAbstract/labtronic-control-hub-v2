@@ -13,7 +13,7 @@ const device_pdf_src = ref<string | undefined>(undefined);
 const pdf_iframe = ref<HTMLIFrameElement>();
 
 onMounted(() => {
-    subscribe('toggle_device_pdf_panel', 'toggle_device_pdf_panel_visi', _ => {
+    subscribe('toggle_device_pdf_panel', _ => {
         const values_map = {
             '0px': '-60vw',
             '-60vw': '0px',
@@ -21,9 +21,9 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_device_pdf_panel', 'hide_device_pdf_panel', _ => panel_pos.value = '-60vw');
+    subscribe('hide_device_pdf_panel', _ => panel_pos.value = '-60vw');
 
-    subscribe('update_device_pdf_page', 'update_device_pdf_page', args => {
+    subscribe('update_device_pdf_page', args => {
         const target_page: number = args.target_page;
         device_pdf_src.value = URL.createObjectURL(pdf_object ?? new Blob()) + '#page=' + target_page;
     });

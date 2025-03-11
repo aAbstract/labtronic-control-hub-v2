@@ -23,7 +23,7 @@ const heater_state = ref(false);
 const heater_lbl_color = computed(() => heater_state.value ? '#64DD17' : 'var(--font-color)');
 
 onMounted(() => {
-    subscribe('device_config_ready', `device_config_ready_${device_model}`, () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(_device_config => {
             if (!_device_config)
                 return;
@@ -31,7 +31,7 @@ onMounted(() => {
         });
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { cfg2, msg_type } = device_msg.config;
         if (cfg2 === 0xA1 && device_mode.value !== LT_TO101_DeviceMode.BOYLE) {

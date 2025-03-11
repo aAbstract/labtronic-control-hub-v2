@@ -1,14 +1,13 @@
 <script setup lang="ts">
 
-import { ref, onMounted, inject, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 
 import { DropdownOption, DeviceMsg } from '@common/models';
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 
-const device_model = inject('device_model');
 // const T_sam_MSG_TYPE = 0;
 // const T_amb_MSG_TYPE = 1;
 // const T_ref_MSG_TYPE = 2;
@@ -77,7 +76,7 @@ function handle_water_level_switch_msg(wls: boolean) {
 }
 const cfg2_set = new Set([0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6]);
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type, cfg2 } = device_msg.config;
         if (msg_type === W_flw_MSG_TYPE)

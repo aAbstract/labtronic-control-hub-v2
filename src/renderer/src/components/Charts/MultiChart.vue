@@ -86,7 +86,7 @@ onMounted(() => {
     chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, _y_min, _y_max);
 
     // auto construct points data cache struct using device driver config
-    subscribe('device_config_ready', 'device_config_ready_MultiChart', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;
@@ -106,7 +106,7 @@ onMounted(() => {
         });
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         if (chart_state.value === CHXChartState.PAUSED)
             return;
 
@@ -131,13 +131,13 @@ onMounted(() => {
         points_changed = false;
     }, dt_ms);
 
-    subscribe('change_plot_channels', 'change_plot_channels', args => {
+    subscribe('change_plot_channels', args => {
         const { new_msg_type_state_map } = args;
         msg_type_state_map.value = new_msg_type_state_map;
         render_chart();
     });
 
-    subscribe('update_multi_chart_y_min_max', 'update_multi_chart_y_min_max', args => {
+    subscribe('update_multi_chart_y_min_max', args => {
         const y_min: number = args.y_min;
         const y_max: number = args.y_max;
         _y_min = y_min;
@@ -145,12 +145,12 @@ onMounted(() => {
         chart_opts.value = create_chart_options(chart_font_color, chart_grid_color, y_min, y_max);
     });
 
-    subscribe('set_multi_chart_state', 'set_multi_chart_state', args => {
+    subscribe('set_multi_chart_state', args => {
         const { chx_chart_state } = args;
         chart_state.value = chx_chart_state;
     });
 
-    subscribe('set_multi_chart_auto_scale', 'set_multi_chart_auto_scale', args => {
+    subscribe('set_multi_chart_auto_scale', args => {
         const { chx_chart_auto_scale } = args;
         chart_auto_scale.value = chx_chart_auto_scale;
 

@@ -4,7 +4,7 @@ import { ref, onMounted, inject } from 'vue';
 import Button from 'primevue/button';
 
 import { DeviceMsg } from '@common/models';
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_send } from '@renderer/lib/util';
 
 const device_model = inject('device_model');
@@ -12,7 +12,7 @@ const device_model = inject('device_model');
 const energy_wh = ref('0.00000');
 
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
 

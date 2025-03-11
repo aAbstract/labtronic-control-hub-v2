@@ -188,7 +188,7 @@ function set_chart_tool_state(_state: CHXChartState) {
 }
 
 onBeforeMount(() => {
-    subscribe('set_chart_msg_type_name_map', 'set_chart_msg_type_name_map', args => {
+    subscribe('set_chart_msg_type_name_map', args => {
         const { _msg_type_chart_name_map } = args;
         msg_type_chart_name_map.value = _msg_type_chart_name_map;
     });
@@ -226,7 +226,7 @@ function render_chart() {
 }
 
 onMounted(() => {
-    subscribe('toggle_chart_tool_panel', 'toggle_chart_tool_panel_visi', _ => {
+    subscribe('toggle_chart_tool_panel', _ => {
         const values_map = {
             '8px': '-50vw',
             '-50vw': '8px',
@@ -236,9 +236,9 @@ onMounted(() => {
         if (panel_pos.value === '-50vw')
             panel_expand.value = false;
     });
-    subscribe('hide_chart_tool_panel', 'hide_chart_tool_panel', _ => { panel_pos.value = '-50vw'; panel_expand.value = false });
+    subscribe('hide_chart_tool_panel', _ => { panel_pos.value = '-50vw'; panel_expand.value = false });
 
-    subscribe('device_config_ready', 'device_config_ready_ChartToolPanel', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;
@@ -259,7 +259,7 @@ onMounted(() => {
         });
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         if (chart_state.value !== CHXChartState.RECORDING)
             return;
 

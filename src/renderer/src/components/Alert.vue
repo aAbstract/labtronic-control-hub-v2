@@ -22,11 +22,11 @@ const dialog_pt = {
 };
 
 onMounted(() => {
-    subscribe('show_alert', 'show_alert', args => {
+    subscribe('show_alert', args => {
         dialog_config.value = args.dialog_config;
         dialog_visible.value = true;
     });
-    subscribe('hide_alert', 'hide_alert', () => dialog_visible.value = false);
+    subscribe('hide_alert', () => dialog_visible.value = false);
     window.electron?.ipcRenderer.on(`${device_model}_device_connected`, _ => dialog_visible.value = false);
 });
 

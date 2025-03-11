@@ -57,7 +57,7 @@ function save_cps_btn_click() {
 }
 
 onMounted(() => {
-    subscribe('show_cps_dialog', 'show_cps_dialog', _ => {
+    subscribe('show_cps_dialog', _ => {
         dialog_visible.value = true;
     });
 
@@ -67,7 +67,7 @@ onMounted(() => {
         vce_param_config.value = _vce_param_config;
     });
 
-    subscribe('device_config_ready', 'device_config_ready_CPsDialog', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<CHXComputedParam[]>(`${device_model}_get_chx_cps`).then(chx_cps => {
             if (!chx_cps)
                 return;

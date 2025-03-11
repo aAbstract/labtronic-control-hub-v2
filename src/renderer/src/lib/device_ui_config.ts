@@ -58,7 +58,7 @@ export class DeviceUIConfig {
         this.rot_color_idx = 0;
 
         // update ui params for dynamic msg_types like computed parameters
-        subscribe(`${device_model}_update_ui_params`, `${device_model}_update_ui_params`, (args) => {
+        subscribe(`${device_model}_update_ui_params`, (args) => {
             const device_config: MsgTypeConfig[] = args.device_config;
             device_config.forEach(_config => {
                 if (!_config.msg_name.startsWith('READ_'))

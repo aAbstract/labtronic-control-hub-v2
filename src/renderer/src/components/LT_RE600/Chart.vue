@@ -1,10 +1,11 @@
 <script setup lang="ts">
 
-import { shallowRef, onMounted, inject } from 'vue';
+import { shallowRef, onMounted } from 'vue';
 import Chart from 'primevue/chart';
 import { ChartOptions, ChartData } from 'chart.js';
 import { DeviceMsg } from '@common/models';
 import { ChartParams } from '@renderer/lib/device_ui_config';
+import { subscribe } from '@common/mediator';
 
 const props = defineProps<{
     x_msg_type: number;
@@ -14,7 +15,6 @@ const props = defineProps<{
     line_color: string;
 }>();
 
-const device_model = inject('device_model');
 const font_color = document.documentElement.style.getPropertyValue('--font-color');
 const chart_grid_color = document.documentElement.style.getPropertyValue('--empty-gauge-color');
 const chart_opts = shallowRef(create_chart_options(font_color, chart_grid_color, 0, 100));
@@ -41,7 +41,7 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
 }
 
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         const { msg_value, seq_number } = device_msg;

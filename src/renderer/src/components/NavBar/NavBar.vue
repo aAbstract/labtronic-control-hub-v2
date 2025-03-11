@@ -106,7 +106,7 @@ function toggle_panel(panel_name: string, panel_pos: PanelPosType) {
 }
 
 onMounted(() => {
-    subscribe('toggle_panel', 'toggle_panel', args => toggle_panel(args.panel_name, args.panel_pos));
+    subscribe('toggle_panel', args => toggle_panel(args.panel_name, args.panel_pos));
 });
 
 </script>

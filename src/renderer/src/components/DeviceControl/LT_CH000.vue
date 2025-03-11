@@ -49,7 +49,7 @@ function perp_btn_click(val: number) {
 }
 
 onMounted(() => {
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         if (msg_type === 0)
@@ -59,7 +59,7 @@ onMounted(() => {
     });
 
     // handle chx script injected parameters
-    subscribe('chx_script_ip_lt_ch000_test_control_value', '', args => {
+    subscribe('chx_script_ip_lt_ch000_test_control_value', args => {
         const pv = Math.round(args.pv);
         pisp_indc_val.value = pv;
         electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET PISTON_PUMP ${pv}` });

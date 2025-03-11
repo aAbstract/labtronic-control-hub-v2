@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 
 import { ref, onMounted, inject } from 'vue';
+
 import { post_event } from '@common/mediator';
 import { electron_renderer_invoke } from '@renderer/lib/util';
 import { LTBusDeviceMsg } from '@common/models';
+import { subscribe } from '@common/mediator';
 
 defineProps<{ full_screen: boolean }>();
 const temps = ref<number[]>(new Array(20).fill(0));
@@ -42,7 +44,7 @@ onMounted(() => {
         device_model_img.value = base64_src;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: LTBusDeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         if (msg_type >= 8 && msg_type <= 27)

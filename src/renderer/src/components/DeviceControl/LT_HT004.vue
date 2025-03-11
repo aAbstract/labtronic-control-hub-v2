@@ -4,7 +4,7 @@ import { ref, inject, onMounted } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import { DropdownOption, LT_HT004_DeviceOperationMode, DeviceMsg } from '@common/models';
-import { post_event } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_send } from '@renderer/lib/util';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 
@@ -73,7 +73,7 @@ onMounted(() => {
     post_event('change_device_model_asset', { _asset: 'lt_ht004_plate' });
     post_event('update_device_model_cont_width', { margin_bottom: '0px;' });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         switch (msg_type) {

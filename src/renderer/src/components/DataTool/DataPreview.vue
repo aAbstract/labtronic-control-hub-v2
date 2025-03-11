@@ -44,11 +44,11 @@ function scroll_table_down() {
 }
 
 onMounted(() => {
-    subscribe('show_data_preview', 'show_data_preview', _ => {
+    subscribe('show_data_preview', _ => {
         dialog_visible.value = true;
     });
 
-    subscribe('device_config_ready', 'device_config_ready_DataPreview', () => {
+    subscribe('device_config_ready', () => {
         electron_renderer_invoke<MsgTypeConfig[]>(`${device_model}_get_device_config`).then(device_config => {
             if (!device_config)
                 return;
@@ -65,18 +65,18 @@ onMounted(() => {
         });
     });
 
-    subscribe('record_data_point', 'record_data_point_data_preview', args => {
+    subscribe('record_data_point', args => {
         data_points_cache.push(args._data_point);
         data_points.value = [...data_points_cache];
         scroll_table_down();
     });
 
-    subscribe('clear_recorded_data', 'clear_recorded_data_data_preview', () => {
+    subscribe('clear_recorded_data', () => {
         data_points_cache = [];
         data_points.value = [];
     });
 
-    subscribe('set_shadow_recording_state', 'set_shadow_recording_state_DataPreview', args => {
+    subscribe('set_shadow_recording_state', args => {
         const recording_state = args.recording_state as RecordingState;
         shadow_recording_state.value = recording_state;
     });

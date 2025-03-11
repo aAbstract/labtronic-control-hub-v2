@@ -62,7 +62,7 @@ function check_ltai_agent() {
 }
 
 onMounted(() => {
-    subscribe('toggle_settings_panel', 'toggle_settings_panel_visi', _ => {
+    subscribe('toggle_settings_panel', _ => {
         const values_map = {
             '8px': '-50vw',
             '-50vw': '8px',
@@ -70,9 +70,9 @@ onMounted(() => {
         panel_pos.value = values_map[panel_pos.value];
     });
 
-    subscribe('hide_settings_panel', 'hide_settings_panel', _ => panel_pos.value = '-50vw');
+    subscribe('hide_settings_panel', _ => panel_pos.value = '-50vw');
 
-    subscribe('chx_settings_loaded', 'chx_settings_loaded_settings_panel', _ => cdn_server.value = get_base_url());
+    subscribe('chx_settings_loaded', _ => cdn_server.value = get_base_url());
 
     electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
         if (!base64_src)

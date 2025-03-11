@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 import { LT_RE600_ScreenMode, LT_RE600_MeterParams, DeviceMsg } from '@common/models';
 import { subscribe } from '@common/mediator';
@@ -20,7 +20,6 @@ const __smifs_map: Record<LT_RE600_ScreenMode, string> = {
     [LT_RE600_ScreenMode.W1920]: '16px',
 };
 
-const device_model = inject('device_model');
 const screen_mode = ref<LT_RE600_ScreenMode | null>(null);
 const top_offset = computed(() => props.meter_params.top_offsets[screen_mode.value ?? LT_RE600_ScreenMode.W1280] + 'px');
 const left_offset = computed(() => props.meter_params.left_offsets[screen_mode.value ?? LT_RE600_ScreenMode.W1280] + 'px');
@@ -31,12 +30,12 @@ const meter_value_font_size = computed(() => __smifs_map[screen_mode.value ?? LT
 const msg_type_set = new Set(props.meter_params.meter_values.map(x => x.msg_type));
 
 onMounted(() => {
-    subscribe('change_lt_re600_screen_mode', `change_lt_re600_screen_mode_meter_${props.meter_params.meter_name}`, args => {
+    subscribe('change_lt_re600_screen_mode', args => {
         const _screen_mode: LT_RE600_ScreenMode | null = args._screen_mode;
         screen_mode.value = _screen_mode;
     });
 
-    window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
+    subscribe('device_msg', data => {
         const device_msg: DeviceMsg = data.device_msg;
         const { msg_type } = device_msg.config;
         const { msg_value } = device_msg;
