@@ -65,7 +65,7 @@ const lines = computed(() => {
 defineProps(['mode'])
 
 const fuel_src = ref()
-electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_at000/Fuel.png' }).then(base64_src => {
+electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_au450/Fuel.png' }).then(base64_src => {
     if (!base64_src)
         return;
     fuel_src.value = base64_src;

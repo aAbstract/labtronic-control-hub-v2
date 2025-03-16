@@ -239,8 +239,8 @@ export enum RecordingState {
 
 
 
-// device models - LT_AT000
-export enum LT_AT000_ScreenMode {
+// device models - LT_AU450
+export enum LT_AU450_ScreenMode {
     W1280 = 1,
     W1920 = 2,
 };
@@ -263,7 +263,7 @@ export interface OBDCONFIG {
 }
 
 
-export interface LT_AT000_DeviceConfig {
+export interface LT_AU450_DeviceConfig {
     Vavg_Vmax: number,
     Cp: number,
     r: number,

@@ -136,7 +136,7 @@ function animate_rpm_gauge() {
 }
 
 const engine_src = ref()
-electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_at000/Engine.png' }).then(base64_src => {
+electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_au450/Engine.png' }).then(base64_src => {
     if (!base64_src)
         return;
     engine_src.value = base64_src;

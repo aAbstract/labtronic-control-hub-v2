@@ -7,12 +7,15 @@ import Button from 'primevue/button';
 import OverlayPanel from 'primevue/overlaypanel';
 import Dropdown from 'primevue/dropdown';
 import Checkbox from 'primevue/checkbox';
+import Alert from './Alert.vue';
 
 import { DeviceMsg, DropdownOption, CHXChartState, MsgTypeConfig } from '@common/models';
 import { ChartParams, DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
 import { compute_tooltip_pt, electron_renderer_invoke } from '@renderer/lib/util';
-import { subscribe } from '@common/mediator';
+import { post_event, subscribe } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
+
+import { electron_renderer_send } from '@renderer/lib/util';
 
 type DataPointType = Record<string, number>;
 
@@ -126,7 +129,7 @@ function create_chart_options(font_color: string, grid_color: string, _y_min: nu
 
 
         scales: {
-            x: {type:'linear', ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? '', display: true, color: font_color } },
+            x: { type: 'linear', ticks: { color: font_color }, grid: { color: grid_color }, title: { text: _x_title ?? '', display: true, color: font_color } },
             y: _y_min === -1 && _y_max === -1 ?
                 {
                     position: 'left',
@@ -201,6 +204,8 @@ function set_chart_tool_state(_state: CHXChartState) {
     chart_state.value = _state;
     if (_state === CHXChartState.STOPPED) {
         data_points_cache = {};
+        test_data_points_cache = {}
+        test_mode.value = 'NONE'
         points_changed = true;
     }
 
@@ -224,7 +229,8 @@ function __time_s(): number {
 let sorted_cache: DataPointType[] = [];
 function render_chart() {
     const __x = chart_x_msg_type.value;
-    const _data_points = Object.values(data_points_cache).filter(dp => !isNaN(dp[__x])).sort((a, b) => a[__x] - b[__x]);
+    const used_cash = test_mode.value !== 'NONE' ? test_data_points_cache : data_points_cache
+    const _data_points = Object.values(used_cash).filter(dp => !isNaN(dp[__x])).sort((a, b) => a[__x] - b[__x]);
     sorted_cache = _data_points;
     const x_series = _data_points.map(x => x[__x]);
     const _datasets: ChartParams[] = [];
@@ -250,8 +256,8 @@ onMounted(() => {
                 return;
             const read_config = device_config.filter(x => x.msg_name.startsWith('READ_'));
             msg_types_opts.value = [
-                ...read_config.filter(_config =>{
-                    return [24,52,49,48,47,46].includes(_config.msg_type)
+                ...read_config.filter(_config => {
+                    return [24, 52, 49, 48, 47, 46].includes(_config.msg_type)
                 }).map(_config => {
                     const label = _config.msg_name.replace('READ_', '');
                     msg_type_msg_name_map[_config.msg_type] = label;
@@ -274,10 +280,13 @@ onMounted(() => {
         const { msg_value, seq_number } = device_msg;
         const _msg_value = Number(msg_value.toFixed(2));
 
+        if (msg_type == 24)
+            new_rpm = msg_value
+        if (msg_type == 21)
+            pedal_val = msg_value
         if (!data_points_cache[seq_number])
             data_points_cache[seq_number] = { [-1]: __time_s() };
         data_points_cache[seq_number][msg_type] = _msg_value;
-
         points_changed = true;
     });
 
@@ -291,13 +300,145 @@ onMounted(() => {
     set_chart_auto_scale();
 });
 
+
+////////////////////////////////// tests //////////////////////////
+type test_type = 'LOAD' | 'SPEED' | 'NONE'
+const test_mode = ref<test_type>('NONE')
+const record_timeout = 5000
+let test_data_points_cache: Record<number, DataPointType> = {};
+let start_record_time = 0
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+function increase_piston() {
+    post_event('increase_piston',{})
+}
+function decrease_piston() {
+    post_event('decrease_piston',{})
+}
+
+function avg_points() {
+    let points: Record<number, number[]> = {}
+    let sn = 0
+    for (let seq_num in data_points_cache) {
+        sn = Number(seq_num)
+        let point_time = data_points_cache[seq_num][-1]
+        if (point_time > start_record_time + record_timeout / 1000)
+            break
+        if (point_time >= start_record_time) {
+            for (let msq_type in data_points_cache[seq_num]) {
+                if (!(msq_type in points))
+                    points[msq_type] = []
+                points[msq_type].push(data_points_cache[seq_num][msq_type])
+            }
+        }
+    }
+    test_data_points_cache[sn] = {}
+    for (let msg_type in points) {
+        test_data_points_cache[sn][msg_type] = points[msg_type].reduce((a, b) => a + b) / points[msg_type].length
+    }
+}
+
+function pause_test() {
+    chart_state.value = CHXChartState.PAUSED
+    test_mode.value = 'NONE'
+}
+
+
+//  chart auto load test 
+let new_rpm = 0
+let old_rpm = 0
+const rpm_change_limit = 150
+const rpm_change_timeout = 2000
+
+async function auto_load_test_point() {
+    old_rpm = new_rpm
+    increase_piston()
+    await sleep(rpm_change_timeout)
+    if (old_rpm - new_rpm >= rpm_change_limit) {
+        start_record_time = __time_s()
+
+        await sleep(record_timeout)
+        avg_points()
+    
+    }
+
+}
+
+async function start_auto_load_test() {
+    chart_state.value = CHXChartState.RECORDING
+    test_mode.value = 'LOAD'
+    while(test_mode.value === 'LOAD'){
+       await auto_load_test_point()
+    }
+}
+
+
+// chart constant speed test
+
+let pedal_val = 20
+let old_pedal_val = 0
+const target_rpm = ref(100)
+let error_margin = 100
+let check_rpm_timeout = 1000
+
+
+async function const_speed_test_point() {
+    if (target_rpm.value - new_rpm > error_margin)
+        decrease_piston()
+    else if (new_rpm - target_rpm.value > error_margin)
+        increase_piston()
+
+    await sleep(check_rpm_timeout)
+
+    if (Math.abs(target_rpm.value - new_rpm) < error_margin) {
+        start_record_time = __time_s()
+        await sleep(record_timeout)
+        avg_points()
+    }
+}
+
+async function start_const_speed_test() {
+    chart_state.value = CHXChartState.RECORDING
+    test_mode.value = 'SPEED'
+    old_pedal_val = pedal_val
+    post_event('show_pedal_alert', {})
+    // to be removed
+    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 30` }); }, 5000)
+
+    while (pedal_val <= old_pedal_val) {
+        await sleep(500)
+    }
+
+    post_event('hide_pedal_alert', {})
+
+    while(test_mode.value === 'SPEED'){
+       await const_speed_test_point()
+    }
+}
+
+
+
+
 </script>
 
 <template>
     <div id="chart_tool_panel" v-on="screenshot_handlers">
+        <Alert />
         <Button style="top: 8px; right: 28px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
 
         <OverlayPanel ref="chart_tool_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
+            <div id="buttons_container">
+                <Button icon="pi pi-play-circle" outlined label="Auto Load Test" @click="start_auto_load_test()" v-if="test_mode !== 'LOAD'" :disabled="test_mode === 'SPEED'" />
+                <Button icon="pi pi-pause-circle" outlined label="Pause Load Test" @click="pause_test()" v-if="test_mode === 'LOAD'" />
+                <div id="speed_test">
+                    <Button icon="pi pi-play-circle" outlined label="Constant Speed Test" @click="start_const_speed_test()" v-if="test_mode !== 'SPEED'" :disabled="test_mode === 'LOAD'" />
+                    <Button icon="pi pi-pause-circle" outlined label="Pause Speed Test" @click="pause_test()" v-if="test_mode === 'SPEED'" />
+                    <input v-model="target_rpm" type="number" class="dt_tf">
+                </div>
+
+            </div>
             <div style="display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
                 <div style="width: 280px;">
                     <span style="font-size: 14px; margin-right: 8px; width: 125px; display: inline-block;">Chart Tool Y1 Range</span>
@@ -319,7 +460,7 @@ onMounted(() => {
                         <Dropdown style="width: calc(50% - 4px);" :pt="dropdown_pt" :options="msg_types_opts" optionLabel="label" optionValue="value" :placeholder="`Chart Y 1`" :title="`Chart Y 1`" v-model="chart_y_msg_type1" @change="set_chart_x_y_msg_type()" />
                         <Dropdown style="width: calc(50% - 4px);" :pt="dropdown_pt" :options="msg_types_opts" optionLabel="label" optionValue="value" :placeholder="`Chart Y 2`" :title="`Chart Y 2`" v-model="chart_y_msg_type2" @change="set_chart_x_y_msg_type()" />
                     </div>
-                   
+
                 </div>
                 <div style="height: 16px;"></div>
                 <div style="display: flex; width: 280px; justify-content: space-between;">
@@ -347,6 +488,27 @@ onMounted(() => {
 </template>
 
 <style scoped>
+button {
+    height: 28px;
+    width: 200px;
+    font-size: 14px;
+    padding: 8px;
+    text-align: left;
+}
+
+#speed_test {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#buttons_container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
 .cci_row {
     width: 200px;
     display: flex;

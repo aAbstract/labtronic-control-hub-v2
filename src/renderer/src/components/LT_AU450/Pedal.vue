@@ -30,7 +30,7 @@ const pedal_src = ref()
 
 defineProps(['mode'])
 
-electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_at000/Pedal.png' }).then(base64_src => {
+electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_au450/Pedal.png' }).then(base64_src => {
     if (!base64_src)
         return;
     pedal_src.value = base64_src;

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Wind from '../LT_AT000/Wind.vue'
+import Wind from '../LT_AU450/Wind.vue'
 import Pedal from './Pedal.vue';
 import Fuel from './Fuel.vue';
 import Engine from './Engine.vue';
@@ -9,7 +9,7 @@ import {  ref } from 'vue';
 
 const mode = ref(1)
 
-subscribe('change_lt_at000_screen_mode', 'change_lt_at000_screen_mode_dashboard', (screen) => { mode.value = screen._screen_mode })
+subscribe('change_lt_au450_screen_mode', 'change_lt_au450_screen_mode_dashboard', (screen) => { mode.value = screen._screen_mode })
 
 
 </script>

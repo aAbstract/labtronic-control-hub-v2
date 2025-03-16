@@ -43,7 +43,7 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
 defineProps(['mode'])
 
 const wind_src = ref()
-electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_at000/Wind.png' }).then(base64_src => {
+electron_renderer_invoke<string>('load_devie_asset', { asset_path: 'etc/lt_au450/Wind.png' }).then(base64_src => {
     if (!base64_src)
         return;
     wind_src.value = base64_src;
