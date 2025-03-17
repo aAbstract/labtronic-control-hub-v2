@@ -1,7 +1,8 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { LogMsg, _ToastMessageOptions, LTBusMsgConfig, LTBusDeviceMsg, LTBusDeviceErrorMsg } from '../../common/models';
-import { get_chx_cps, get_chx_eqs, get_chx_scripts, get_chx_series } from "../system_settings";
+import { get_chx_cps, get_chx_eqs, get_chx_scripts, get_chx_series, get_version_info } from "../system_settings";
 import { LtBusDriver, LTBusDataType } from "./lt_bus_driver";
+import { check_for_update } from '../update_service';
 
 const DEVICE_MODEL = 'LT-RE850';
 const LT_RE850_SLAVE_ID = 0x01;
@@ -182,6 +183,31 @@ const LT_RE850_DEVICE_CMD_HELP: string[] = [
     '================================================================================================================================',
 ];
 function lt_bus_driver_cmd_exec(cmd: string) {
+    let cmd_parts = cmd.split(' ');
+
+    if (cmd_parts[0] === 'DEVICE' && cmd_parts[1] === 'INFO') {
+        const version_info = get_version_info();
+        const _msg = [
+            `DEVICE_MODEL: ${version_info.device_model}`,
+            `CHX_CORE_VERSION: ${version_info.chx_core_version}`,
+            `CHX_MODULE_VERSION: ${version_info.chx_module_version}`,
+        ];
+        mw_logger({ level: 'INFO', msg: _msg.join('\n') });
+        return;
+    }
+
+    if (cmd_parts[0] === 'CHECK' && cmd_parts[1] === 'UPDATE') {
+        mw_logger({ level: 'INFO', msg: 'Checking for Software Updates' });
+        check_for_update().then(ucheck_res => {
+            if (ucheck_res.err)
+                mw_logger({ level: 'ERROR', msg: ucheck_res.err });
+
+            if (ucheck_res.ok)
+                mw_logger({ level: 'INFO', msg: ucheck_res.ok });
+        });
+        return;
+    }
+
     if (!lt_bus_driver) {
         mw_logger({ level: 'ERROR', msg: 'No LT-Bus Connected' });
         return;
@@ -199,7 +225,6 @@ function lt_bus_driver_cmd_exec(cmd: string) {
     };
 
     // substitute command alias
-    let cmd_parts = cmd.split(' ');
     const cmd_part_1 = cmd_parts[0];
     if (cmd_part_1 in CMD_ALIAS_LIST)
         cmd_parts = [...CMD_ALIAS_LIST[cmd_part_1], ...cmd_parts.slice(1)];

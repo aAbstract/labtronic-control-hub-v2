@@ -1,12 +1,13 @@
 import { ipcMain, BrowserWindow } from "electron";
 import fs from 'node:fs';
-import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result, CHXSeries, CHXEquation, CHXScript } from "../common/models";
+import { CHXSettings, CHXComputedParam, _ToastMessageOptions, Result, CHXSeries, CHXEquation, CHXScript, CHXVersionInfo } from "../common/models";
 
 export const CHX_SETTINGS_FILENAME = 'chx_settings.json';
 
 const chx_settings_schema: CHXSettings = {
     device_model: '',
-    cloud_settings: { labtronic_cdn_base_url: '' },
+    chx_core_version: '',
+    chx_module_version: '',
     chx_advanced: false,
     computed_params: [{ param_name: '', expr: '' }],
     equations: [{ func_name: '', args_list: [], expr: '', result_unit: '' }],
@@ -38,11 +39,17 @@ function validate_chx_settings(_chx_settings: CHXSettings | null): Result<string
     if (!_chx_settings)
         return { err: 'validate_chx_settings: _chx_settings=NULL' };
 
-    if (!('device_model' in _chx_settings))
-        return { err: 'validate_chx_settings: Missing device_model' };
-
-    if (!compare_json_schema(_chx_settings.cloud_settings ?? {}, chx_settings_schema.cloud_settings))
-        return { err: 'validate_chx_settings: Invalid _chx_settings.cloud_settings' };
+    const __ks = [
+        'device_model',
+        'chx_core_version',
+        'chx_module_version',
+        'chx_advanced',
+        'device_config',
+    ]
+    for (const __k of __ks) {
+        if (!(__k in _chx_settings))
+            return { err: `validate_chx_settings: Missing ${__k}` };
+    }
 
     if (!compare_json_schema_arr(_chx_settings.computed_params ?? [], chx_settings_schema.computed_params))
         return { err: 'validate_chx_settings: Invalid _chx_settings.computed_params' };
@@ -56,9 +63,6 @@ function validate_chx_settings(_chx_settings: CHXSettings | null): Result<string
     if (!compare_json_schema_arr(_chx_settings.series ?? [], chx_settings_schema.series))
         return { err: 'validate_chx_settings: Invalid _chx_settings.series' };
 
-    if (!('device_config' in _chx_settings))
-        return { err: 'validate_chx_settings: Missing device_config' };
-
     return { ok: 'OK' };
 }
 
@@ -66,11 +70,13 @@ function load_chx_settings(): boolean {
     try {
         const _data = fs.readFileSync(CHX_SETTINGS_FILENAME, 'utf-8');
         const _json = JSON.parse(_data);
-        if (validate_chx_settings(_json)) {
+        const _vres = validate_chx_settings(_json);
+        if (_vres.ok) {
             chx_settings = _json;
             return true;
         }
-        else { return false }
+
+        throw new Error(_vres.err);
     } catch (_) {
         fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings_schema, null, 2));
         return false;
@@ -103,13 +109,22 @@ export function set_chx_device_config(_device_config: Record<string, any>) {
     chx_settings.device_config = _device_config;
 }
 
-export function save_chx_settings(): boolean {
-    if (!validate_chx_settings(chx_settings))
-        return false;
+export function get_version_info(): CHXVersionInfo {
+    const device_model = chx_settings?.device_model ?? '';
+    const chx_core_version = chx_settings?.chx_core_version ?? '';
+    const chx_module_version = chx_settings?.chx_module_version ?? '';
+    return { device_model, chx_core_version, chx_module_version };
+}
 
+export function save_chx_settings(): boolean {
     try {
-        fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings, null, 2));
-        return true;
+        const _vres = validate_chx_settings(chx_settings);
+        if (_vres.ok) {
+            fs.writeFileSync(CHX_SETTINGS_FILENAME, JSON.stringify(chx_settings, null, 2));
+            return true;
+        }
+
+        return false;
     } catch (_) { return false }
 }
 
@@ -117,7 +132,8 @@ export function init_system_settings(_main_window: BrowserWindow) {
     main_window = _main_window;
     load_chx_settings();
     ipcMain.handle('get_chx_advanced', () => chx_settings?.chx_advanced ?? false);
-    ipcMain.handle('get_chx_cloud_settings', () => chx_settings?.cloud_settings ?? '');
     ipcMain.handle('get_chx_device_config', () => chx_settings?.device_config ?? {});
     ipcMain.handle('get_chx_eqs', () => chx_settings?.equations ?? []);
+
+    ipcMain.handle('get_version_info', () => get_version_info());
 }

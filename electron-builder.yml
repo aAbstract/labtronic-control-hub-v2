@@ -2,6 +2,7 @@ appId: com.electron.app
 productName: CHX
 directories:
   buildResources: build
+
 files:
   - '!**/.vscode/*'
   - '!src/*'
@@ -9,6 +10,23 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!deno.lock'
+  - '!chx_settings.json'
+  - '!tstest/*'
+  - '!temp/*'
+  - '!scripts/*'
+  - '!tstest/*'
+  - '!pytest/*'
+  - '!labtronic_ai/*'
+  - '!firmware/*'
+  - '!e2e/*'
+  - '!device_scripts/*'
+  - '!device_data/*'
+  - '!device_assets/*'
+  - '!data/*'
+  - '!.pytest_cache'
+  - '!dist/*'
+
 asarUnpack:
   - resources/**
 win:

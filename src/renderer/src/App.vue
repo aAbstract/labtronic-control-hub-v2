@@ -17,8 +17,10 @@ import Alert from '@renderer/components/Alert.vue';
 import LTAIPanel from '@renderer/components/LTAIPanel.vue';
 import ChartToolPanel from '@renderer/components/ChartToolPanel.vue';
 import { DEVICE_UI_CONFIG_MAP } from '@renderer/lib/device_ui_config';
+// @ts-ignore
 import { CHXCloudSettings, MsgTypeConfig, _ToastMessageOptions } from '@common/models';
-import { set_base_url, inject_source_csp } from '@renderer/lib/lt_cdn_api';
+// @ts-ignore
+import { set_base_url, inject_default_source_csp } from '@renderer/lib/lt_cdn_api';
 import { post_event, subscribe } from '@common/mediator';
 import { electron_renderer_invoke, electron_renderer_send } from '@renderer/lib/util';
 
@@ -48,14 +50,16 @@ onBeforeMount(() => {
 
   electron_renderer_send('load_device_driver', {});
 
-  electron_renderer_invoke<CHXCloudSettings>('get_chx_cloud_settings').then(chx_cloud_settings => {
-    if (!chx_cloud_settings)
-      return;
-    const { labtronic_cdn_base_url } = chx_cloud_settings;
-    inject_source_csp(labtronic_cdn_base_url);
-    set_base_url(labtronic_cdn_base_url);
-    post_event('chx_settings_loaded', {});
-  });
+  inject_default_source_csp();
+
+  // electron_renderer_invoke<CHXCloudSettings>('get_chx_cloud_settings').then(chx_cloud_settings => {
+  //   if (!chx_cloud_settings)
+  //     return;
+  //   const { labtronic_cdn_base_url } = chx_cloud_settings;
+  //   inject_source_csp(labtronic_cdn_base_url);
+  //   set_base_url(labtronic_cdn_base_url);
+  //   post_event('chx_settings_loaded', {});
+  // });
 
   subscribe('remove_ui_springs', _ => spring_display.value = 'none');
 

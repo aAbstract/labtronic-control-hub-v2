@@ -4,8 +4,8 @@ import { ref, onMounted, inject } from 'vue';
 import Button from 'primevue/button';
 
 import { subscribe } from '@common/mediator';
-import { get_base_url } from '@renderer/lib/lt_cdn_api';
-import { CHXCloudSettings } from '@common/models';
+// import { get_base_url } from '@renderer/lib/lt_cdn_api';
+import { CHXCloudSettings, CHXVersionInfo } from '@common/models';
 import { electron_renderer_send, compute_tooltip_pt, electron_renderer_invoke } from '@renderer/lib/util';
 
 enum AIAgentState {
@@ -14,7 +14,7 @@ enum AIAgentState {
 };
 
 const panel_pos = ref('-50vw');
-const cdn_server = ref('Loading...');
+const cdn_server = ref('0.0.0.0');
 const device_model = inject('device_model') as string;
 const device_model_img = ref('');
 const device_about = ref('Device Description...');
@@ -31,6 +31,9 @@ const __aigstm: Record<AIAgentState, string> = {
     [AIAgentState.STOPPED]: 'STOPPED',
     [AIAgentState.RUNNING]: 'RUNNING',
 };
+
+const product_id = ref('...');
+const version = ref('...');
 
 function save_chx_settings() {
     const _chx_settings: CHXCloudSettings = { labtronic_cdn_base_url: cdn_server.value };
@@ -72,7 +75,7 @@ onMounted(() => {
 
     subscribe('hide_settings_panel', _ => panel_pos.value = '-50vw');
 
-    subscribe('chx_settings_loaded', _ => cdn_server.value = get_base_url());
+    // subscribe('chx_settings_loaded', _ => cdn_server.value = get_base_url());
 
     electron_renderer_invoke<string>('load_devie_asset', { asset_path: `device_models/${device_model.toLowerCase().replace('-', '_')}.png` }).then(base64_src => {
         if (!base64_src)
@@ -87,6 +90,14 @@ onMounted(() => {
         device_weight.value = metadata.weight;
         device_dimensions.value = metadata.dimensions;
         device_level.value = metadata.level;
+    });
+
+    electron_renderer_invoke<CHXVersionInfo>('get_version_info').then(chx_version_info => {
+        if (!chx_version_info)
+            return;
+
+        product_id.value = `CHX_${chx_version_info.device_model}`;
+        version.value = `CHX_CORE: ${chx_version_info.chx_core_version} | ${chx_version_info.device_model}_MODULE: ${chx_version_info.chx_module_version}`;
     });
 
     window.electron?.ipcRenderer.on('ltai_agent_started', () => ai_agent_state.value = AIAgentState.RUNNING);
@@ -145,7 +156,7 @@ onMounted(() => {
                 <input type="text" value="********************************" readonly>
             </div>
         </div>
-        <div class="sp_section">
+        <!-- <div class="sp_section">
             <h1>DEVICE INFO</h1>
             <div id="device_info_cont">
                 <img id="device_img" :src="device_model_img" alt="Device Solid Model">
@@ -158,17 +169,17 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="sp_section">
             <h1>ABOUT SOFTWARE</h1>
             <div id="about_software_cont">
                 <div>
                     <span>Product ID</span>
-                    <span>labtronic-control-hub-x</span>
+                    <span>{{ product_id }}</span>
                 </div>
                 <div>
                     <span>Version</span>
-                    <span>2.0.0</span>
+                    <span>{{ version }}</span>
                 </div>
                 <div>
                     <span>Link</span>

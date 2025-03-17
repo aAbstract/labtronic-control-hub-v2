@@ -1,16 +1,11 @@
 {
-  "device_model": "LT-HT113",
-  "cloud_settings": {
-    "labtronic_cdn_base_url": "http://127.0.0.1:8090"
-  },
+  "device_model": "LT-RE850",
+  "chx_core_version": "2.25.4",
+  "chx_module_version": "1.0.0",
   "chx_advanced": false,
   "computed_params": [],
   "equations": [],
   "scripts": [],
   "series": [],
-  "device_config": {
-    "C_f": 0.6,
-    "Q_L_F1": 0,
-    "Q_L_F2": 0
-  }
+  "device_config": {}
 }

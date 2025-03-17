@@ -21,8 +21,23 @@ export function inject_source_csp(_url: string) {
         "script-src 'self'",
         "style-src 'self' 'unsafe-inline'",
         "connect-src 'self' 127.0.0.1:8091",
-        // `connect-src 'self' ${_url}`,
-        // `img-src 'self' ${url} data:`,
+        `connect-src 'self' ${_url}`,
+        `img-src 'self' ${_url} data:`,
+        "img-src 'self' data:",
+        "frame-src 'self' blob:",
+    ];
+    cdn_meta_csp.setAttribute('content', csp_items.join(';'));
+    document.head.appendChild(cdn_meta_csp);
+}
+
+export function inject_default_source_csp() {
+    // allow renderer process to access LabTronic CDN network resources
+    const cdn_meta_csp = document.createElement('meta');
+    cdn_meta_csp.setAttribute('http-equiv', 'Content-Security-Policy');
+    const csp_items = [
+        `default-src 'self'`,
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data:",
         "frame-src 'self' blob:",
     ];

@@ -182,13 +182,20 @@ export interface CHXSeries {
 
 export interface CHXSettings {
     device_model: string;
-    cloud_settings: CHXCloudSettings;
+    chx_core_version: string;
+    chx_module_version: string;
     chx_advanced: boolean;
     computed_params: CHXComputedParam[];
     equations: CHXEquation[];
     scripts: CHXScript[];
     series: CHXSeries[];
     device_config: Record<string, any>;
+};
+
+export interface CHXVersionInfo {
+    device_model: string;
+    chx_core_version: string;
+    chx_module_version: string;
 };
 // CHX Settings
 
