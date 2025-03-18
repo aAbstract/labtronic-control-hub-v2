@@ -6,21 +6,22 @@ import { electron_renderer_invoke } from '@renderer/lib/util';
 defineProps(['full_screen'])
 const device_model = inject('device_model');
 
-const data_values = ref([10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
-const data_names = ['T1', 'T2', 'T3', 'T4', 'Air Flow', 'Air Press', 'Fuel Press', 'Fuel Flow', 'RPM', 'Load']
+const data_values = ref([0,0,0,0,0,0,0,0,0,0,0])
+const data_names = ['T1', 'T2', 'T3', 'T4', 'Air Flow', 'Air Press', 'Fuel Press', 'Fuel Flow', 'RPM', 'Load','Torque']
 let allow_update = Array(10).fill(true)
 
 const data_positions = [
-    'top: 82%; left:32%',
-    'top: 60%; left:32.5%',
-    'top: 70%; left:62.5%',
-    'top: 82%; left:45%',
-    'top: 82%; left:17.5%',
-    'top: 50%; left:35%',
-    'top: 0%; left:50%',
-    'top: 0%; left:65%',
+    'top: 84%; left:30%',
+    'top: 62.5%; left:31%',
+    'top: 73%; left:62%',
+    'top: 84%; left:47.5%',
+    'top: 84%; left:17%',
+    'top: 51%; left:33%',
+    'top: 1%; left:47.5%',
+    'top: 1%; left:62.5%',
     'top: 55%; left:10%',
     'top: 60%; left:10%',
+    'top: 65%; left:10%',
 ]
 
 
@@ -70,6 +71,10 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
         data_values.value[9] = device_msg.msg_value;
         allow_update[9] = false
     }
+    else if (msg_type == 52 && allow_update[10]) {
+        data_values.value[10] = device_msg.msg_value;
+        allow_update[10] = false
+    }
 
 
 }
@@ -85,9 +90,16 @@ onMounted(() => {
 })
 
 setInterval(() => {
-    allow_update = Array(10).fill(true)
+    allow_update = Array(11).fill(true)
 }, 1000)
 
+
+function formatNumber(num:number) {
+    if (Math.abs(num) >= 1e2 || (Math.abs(num) < 1e-2 && Math.abs(num) > 0)) {
+        return num.toExponential(0); // Converts to scientific notation
+    }
+    return num.toFixed(1); // Returns regular number
+}
 </script>
 
 <template>
@@ -96,7 +108,7 @@ setInterval(() => {
         <img style="width: 90%; margin-left: 5%;" :src="system_diagram_src" alt="Diagram">
         <div v-if="full_screen" v-for="value, i in data_values" style="position: absolute;" :style="data_positions[i]">
             <span>{{ data_names[i] }}:</span>
-            <p> {{ value }}</p>
+            <p> {{ formatNumber(value) }}</p>
         </div>
 
     </div>
@@ -113,7 +125,7 @@ setInterval(() => {
 }
 
 p {
-    font-size: 24px;
+    font-size: 20px;
     color: var(--font-color);
     font-weight: bolder;
     display: inline;

@@ -9,17 +9,17 @@
   "scripts": [],
   "series": [],
   "device_config": {
-    "VAVG_VMAX": 7,
-    "CP": 10,
-    "R": 5,
-    "DO": 5,
-    "SG": 4,
+    "VAVG_VMAX": 0.8,
+    "CP": 0.9,
+    "R": 0.03,
+    "DO": 1000,
+    "SG": -1,
     "Q_WATER": 2,
     "C_WATER": 1,
     "D": 1,
-    "SF": 4,
-    "SV": 4,
-    "CV": 6,
-    "ME": 4
+    "SF": 2,
+    "SV": 2.5,
+    "CV": 4,
+    "ME": 0.8
   }
 }

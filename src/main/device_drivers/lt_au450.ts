@@ -325,19 +325,19 @@ const DEVICE_SERIES: CHXSeries[] = [
 
 // msg_type start from 40
 const DEVICE_CPS: CHXComputedParam[] = [
-    { param_name: 'D_air', expr: '$PB * $T1', msg_type: 40 },
-    { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)', msg_type: 41 },
-    { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1))', msg_type: 42 },
-    { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43 },
-    { param_name: 'A_F_Ratio', expr: '($PB * $T1) / (0.001596 * $RPM - 0.0705)', msg_type: 44 },
-    { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45 },
-    { param_name: 'P_engine', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46 },
-    { param_name: 'Fuel_Consumption', expr: '(0.001596 * $RPM - 0.0705) / (($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60)', msg_type: 47 },
-    { param_name: 'ETA_V', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * $PR1 / ($PB * $T1)) * $SF) / ($RPM * $SV)', msg_type: 48 },
-    { param_name: 'ETA', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * (0.001596 * $RPM - 0.0705))', msg_type: 49 },
-    { param_name: 'Load_Diff', expr: '($L2 - $L1) ', msg_type: 50 },
-    { param_name: 'Fuel_Rate', expr: '0.0016 * $RPM * 3.78541 * 1000 / 3600 * $DO * $SG', msg_type: 51 ,unit:'[g/s]'},
-    { param_name: 'Engine_T', expr: '($L2 - $L1) * $D ', msg_type: 52 }
+    { param_name: 'D_air', expr: '0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15)', msg_type: 40, unit: '[Kg/m3]' },
+    { param_name: 'V_air', expr: '44.63 * $VAVG_VMAX * $CP * Math.sqrt($PR1 / (0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15)))', msg_type: 41, unit: '[m/s]' },
+    { param_name: 'Q_air', expr: 'Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * Math.sqrt($PR1 / (0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15))))', msg_type: 42, unit: '[m3/s]' },
+    { param_name: 'D_fuel', expr: '$DO * $SG', msg_type: 43, unit: '[Kg/m3]' },
+    { param_name: 'Air_Fuel_Ratio', expr: '(Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * Math.sqrt($PR1 / (0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15)))) * 0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15) * 1000) / (0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG)', msg_type: 44 },
+    { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45, unit: '[W]' },
+    { param_name: 'Engine_Power', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46, unit: '[W]' },
+    { param_name: 'Fuel_Consumption', expr: '(0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG) / (($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60)', msg_type: 47 },
+    { param_name: 'Volumetric_Efficiency', expr: '(60000 * (Math.PI * Math.sqrt($R) * (44.63 * $VAVG_VMAX * $CP * Math.sqrt($PR1 / (0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15))))) * $SF) / ($RPM * $SV)', msg_type: 48 },
+    { param_name: 'Efficiency', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * (0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG))', msg_type: 49 },
+    { param_name: 'Load_Diff', expr: '($L2 - $L1) ', msg_type: 50, unit: '[N]' },
+    { param_name: 'Fuel_Rate', expr: '0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG', msg_type: 51, unit: '[g/s]' },
+    { param_name: 'Engine_Torque', expr: '($L2 - $L1) * $D', msg_type: 52, unit: '[N.m]' }
 ];
 
 let serial_adapter: SerialAdapter | null = null;
@@ -457,6 +457,7 @@ const LT_AU450_DEVICE_CMD_HELP: string[] = [
     ...set_commands_list(),
     'GET ALL CONSTS',
     'SECRET PANEL',
+    'SECRET CONTROLS',
     '=======================================================================================================',
 ];
 
@@ -477,6 +478,7 @@ function lt_au450_cmd_exec(cmd: string) {
         serial_adapter?.send_packet(9, new_set_val * 65);
         last_analog_output = new_set_val
         mw_logger({ level: 'DEBUG', msg: `Set ANALOG OUTPUT : ${new_set_val * 65}` });
+        mw_ipc_handler(`${DEVICE_MODEL}_ANALOG`, { piston: new_set_val });
         return;
     }
 
@@ -486,6 +488,8 @@ function lt_au450_cmd_exec(cmd: string) {
         mw_logger({ level: 'DEBUG', msg: ` ${cmd_parts[1]}: ${device_config[cmd_parts[1]]}` });
         if (cmd_parts[1] == 'CV')
             mw_ipc_handler(`${DEVICE_MODEL}_CV`, { CV: device_config.CV });
+        if (cmd_parts[1] == 'SG')
+            mw_ipc_handler(`${DEVICE_MODEL}_SG`, { SG: device_config.SG });
         return;
     }
 
@@ -529,6 +533,10 @@ function lt_au450_cmd_exec(cmd: string) {
     }
     if (cmd_parts[0] === 'SECRET' && cmd_parts[1] === 'PANEL') {
         mw_ipc_handler(`${DEVICE_MODEL}_secret_panel`, { input_consts, device_config });
+        return
+    }
+    if (cmd_parts[0] === 'SECRET' && cmd_parts[1] === 'CONTROLS') {
+        mw_ipc_handler(`${DEVICE_MODEL}_secret_controls`, {});
         return
     }
 

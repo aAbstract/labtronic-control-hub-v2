@@ -289,6 +289,7 @@ onMounted(() => {
         data_points_cache[seq_number][msg_type] = _msg_value;
         points_changed = true;
     });
+    
 
     setInterval(() => {
         if (!points_changed)
@@ -312,10 +313,10 @@ function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 function increase_piston() {
-    post_event('increase_piston',{})
+    post_event('increase_piston', {})
 }
 function decrease_piston() {
-    post_event('decrease_piston',{})
+    post_event('decrease_piston', {})
 }
 
 function avg_points() {
@@ -343,14 +344,17 @@ function avg_points() {
 function pause_test() {
     chart_state.value = CHXChartState.PAUSED
     test_mode.value = 'NONE'
+    post_event('send_digital',{digital:'0x0'})
 }
 
 
 //  chart auto load test 
 let new_rpm = 0
 let old_rpm = 0
+const minimum_rpm = ref(400)
 const rpm_change_limit = 150
 const rpm_change_timeout = 2000
+const show_pedal_dialog = ref(false)
 
 async function auto_load_test_point() {
     old_rpm = new_rpm
@@ -358,19 +362,27 @@ async function auto_load_test_point() {
     await sleep(rpm_change_timeout)
     if (old_rpm - new_rpm >= rpm_change_limit) {
         start_record_time = __time_s()
-
         await sleep(record_timeout)
         avg_points()
-    
     }
+    if (new_rpm<=minimum_rpm.value)
+        pause_test()
 
 }
 
 async function start_auto_load_test() {
+    post_event('send_digital',{digital:'0x1'})
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'LOAD'
-    while(test_mode.value === 'LOAD'){
-       await auto_load_test_point()
+    show_rpm_dialog.value = true
+    // to be removed
+    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 24 4000` }); }, 5000)
+    while (new_rpm < 3500) {
+        await sleep(500)
+    }
+    show_rpm_dialog.value = false
+    while (test_mode.value === 'LOAD') {
+        await auto_load_test_point()
     }
 }
 
@@ -382,6 +394,7 @@ let old_pedal_val = 0
 const target_rpm = ref(100)
 let error_margin = 100
 let check_rpm_timeout = 1000
+const show_rpm_dialog = ref(false)
 
 
 async function const_speed_test_point() {
@@ -396,25 +409,31 @@ async function const_speed_test_point() {
         start_record_time = __time_s()
         await sleep(record_timeout)
         avg_points()
+        await start_const_speed_test()
     }
+    else{
+        await const_speed_test_point()
+    }
+   
 }
 
 async function start_const_speed_test() {
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'SPEED'
     old_pedal_val = pedal_val
-    post_event('show_pedal_alert', {})
+    show_pedal_dialog.value = true
+    post_event('send_digital',{digital:'0x1'})
     // to be removed
-    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 30` }); }, 5000)
+    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 5000)
 
     while (pedal_val <= old_pedal_val) {
         await sleep(500)
     }
 
-    post_event('hide_pedal_alert', {})
+    show_pedal_dialog.value = false
 
-    while(test_mode.value === 'SPEED'){
-       await const_speed_test_point()
+    if (test_mode.value === 'SPEED') {
+        await const_speed_test_point()
     }
 }
 
@@ -425,14 +444,19 @@ async function start_const_speed_test() {
 
 <template>
     <div id="chart_tool_panel" v-on="screenshot_handlers">
-        <Alert />
+        <Alert :show_dialog="show_pedal_dialog" MSG="You Must Press the Pedal to Proceed " header="Press Pedal" />
+        <Alert :show_dialog="show_rpm_dialog" MSG="Engine Speed Must Reach More Than 3500 RPM" header="RPM Minimum Value" />
         <Button style="top: 8px; right: 28px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
 
         <OverlayPanel ref="chart_tool_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
             <div id="buttons_container">
-                <Button icon="pi pi-play-circle" outlined label="Auto Load Test" @click="start_auto_load_test()" v-if="test_mode !== 'LOAD'" :disabled="test_mode === 'SPEED'" />
-                <Button icon="pi pi-pause-circle" outlined label="Pause Load Test" @click="pause_test()" v-if="test_mode === 'LOAD'" />
-                <div id="speed_test">
+
+                <div class="speed_test">
+                    <Button icon="pi pi-play-circle" outlined label="Auto Load Test" @click="start_auto_load_test()" v-if="test_mode !== 'LOAD'" :disabled="test_mode === 'SPEED'" />
+                    <Button icon="pi pi-pause-circle" outlined label="Pause Load Test" @click="pause_test()" v-if="test_mode === 'LOAD'" />
+                    <input v-model="minimum_rpm" type="number" class="dt_tf">
+                </div>
+                <div class="speed_test">
                     <Button icon="pi pi-play-circle" outlined label="Constant Speed Test" @click="start_const_speed_test()" v-if="test_mode !== 'SPEED'" :disabled="test_mode === 'LOAD'" />
                     <Button icon="pi pi-pause-circle" outlined label="Pause Speed Test" @click="pause_test()" v-if="test_mode === 'SPEED'" />
                     <input v-model="target_rpm" type="number" class="dt_tf">
@@ -496,7 +520,7 @@ button {
     text-align: left;
 }
 
-#speed_test {
+.speed_test {
     display: flex;
     justify-content: space-between;
     align-items: center;

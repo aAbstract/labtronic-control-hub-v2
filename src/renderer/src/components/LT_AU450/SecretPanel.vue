@@ -4,6 +4,7 @@ import { ref, onMounted, inject } from 'vue';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import { electron_renderer_send } from '@renderer/lib/util';
+
 const device_model = inject('device_model');
 const input_consts_names = ref<string[] | null>()
 const dialog_visible = ref(false);
@@ -61,8 +62,8 @@ const input_consts_config = [
     },
     {
         name: 'D',
-        desc: 'Delta T Water',
-        unit: 'degC',
+        desc: 'Break Load Diameter',
+        unit: 'm',
     },
     {
         name: 'SF',
@@ -76,7 +77,7 @@ const input_consts_config = [
     },
     {
         name: 'CV',
-        desc: 'Water Calorific Value',
+        desc: 'Fuel Calorific Value',
         unit: 'Mj/Kg',
     },
     {

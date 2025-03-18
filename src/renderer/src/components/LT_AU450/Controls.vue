@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { ref, inject, onMounted, watch } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import Slider from 'primevue/slider';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import { electron_renderer_send } from '@renderer/lib/util';
 import { DeviceMsg } from '@common/models';
-import { useToast } from 'primevue/usetoast';
-import { subscribe} from '@common/mediator';
+import { post_event } from '@common/mediator';
 
 const device_model = inject('device_model');
 
@@ -23,9 +22,10 @@ const piston_val = ref(0)
 const enable_load_point = ref(false)
 const enable_piston_max = ref(false)
 const CV = ref(0)
-const toast_service = useToast()
+const SG = ref(0)
 
-let piston_timeout: NodeJS.Timeout
+
+
 
 
 function threshold_value(x: any, upper_limit: number): number {
@@ -39,21 +39,7 @@ function submit_val(val: number) {
     Piston_indc_val.value = _ph_val;
     piston_val.value = _ph_val
     send_analog()
-
 }
-
-watch(piston_val, (current,old ) => {
-    if (old == 0 && current > 0) {
-        piston_timeout = setTimeout(() => {
-            submit_val(0)
-            toast_service.add({ severity: 'warn', summary: 'Piston Exceeded Time', detail: 'Piston Value Exceeded the Limit for More Than 3 minutes', life: 3000 });
-
-        }, 1000*60*3)
-    }
-    else if( current == 0){
-        clearTimeout(piston_timeout)
-    }
-})
 
 
 
@@ -90,12 +76,12 @@ function calibrate() {
 
 function send_digital() {
     const packet_value = compute_packet();
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET OUTREG ${packet_value}` });
-}
-function send_analog() {
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET ANALOG ${piston_val.value}` });
+    post_event('send_digital',{digital:packet_value})
 }
 
+function send_analog(){
+    post_event('send_piston',{piston:piston_val.value})
+}
 
 
 const target_load = ref(0)
@@ -105,11 +91,9 @@ window.electron?.ipcRenderer.on(`${device_model}_device_msg`, (_, data) => {
     const device_msg: DeviceMsg = data.device_msg;
     const { msg_type } = device_msg.config;
     switch (msg_type) {
-
         case 50:
             actual_load.value = Math.round(device_msg.msg_value)
             break;
-
         default:
             break;
     }
@@ -121,15 +105,13 @@ setInterval(() => {
 
     if (actual_load.value > target_load.value) {
         const _ph_val = Piston_slider_val.value - 2
-        Piston_slider_val.value = _ph_val;
-        Piston_indc_val.value = _ph_val;
-        send_analog()
+        submit_val(_ph_val)
+        
     }
     else if (actual_load.value < target_load.value) {
         const _ph_val = Piston_slider_val.value + 2
-        Piston_slider_val.value = _ph_val;
-        Piston_indc_val.value = _ph_val;
-        send_analog()
+        submit_val(_ph_val)
+        
     }
 }, 1000)
 
@@ -141,12 +123,12 @@ setInterval(() => {
     if (Piston_indc_val.value > target_piston.value) {
         const _ph_val = Piston_indc_val.value - 2
         submit_val(_ph_val)
-        send_analog()
+        
     }
     else if (Piston_indc_val.value < target_piston.value) {
         const _ph_val = Piston_indc_val.value + 2
         submit_val(_ph_val)
-        send_analog()
+       
     }
 }, 1000)
 
@@ -160,16 +142,28 @@ onMounted(() => {
         CV.value = data.CV
     }
     )
-    subscribe('increase_piston','increase_piston',()=>{
-        submit_val(piston_val.value+1)
-    })
-    subscribe('decrease_piston','decrease_piston',()=>{
-        submit_val(piston_val.value-1)
-    })
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: 'GET SG' });
+    window.electron?.ipcRenderer.on(`${device_model}_SG`, (_, data) => {
+        SG.value = data.SG
+    }
+    )
+
+    window.electron?.ipcRenderer.on(`${device_model}_ANALOG`, (_,data) => {
+        let _ph_val = threshold_value(data.piston, 200);
+    Piston_slider_val.value = _ph_val;
+    Piston_indc_val.value = _ph_val;
+    piston_val.value = _ph_val
+    }
+    )
+
+
 });
 
 function send_CV(value: number) {
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET CV ${value}` });
+}
+function send_SG(value: number) {
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `SET SG ${value}` });
 }
 </script>
 
@@ -205,11 +199,15 @@ function send_CV(value: number) {
                 <Button outlined icon="pi pi-power-off" v-if="enable_piston_max" severity="warning" label="Disable" @click="enable_piston_max = false" />
             </div>
         </div>
-
-        <div class="lt_au450_CV">
-            <span>Calorific Value</span>
-            <input style="width: 50px;" class="lt_au450_inp" type="number" v-model="CV" @change="send_CV(CV)" />
-            <span> Mj / Kg</span>
+        <div class="lt_au450_CV_SG">
+            <div class="lt_au450_CV">
+                <span>Calorific Value</span>
+                <input style="width: 50px;" class="lt_au450_inp" type="number" v-model="CV" @change="send_CV(CV)" />
+            </div>
+            <div class="lt_au450_CV">
+                <span>Specific Gravity</span>
+                <input style="width: 50px;" class="lt_au450_inp" type="number" v-model="SG" @change="send_SG(SG)" />
+            </div>
         </div>
 
         <div class="lt_au450_digital_output">
@@ -279,13 +277,17 @@ function send_CV(value: number) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 260px;
+    width: 160px;
     margin-bottom: 16px;
 }
 
 .lt_au450_CV>span {
     color: var(--font-color);
+}
 
+.lt_au450_CV_SG {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 
 }
 

@@ -70,7 +70,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'Rail_Pressure',
+        name: 'Fuel_Pressure',
         command: '2123',
         msg_type: 22,
         response_size: 4,
@@ -141,7 +141,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'IMAP',
+        name: 'Manifold_ABS',
         command: '210B',
         msg_type: 27,
         response_size: 3,
@@ -170,7 +170,7 @@ export const obd_config: OBDCONFIG[] = [
         }
     },
     {
-        name: 'PB',
+        name: 'barometric_pressure',
         command: '2133',
         msg_type: 29,
         response_size: 1,
