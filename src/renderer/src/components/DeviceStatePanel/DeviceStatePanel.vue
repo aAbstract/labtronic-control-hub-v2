@@ -25,10 +25,10 @@ const msg_type_value_map = shallowRef<Record<number, string>>({});
 const msg_type_color_map = ref<Record<number, string>>({});
 const msg_type_state_map = ref<Record<number, boolean>>({});
 const active_msg_type = ref(-1);
-const filter_MSG = [0,1,2,3,43,44,46,47,48,49,51,52,22,23,24,27,29]
+const filter_MSG = [0,1,2,3,42,43,44,46,47,48,49,51,52,22,23,24,27,29]
 const read_device_config = computed(() => {
-
-    const read_config = device_config.value.filter(x => x.msg_name.startsWith('READ_') && filter_MSG.includes(x.msg_type));
+// && filter_MSG.includes(x.msg_type)
+    const read_config = device_config.value.filter(x => x.msg_name.startsWith('READ_'));
     const _chart_height = map_chart_height(Math.ceil(read_config.length / 5));
     chart_height.value = `${_chart_height}vh`;
 

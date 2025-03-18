@@ -62,13 +62,13 @@ onMounted(() => {
     <div class="container">
         <img :src="wind_src" alt="">
         <div class="info_container">
-            <div class="info_element">
+            <!-- <div class="info_element">
                 <div class="icon_val">
                     <TemperatureLowIcon v-if="mode ==2" class="icon" fill_color="var(--font-color)" />
                     <h3 :class="{ mode1_text: mode == 1 }">{{ tem }}</h3>
                 </div>
                 <p :class="{ mode1_small_text: mode == 1 }"> {{ tem_conf?.unit }} </p>
-            </div>
+            </div> -->
             <div class="info_element">
                 <div class="icon_val">
                     <PressureIcon  v-if="mode ==2" class="icon" fill_color="var(--font-color)" />

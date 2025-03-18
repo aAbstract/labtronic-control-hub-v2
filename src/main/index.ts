@@ -18,7 +18,7 @@ function createWindow(): void {
     // resizable: false,
     frame: false,
     autoHideMenuBar: true,
-    // fullscreen: true,
+    fullscreen: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
