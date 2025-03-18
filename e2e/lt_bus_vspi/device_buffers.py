@@ -58,3 +58,41 @@ for lt_re850_register_config in lt_re850_device_data_registers_config:
 
     if __conf.register_name == 'FLOW':
         lt_re850_data_buffer.write_register(__conf.register_name, 12.34)
+
+
+# LT-MC417
+lt_mc417_config_buffer = DeviceBuffer(0xA000, [
+    DeviceRegisterConfig('device_id', 0x000, 'u16'),
+    DeviceRegisterConfig('device_status', 0x002, 'u16'),
+    DeviceRegisterConfig('device_config', 0x004, 'u16'),
+    DeviceRegisterConfig('msg_counter', 0x006, 'u8'),
+    DeviceRegisterConfig('msg_buffer', 0x007, 'u8[]', 255),
+])
+lt_mc417_config_buffer.write_register('device_id', 0x1001)
+lt_mc417_config_buffer.write_register('msg_counter', 3)
+lt_mc417_config_buffer.write_register('msg_buffer', b'\x01\x02\x03')
+
+lt_mc417_device_data_registers_config = [
+    DeviceRegisterConfig('PR1', 0x000, 'f32'),
+    DeviceRegisterConfig('INPUT_REG', 0x004, 'u16'),
+    DeviceRegisterConfig('PUMP1_SPEED', 0x006, 'f32'),
+    DeviceRegisterConfig('CTRL_BTN_REG', 0x00A, 'u16'),
+    DeviceRegisterConfig('FAULT_BTN_REG', 0x00C, 'u16'),
+]
+lt_mc417_data_buffer = DeviceBuffer(0xD000, lt_mc417_device_data_registers_config)
+for lt_mc417_register_config in lt_mc417_device_data_registers_config:
+    __conf = lt_mc417_register_config
+    if __conf.register_name == 'INPUT_REG':
+        lt_mc417_data_buffer.write_register(__conf.register_name, 0)
+
+    if __conf.register_name == 'CTRL_BTN_REG':
+        lt_mc417_data_buffer.write_register(__conf.register_name, 1)
+
+    if __conf.register_name == 'FAULT_BTN_REG':
+        lt_mc417_data_buffer.write_register(__conf.register_name, 0)
+
+    if __conf.register_name == 'PR1':
+        lt_mc417_data_buffer.write_register(__conf.register_name, 12.34)
+
+    if __conf.register_name == 'PUMP1_SPEED':
+        lt_mc417_data_buffer.write_register(__conf.register_name, 50)

@@ -4,36 +4,23 @@ import { get_chx_cps, get_chx_eqs, get_chx_scripts, get_chx_series, get_version_
 import { LtBusDriver, LTBusDataType } from "./lt_bus_driver";
 import { check_for_update } from '../update_service';
 
-const DEVICE_MODEL = 'LT-RE850';
+const DEVICE_MODEL = 'LT-MC417';
 const SLAVE_ID = 0x01;
 
-const LT_RE850_DRIVER_CONFIG = [
-    'READ_FLOW',
+const LT_MC417_DRIVER_CONFIG = [
     'READ_PR1',
-    'READ_PR2',
-    'READ_HUMD1',
-    'READ_HUMD2',
-    'READ_PUMP1_CURR',
-    'READ_PUMP2_CURR',
-    'READ_COMP_CURR',
-    ...(new Array(20).fill(0).map((_, i) => `READ_TMP${i + 1}`)),
-    'READ_PR3',
-    'READ_PR4',
     'INPUT_REG',
-    'READ_FAN_S',
-    'READ_HEATER_P',
-    'READ_HEATER_SP',
-    'READ_THERMO_SP',
+    'READ_PUMP1_SPEED',
     'CTRL_REG',
     'FAULT_REG',
 ].map((msg_name, idx) => {
     return { msg_name, msg_type: idx } as LTBusMsgConfig;
 });
 
-const LT_RE850_DEVICE_ERRORS: LTBusDeviceErrorMsg[] = [
+const LT_MC417_DEVICE_ERRORS: LTBusDeviceErrorMsg[] = [
     {
         error_code: 0x01,
-        error_text: 'Fan Speed Set Point out of Range',
+        error_text: 'Pump 1 Set Point out of Range',
         user_ack: false,
     },
     {
@@ -43,118 +30,19 @@ const LT_RE850_DEVICE_ERRORS: LTBusDeviceErrorMsg[] = [
     },
     {
         error_code: 0x03,
-        error_text: 'Pump 2 Overloaded',
-        user_ack: true,
-    },
-    {
-        error_code: 0x04,
-        error_text: 'Upper Temprature Limit Reached',
-        user_ack: true,
-    },
-    {
-        error_code: 0x05,
-        error_text: 'Compressor Should be OFF',
-        user_ack: true,
-    },
-    {
-        error_code: 0x06,
-        error_text: 'Reverse Valve Dead Time is not Reached',
-        user_ack: false,
-    },
-    {
-        error_code: 0x07,
-        error_text: 'Water Level is not Sufficient',
-        user_ack: true,
-    },
-    {
-        error_code: 0x08,
-        error_text: 'Heater Power Set Point out of Range',
-        user_ack: false,
-    },
-    {
-        error_code: 0x09,
-        error_text: 'Heater Temprature Set Point out of Range',
-        user_ack: false,
-    },
-    {
-        error_code: 0x0A,
-        error_text: 'Tank Filling Button Should be OFF',
-        user_ack: false,
-    },
-    {
-        error_code: 0x0B,
-        error_text: 'Tank Draining Button Should be OFF',
-        user_ack: false,
-    },
-    {
-        error_code: 0x0C,
-        error_text: 'Tank Filling Draining Buttons Should be OFF',
-        user_ack: false,
-    },
-    {
-        error_code: 0x0D,
-        error_text: 'Tap Water Circulation Button Should be OFF',
-        user_ack: false,
-    },
-    {
-        error_code: 0x0E,
-        error_text: 'Max Water Level Reached',
-        user_ack: false,
-    },
-    {
-        error_code: 0x0F,
-        error_text: 'Compressor Exceeded Run Time',
-        user_ack: false,
-    },
-    {
-        error_code: 0x10,
-        error_text: 'Thermostat Temprature Set Point Can not be Reached',
-        user_ack: false,
-    },
-    {
-        error_code: 0x11,
-        error_text: 'Pump 1 Button Should be ON',
-        user_ack: false,
-    },
-    {
-        error_code: 0x12,
-        error_text: 'Fan Button Should be ON',
-        user_ack: false,
-    },
-    {
-        error_code: 0x13,
-        error_text: 'Pump 1 and Fan Buttons Should be ON',
-        user_ack: false,
-    },
-    {
-        error_code: 0x14,
-        error_text: 'Compressor Overloaded',
-        user_ack: true,
-    },
-    {
-        error_code: 0x15,
         error_text: 'PR1 Exceeded the Limit',
         user_ack: true,
     },
-    {
-        error_code: 0x16,
-        error_text: 'PR2 Exceeded the Limit',
-        user_ack: true,
-    },
-    {
-        error_code: 0x17,
-        error_text: 'Thermostat Exceeded the Limit',
-        user_ack: true,
-    },
 ];
+
 const device_errors_map: Record<number, LTBusDeviceErrorMsg> = {};
-LT_RE850_DEVICE_ERRORS.forEach(derm => device_errors_map[derm.error_code] = derm);
+LT_MC417_DEVICE_ERRORS.forEach(derm => device_errors_map[derm.error_code] = derm);
 
 let main_window: BrowserWindow | null = null;
 let lt_bus_driver: LtBusDriver | null = null;
 
-ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => LT_RE850_DRIVER_CONFIG);
-ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_RE850_DEVICE_CMD_HELP);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_config`, () => LT_MC417_DRIVER_CONFIG);
+ipcMain.handle(`${DEVICE_MODEL}_get_device_cmd_help`, () => LT_MC417_DEVICE_CMD_HELP);
 ipcMain.handle(`${DEVICE_MODEL}_get_vce_config`, () => []);
 
 ipcMain.handle(`${DEVICE_MODEL}_get_chx_cps`, () => get_chx_cps());
@@ -170,7 +58,7 @@ function mw_ipc_handler(channel: string, data: any) {
     main_window?.webContents.send(channel, data);
 }
 
-const LT_RE850_DEVICE_CMD_HELP: string[] = [
+const LT_MC417_DEVICE_CMD_HELP: string[] = [
     '================================================================================================================================',
     'READ REGISTER <address> <size>, Alias: RR <address> <size>                     | Read Register from LT Bus',
     'READ F_REGISTER <address> <type>, Alias: RFR <address> <type>                  | Read and Parse Register from LT Bus',
@@ -179,9 +67,9 @@ const LT_RE850_DEVICE_CMD_HELP: string[] = [
     'RUN DATA_POOL, Alias RDP                                                       | Runs Data Pool Task',
     'SET MSG_ENABLE, Alias SME                                                      | Sets MSG_ENABLE Bit',
     'SET SYS_RESET, Alias SSR                                                       | Sets System Reset Bit',
-    'SYNC CTRL_REG, Alias SCR                                                       | Sync LT-RE850 Device CTRL Register',
     '================================================================================================================================',
 ];
+
 function lt_bus_driver_cmd_exec(cmd: string) {
     let cmd_parts = cmd.split(' ');
 
@@ -221,7 +109,6 @@ function lt_bus_driver_cmd_exec(cmd: string) {
         'RDP': ['RUN', 'DATA_POOL'],
         'SME': ['SET', 'MSG_ENABLE'],
         'SSR': ['SET', 'SYS_RESET'],
-        'SCR': ['SYNC', 'CTRL_REG'],
     };
 
     // substitute command alias
@@ -347,40 +234,16 @@ function lt_bus_driver_cmd_exec(cmd: string) {
         return;
     }
 
-    if (cmd_parts[0] === 'SYNC' && cmd_parts[1] === 'CTRL_REG') {
-        const reg_size = 2;
-        lt_bus_driver.read_registers(0xD08A, reg_size).then(request_result => {
-            if (request_result.err) {
-                mw_logger({ level: 'ERROR', msg: request_result.err });
-                return;
-            }
-
-            const response_packet: Uint8Array = request_result.ok as Uint8Array;
-            const data_buffer = response_packet.slice(LtBusDriver.LT_BUS_PACKET_DATA_START, LtBusDriver.LT_BUS_PACKET_DATA_START + reg_size);
-            const decoded_result = LtBusDriver.decode_u16_seq(data_buffer, [__u16_pool_msg_config[1]]);
-            if (decoded_result.err) {
-                mw_logger({ level: 'ERROR', msg: decoded_result.err });
-                return;
-            }
-
-            const decoded_msg_list = decoded_result.ok as LTBusDeviceMsg[];
-            const device_msg = decoded_msg_list[0];
-            mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
-        });
-
-        return;
-    }
-
     mw_logger({ level: 'ERROR', msg: 'Invalid Device Command, Type HELP to List Device Commands' });
 }
 
 let __enable_pool: boolean = false;
 let __sn = 0;
 const __pool_freq_ms = 100;
-const __pool_data_size = (LT_RE850_DRIVER_CONFIG.length - 3) * 4 + 6;
+const __pool_data_size = 2 * 4 + 3 * 2;
 const __pool_filter_set = new Set(['INPUT_REG', 'CTRL_REG', 'FAULT_REG']);
-const __f32_pool_msg_config = LT_RE850_DRIVER_CONFIG.filter(x => !__pool_filter_set.has(x.msg_name));
-const __u16_pool_msg_config = LT_RE850_DRIVER_CONFIG.filter(x => __pool_filter_set.has(x.msg_name));
+const __f32_pool_msg_config = LT_MC417_DRIVER_CONFIG.filter(x => !__pool_filter_set.has(x.msg_name));
+const __u16_pool_msg_config = LT_MC417_DRIVER_CONFIG.filter(x => __pool_filter_set.has(x.msg_name));
 async function __pool_task() {
     while (__enable_pool) {
         if (!lt_bus_driver) {
@@ -398,7 +261,7 @@ async function __pool_task() {
         const data_buffer = response_packet.slice(LtBusDriver.LT_BUS_PACKET_DATA_START, LtBusDriver.LT_BUS_PACKET_DATA_START + __pool_data_size);
 
         // parse f32 sequence
-        const f32_seq_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0, 0x078), data_buffer.slice(0x07A, 0x08A)]); // OFFSET_CALC_LT-RE850
+        const f32_seq_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0, 4), data_buffer.slice(6, 10)]); // OFFSET_CALC_LT-MC417
         const f32_seq_decode_result = LtBusDriver.decode_f32_seq(f32_seq_data_buffer, __f32_pool_msg_config);
         if (f32_seq_decode_result.err) {
             mw_logger({ level: 'ERROR', msg: f32_seq_decode_result.err });
@@ -406,16 +269,12 @@ async function __pool_task() {
         }
         const f32_seq_decoded_msg_list = f32_seq_decode_result.ok as LTBusDeviceMsg[];
         for (const device_msg of f32_seq_decoded_msg_list) {
-            // calibrate FLOW sensor
-            if (device_msg.config.msg_type === 0)
-                device_msg.msg_value *= 0.7;
-
             device_msg.seq_number = __sn;
             mw_ipc_handler(`${DEVICE_MODEL}_device_msg`, { device_msg });
         }
 
         // parse u16 sequence
-        const u16_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0x078, 0x078 + 2), data_buffer.slice(0x08A, 0x08A + 4)]); // OFFSET_CALC_LT-RE850
+        const u16_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(4, 6), data_buffer.slice(10, 14)]); // OFFSET_CALC_LT-MC417
         const u16_decode_result = LtBusDriver.decode_u16_seq(u16_data_buffer, __u16_pool_msg_config);
         if (u16_decode_result.err) {
             mw_logger({ level: 'ERROR', msg: u16_decode_result.err });
@@ -461,7 +320,7 @@ async function __pool_task() {
     }
 }
 
-export function init_lt_re850_serial_adapter(_main_window: BrowserWindow) {
+export function init_lt_mc417_serial_adapter(_main_window: BrowserWindow) {
     main_window = _main_window;
 
     ipcMain.on(`${DEVICE_MODEL}_serial_port_connect`, (_, data) => {
