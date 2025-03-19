@@ -3,12 +3,15 @@
 import { ref, inject, onMounted } from 'vue';
 import Slider from 'primevue/slider';
 import InputSwitch from 'primevue/inputswitch';
+import { useToast } from 'primevue/usetoast';
 
 import { electron_renderer_send } from '@renderer/lib/util'
 import { subscribe } from '@common/mediator';
-import { LTBusDeviceMsg } from '@common/models';
+import { LTBusDeviceMsg, LTBusDeviceErrorMsg } from '@common/models';
+import DeviceErrorAlert from '@renderer/components/DeviceErrorAlert.vue';
 
 const device_model = inject('device_model');
+const toast_service = useToast();
 
 const pump1_control = ref(false);
 const pump1_speed = ref(0);
@@ -50,12 +53,19 @@ onMounted(() => {
         else if (msg_type === 3 && msg_value === 0)
             pump1_control.value = false;
     });
+
+    window.electron?.ipcRenderer.on(`${device_model}_device_error_msg`, (_, data) => {
+        const device_error_msg = data.device_error_msg as LTBusDeviceErrorMsg;
+        if (!device_error_msg.user_ack)
+            toast_service.add({ severity: 'warn', summary: 'Safety Warning', detail: device_error_msg.error_text, life: 5000 });
+    });
 });
 
 </script>
 
 <template>
     <div id="lt_mc417_control_main_cont">
+        <DeviceErrorAlert />
         <h4 style="margin: 0px; margin-bottom: 8px; text-align: left; color: var(--font-color); width: 100%;">Pressure Control LT-MC417</h4>
 
         <div class="lt_mc417_control_row">
