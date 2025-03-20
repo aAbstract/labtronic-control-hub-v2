@@ -33,7 +33,7 @@ const read_device_config = computed(() => {
     chart_height.value = `${_chart_height}vh`;
 
     return read_config.map(x => {
-        msg_values_cache[x.msg_type] = '00.0';
+        msg_values_cache[x.msg_type] = '00.0000';
         update_device_state_panel();
         cache_changed = true;
         msg_type_color_map.value[x.msg_type] = DEVICE_UI_CONFIG_MAP[device_model].get_chart_params(x.msg_type)?.borderColor ?? '#FFFFFF';

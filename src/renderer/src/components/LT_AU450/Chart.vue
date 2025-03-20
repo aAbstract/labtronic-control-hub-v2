@@ -301,9 +301,11 @@ onMounted(() => {
 
 
 ////////////////////////////////// tests //////////////////////////
+let end_test = true
 type test_type = 'LOAD' | 'SPEED' | 'NONE'
 const test_mode = ref<test_type>('NONE')
-const record_timeout = 5000
+const record_timeout = 3000
+const wait_before_record_timeout = 1000
 let test_data_points_cache: Record<number, DataPointType> = {};
 let start_record_time = 0
 
@@ -341,9 +343,9 @@ function avg_points() {
 
 function pause_test() {
     chart_state.value = CHXChartState.PAUSED
-    test_mode.value = 'NONE'
     post_event('send_piston',{piston:0})
     post_event('send_digital',{digital:'0x0'})
+    end_test = true
 }
 
 
@@ -360,6 +362,7 @@ async function auto_load_test_point() {
     increase_piston()
     await sleep(rpm_change_timeout)
     if (old_rpm - new_rpm >= rpm_change_limit) {
+        await sleep(wait_before_record_timeout)
         start_record_time = __time_s()
         await sleep(record_timeout)
         avg_points()
@@ -370,6 +373,7 @@ async function auto_load_test_point() {
 }
 
 async function start_auto_load_test() {
+    end_test = false
     setTimeout(()=>{pause_test()},1000*60*1.5)
     post_event('send_digital',{digital:'0x1'})
     chart_state.value = CHXChartState.RECORDING
@@ -381,7 +385,7 @@ async function start_auto_load_test() {
         await sleep(rpm_change_timeout)
     }
     show_rpm_dialog.value = false
-    while (test_mode.value === 'LOAD') {
+    while (!end_test) {
         await auto_load_test_point()
     }
 }
@@ -406,6 +410,7 @@ async function const_speed_test_point() {
     await sleep(check_rpm_timeout)
 
     if (Math.abs(target_rpm.value - new_rpm) < error_margin) {
+        await sleep(wait_before_record_timeout)
         start_record_time = __time_s()
         await sleep(record_timeout)
         avg_points()
@@ -418,6 +423,7 @@ async function const_speed_test_point() {
 }
 
 async function start_const_speed_test() {
+    end_test = false
     setTimeout(()=>{pause_test()},1000*60*1.5)
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'SPEED'
@@ -433,7 +439,7 @@ async function start_const_speed_test() {
 
     show_pedal_dialog.value = false
 
-    if (test_mode.value === 'SPEED') {
+    if (!end_test) {
         await const_speed_test_point()
     }
 }
@@ -503,7 +509,7 @@ async function start_const_speed_test() {
                 <div style="margin: auto;">
                     <Button icon="pi pi-play" @click="set_chart_tool_state(CHXChartState.RECORDING)" text :style="{ color: chart_state === CHXChartState.RECORDING ? '#64DD17' : '', width: '32px', height: '32px' }" />
                     <Button icon="pi pi-pause" @click="set_chart_tool_state(CHXChartState.PAUSED)" text :style="{ color: chart_state === CHXChartState.PAUSED ? '#FFAB00' : '', width: '32px', height: '32px' }" />
-                    <Button icon="pi pi-stop" @click="set_chart_tool_state(CHXChartState.STOPPED)" text style="color: #DD2C00; width: 32px; height: 32px;" />
+                    <Button icon="pi pi-stop" @click="set_chart_tool_state(CHXChartState.STOPPED);test_mode = 'NONE'" text style="color: #DD2C00; width: 32px; height: 32px;" />
                 </div>
             </div>
         </OverlayPanel>
