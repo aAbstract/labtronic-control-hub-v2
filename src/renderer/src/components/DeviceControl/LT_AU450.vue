@@ -109,12 +109,18 @@ onMounted(() => {
     }
     )
 
-    subscribe('increase_piston', 'increase_piston', () => {
-        piston_val.value = threshold_value(piston_val.value + 5, 200);
+    subscribe('increase_piston', 'increase_piston', (args) => {
+        let value = 5
+        if (args.value)
+            value = args.value
+        piston_val.value = threshold_value(piston_val.value + value, 200);
         send_analog()
     })
-    subscribe('decrease_piston', 'decrease_piston', () => {
-        piston_val.value = threshold_value(piston_val.value - 5, 200);
+    subscribe('decrease_piston', 'decrease_piston', (args) => {
+        let value = 5
+        if (args.value)
+            value = args.value
+        piston_val.value = threshold_value(piston_val.value - value, 200);
         send_analog()
     })
     subscribe('send_piston', 'send_piston', (args) => {

@@ -287,7 +287,7 @@ onMounted(() => {
         data_points_cache[seq_number][msg_type] = _msg_value;
         points_changed = true;
     });
-    
+
 
     setInterval(() => {
         if (!points_changed)
@@ -312,8 +312,8 @@ let start_record_time = 0
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-function increase_piston() {
-    post_event('increase_piston', {})
+function increase_piston(value: number = 5) {
+    post_event('increase_piston', { value })
 }
 function decrease_piston() {
     post_event('decrease_piston', {})
@@ -343,8 +343,8 @@ function avg_points() {
 
 function pause_test() {
     chart_state.value = CHXChartState.PAUSED
-    post_event('send_piston',{piston:0})
-    post_event('send_digital',{digital:'0x0'})
+    post_event('send_piston', { piston: 0 })
+    post_event('send_digital', { digital: '0x0' })
     end_test = true
 }
 
@@ -352,36 +352,52 @@ function pause_test() {
 //  chart auto load test 
 let new_rpm = 0
 let old_rpm = 0
-const minimum_rpm = ref(400)
-const rpm_change_limit = 250
+const minimum_rpm = ref(1000)
+//const rpm_change_limit = 250
 const rpm_change_timeout = 500
 const show_pedal_dialog = ref(false)
+const increase_rate = [5, 5, 5, 10, 10, 10, 20, 20, 20, 40, 40, 40,40]
+let increase_rate_index = 0
+
+// async function auto_load_test_point() {
+//     old_rpm = new_rpm
+//     increase_piston()
+//     await sleep(rpm_change_timeout)
+//     if (old_rpm - new_rpm >= rpm_change_limit) {
+//         await sleep(wait_before_record_timeout)
+//         start_record_time = __time_s()
+//         await sleep(record_timeout)
+//         avg_points()
+//     }
+//     if (new_rpm<=minimum_rpm.value)
+//         pause_test()
+
+// }
 
 async function auto_load_test_point() {
-    old_rpm = new_rpm
-    increase_piston()
-    await sleep(rpm_change_timeout)
-    if (old_rpm - new_rpm >= rpm_change_limit) {
-        await sleep(wait_before_record_timeout)
-        start_record_time = __time_s()
-        await sleep(record_timeout)
-        avg_points()
-    }
-    if (new_rpm<=minimum_rpm.value)
+
+    increase_piston(increase_rate[increase_rate_index])
+    await sleep(wait_before_record_timeout)
+    start_record_time = __time_s()
+    await sleep(record_timeout)
+    increase_rate_index = increase_rate_index +1
+    avg_points()
+
+    if (new_rpm <= minimum_rpm.value || increase_rate_index == increase_rate.length-1)
         pause_test()
 
 }
 
 async function start_auto_load_test() {
     end_test = false
-    setTimeout(()=>{pause_test()},1000*60*1.5)
-    post_event('send_digital',{digital:'0x1'})
+    setTimeout(() => { pause_test() }, 1000 * 60 * 1.5)
+    post_event('send_digital', { digital: '0x1' })
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'LOAD'
     show_rpm_dialog.value = true
     // to be removed
     //setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 24 4000` }); }, 5000)
-    while (new_rpm < 3500) {
+    while (new_rpm < 3200) {
         await sleep(rpm_change_timeout)
     }
     show_rpm_dialog.value = false
@@ -416,20 +432,20 @@ async function const_speed_test_point() {
         avg_points()
         await start_const_speed_test()
     }
-    else{
+    else {
         await const_speed_test_point()
     }
-   
+
 }
 
 async function start_const_speed_test() {
     end_test = false
-    setTimeout(()=>{pause_test()},1000*60*1.5)
+    setTimeout(() => { pause_test() }, 1000 * 60 * 1.5)
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'SPEED'
     old_pedal_val = pedal_val
     show_pedal_dialog.value = true
-    post_event('send_digital',{digital:'0x1'})
+    post_event('send_digital', { digital: '0x1' })
     // to be removed
     //setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 5000)
 
@@ -452,7 +468,7 @@ async function start_const_speed_test() {
 <template>
     <div id="chart_tool_panel" v-on="screenshot_handlers">
         <Alert :show_dialog="show_pedal_dialog" MSG="You Must Press the Pedal to Proceed " header="Press Pedal" />
-        <Alert :show_dialog="show_rpm_dialog" MSG="Engine Speed Must Reach More Than 3500 RPM" header="RPM Minimum Value" />
+        <Alert :show_dialog="show_rpm_dialog" MSG="Engine Speed Must Reach More Than 3200 RPM" header="RPM Minimum Value" />
         <Button style="top: 8px; right: 28px;" class="chart_tool_btn" icon="pi pi-cog" @click="show_chart_tool_settings_overlay_panel" text v-tooltip.left="{ value: 'CHART SETTINGS', pt: compute_tooltip_pt('left') }" />
 
         <OverlayPanel ref="chart_tool_op" :pt="overlay_panel_pt" style="font-family: Cairo, sans-serif;">
@@ -509,7 +525,7 @@ async function start_const_speed_test() {
                 <div style="margin: auto;">
                     <Button icon="pi pi-play" @click="set_chart_tool_state(CHXChartState.RECORDING)" text :style="{ color: chart_state === CHXChartState.RECORDING ? '#64DD17' : '', width: '32px', height: '32px' }" />
                     <Button icon="pi pi-pause" @click="set_chart_tool_state(CHXChartState.PAUSED)" text :style="{ color: chart_state === CHXChartState.PAUSED ? '#FFAB00' : '', width: '32px', height: '32px' }" />
-                    <Button icon="pi pi-stop" @click="set_chart_tool_state(CHXChartState.STOPPED);test_mode = 'NONE'" text style="color: #DD2C00; width: 32px; height: 32px;" />
+                    <Button icon="pi pi-stop" @click="set_chart_tool_state(CHXChartState.STOPPED); test_mode = 'NONE'" text style="color: #DD2C00; width: 32px; height: 32px;" />
                 </div>
             </div>
         </OverlayPanel>
