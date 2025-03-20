@@ -333,8 +333,8 @@ const DEVICE_CPS: CHXComputedParam[] = [
     { param_name: 'P_thermal', expr: '$Q_WATER * $DO * $C_WATER * ($ECT - $T1)  /60', msg_type: 45, unit: '[W]' },
     { param_name: 'Engine_Power', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60', msg_type: 46, unit: '[W]' },
     { param_name: 'Fuel_Consumption', expr: '(0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG) / (($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60)', msg_type: 47 },
-    { param_name: 'Volumetric_Efficiency', expr: '(60000 * (Math.PI * $R * $R * (44.63 * $VAVG_VMAX * $CP * Math.sqrt(($PR1/1000) / (0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15))))) * $SF) / ($RPM * $SV)', msg_type: 48 },
-    { param_name: 'Efficiency', expr: '($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * (0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG))', msg_type: 49 },
+    { param_name: 'Volumetric_Efficiency', expr: '100 * (60000 * (Math.PI * $R * $R * (44.63 * $VAVG_VMAX * $CP * Math.sqrt(($PR1/1000) / (0.4638 * $barometric_pressure * 7.50062 / ($T1 + 273.15))))) * $SF) / ($RPM * $SV)', msg_type: 48 },
+    { param_name: 'Efficiency', expr: '100* ($L2 - $L1) * $D * 2 * Math.PI * $RPM / 60 /1000000 / ($ME * $CV * (0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG))', msg_type: 49 },
     { param_name: 'Load_Diff', expr: '($L2 - $L1) ', msg_type: 50, unit: '[N]' },
     { param_name: 'Fuel_Rate', expr: '0.0016 * $RPM * 3.78541 / 3600 * $DO * $SG', msg_type: 51, unit: '[g/s]' },
     { param_name: 'Engine_Torque', expr: '($L2 - $L1) * $D', msg_type: 52, unit: '[N.m]' }

@@ -15,8 +15,6 @@ import { compute_tooltip_pt, electron_renderer_invoke } from '@renderer/lib/util
 import { post_event, subscribe } from '@common/mediator';
 import { screenshot_handlers } from '@renderer/lib/screenshot';
 
-import { electron_renderer_send } from '@renderer/lib/util';
-
 type DataPointType = Record<string, number>;
 
 const CHART_FPS = 30;
@@ -344,6 +342,7 @@ function avg_points() {
 function pause_test() {
     chart_state.value = CHXChartState.PAUSED
     test_mode.value = 'NONE'
+    post_event('send_piston',{piston:0})
     post_event('send_digital',{digital:'0x0'})
 }
 
@@ -352,8 +351,8 @@ function pause_test() {
 let new_rpm = 0
 let old_rpm = 0
 const minimum_rpm = ref(400)
-const rpm_change_limit = 150
-const rpm_change_timeout = 2000
+const rpm_change_limit = 250
+const rpm_change_timeout = 500
 const show_pedal_dialog = ref(false)
 
 async function auto_load_test_point() {
@@ -371,14 +370,15 @@ async function auto_load_test_point() {
 }
 
 async function start_auto_load_test() {
+    setTimeout(()=>{pause_test()},1000*60*1.5)
     post_event('send_digital',{digital:'0x1'})
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'LOAD'
     show_rpm_dialog.value = true
     // to be removed
-    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 24 4000` }); }, 5000)
+    //setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 24 4000` }); }, 5000)
     while (new_rpm < 3500) {
-        await sleep(500)
+        await sleep(rpm_change_timeout)
     }
     show_rpm_dialog.value = false
     while (test_mode.value === 'LOAD') {
@@ -393,7 +393,7 @@ let pedal_val = 20
 let old_pedal_val = 0
 const target_rpm = ref(100)
 let error_margin = 100
-let check_rpm_timeout = 1000
+let check_rpm_timeout = 500
 const show_rpm_dialog = ref(false)
 
 
@@ -418,16 +418,17 @@ async function const_speed_test_point() {
 }
 
 async function start_const_speed_test() {
+    setTimeout(()=>{pause_test()},1000*60*1.5)
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'SPEED'
     old_pedal_val = pedal_val
     show_pedal_dialog.value = true
     post_event('send_digital',{digital:'0x1'})
     // to be removed
-    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 5000)
+    //setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 5000)
 
     while (pedal_val <= old_pedal_val) {
-        await sleep(500)
+        await sleep(check_rpm_timeout)
     }
 
     show_pedal_dialog.value = false

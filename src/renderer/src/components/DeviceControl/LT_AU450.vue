@@ -110,11 +110,11 @@ onMounted(() => {
     )
 
     subscribe('increase_piston', 'increase_piston', () => {
-        piston_val.value = threshold_value(piston_val.value + 1, 200);
+        piston_val.value = threshold_value(piston_val.value + 5, 200);
         send_analog()
     })
     subscribe('decrease_piston', 'decrease_piston', () => {
-        piston_val.value = threshold_value(piston_val.value - 1, 200);
+        piston_val.value = threshold_value(piston_val.value - 5, 200);
         send_analog()
     })
     subscribe('send_piston', 'send_piston', (args) => {
