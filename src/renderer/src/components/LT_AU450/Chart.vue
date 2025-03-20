@@ -356,7 +356,7 @@ const minimum_rpm = ref(1000)
 //const rpm_change_limit = 250
 const rpm_change_timeout = 500
 const show_pedal_dialog = ref(false)
-const increase_rate = [5, 5, 5, 10, 10, 10, 20, 20, 20, 40, 40, 40,40]
+const increase_rate = [5, 10, 10, 20, 20, 40, 40, 60, 80, 100, 140, 180, 220]
 let increase_rate_index = 0
 
 // async function auto_load_test_point() {
@@ -380,17 +380,17 @@ async function auto_load_test_point() {
     await sleep(wait_before_record_timeout)
     start_record_time = __time_s()
     await sleep(record_timeout)
-    increase_rate_index = increase_rate_index +1
+    increase_rate_index = increase_rate_index + 1
     avg_points()
 
-    if (new_rpm <= minimum_rpm.value || increase_rate_index == increase_rate.length-1)
+    if (new_rpm <= minimum_rpm.value || increase_rate_index == increase_rate.length - 1)
         pause_test()
 
 }
 
 async function start_auto_load_test() {
     end_test = false
-    setTimeout(() => { pause_test() }, 1000 * 60 * 1.5)
+    setTimeout(() => { pause_test() }, 1000 * 60 )
     post_event('send_digital', { digital: '0x1' })
     chart_state.value = CHXChartState.RECORDING
     test_mode.value = 'LOAD'
@@ -411,7 +411,7 @@ async function start_auto_load_test() {
 
 let pedal_val = 20
 let old_pedal_val = 0
-const target_rpm = ref(100)
+const target_rpm = ref(2000)
 let error_margin = 100
 let check_rpm_timeout = 500
 const show_rpm_dialog = ref(false)
@@ -430,27 +430,23 @@ async function const_speed_test_point() {
         start_record_time = __time_s()
         await sleep(record_timeout)
         avg_points()
-        await start_const_speed_test()
+        await repeat_part()
     }
     else {
         await const_speed_test_point()
     }
 
 }
-
-async function start_const_speed_test() {
-    end_test = false
-    setTimeout(() => { pause_test() }, 1000 * 60 * 1.5)
-    chart_state.value = CHXChartState.RECORDING
-    test_mode.value = 'SPEED'
+import { electron_renderer_send } from '@renderer/lib/util';
+async function repeat_part(){
     old_pedal_val = pedal_val
     show_pedal_dialog.value = true
     post_event('send_digital', { digital: '0x1' })
     // to be removed
-    //setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 5000)
-
+    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 20000)
     while (pedal_val <= old_pedal_val) {
         await sleep(check_rpm_timeout)
+        
     }
 
     show_pedal_dialog.value = false
@@ -458,6 +454,15 @@ async function start_const_speed_test() {
     if (!end_test) {
         await const_speed_test_point()
     }
+}
+async function start_const_speed_test() {
+    end_test = false
+    setTimeout(() => { pause_test() }, 1000 * 60)
+    chart_state.value = CHXChartState.RECORDING
+    test_mode.value = 'SPEED'
+    repeat_part()
+    
+   
 }
 
 
