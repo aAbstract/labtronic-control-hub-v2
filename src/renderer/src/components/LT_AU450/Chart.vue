@@ -346,6 +346,7 @@ function pause_test() {
     post_event('send_piston', { piston: 0 })
     post_event('send_digital', { digital: '0x0' })
     end_test = true
+    show_pedal_dialog.value = false
 }
 
 
@@ -437,13 +438,13 @@ async function const_speed_test_point() {
     }
 
 }
-import { electron_renderer_send } from '@renderer/lib/util';
+//import { electron_renderer_send } from '@renderer/lib/util';
 async function repeat_part(){
     old_pedal_val = pedal_val
     show_pedal_dialog.value = true
     post_event('send_digital', { digital: '0x1' })
     // to be removed
-    setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 20000)
+    //setTimeout(() => { electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `OBD 21 ${pedal_val + 1}` }); }, 20000)
     while (pedal_val <= old_pedal_val) {
         await sleep(check_rpm_timeout)
         
