@@ -38,8 +38,8 @@ lt_re850_device_data_registers_config = [
     DeviceRegisterConfig('HEATER_POWER', 0x07E, 'f32'),
     DeviceRegisterConfig('HEATER_TMP_SETPOINT', 0x082, 'f32'),
     DeviceRegisterConfig('THERMOSTAT_SETPOINT', 0x086, 'f32'),
-    DeviceRegisterConfig('CTRL_BTN_REG', 0x08A, 'u16'),
-    DeviceRegisterConfig('FAULT_BTN_REG', 0x08C, 'u16'),
+    DeviceRegisterConfig('CTRL_REG', 0x08A, 'u16'),
+    DeviceRegisterConfig('FAULT_REG', 0x08C, 'u16'),
 ]
 lt_re850_data_buffer = DeviceBuffer(0xD000, lt_re850_device_data_registers_config)
 for lt_re850_register_config in lt_re850_device_data_registers_config:
@@ -50,10 +50,10 @@ for lt_re850_register_config in lt_re850_device_data_registers_config:
     if __conf.register_name == 'INPUT_REG':
         lt_re850_data_buffer.write_register(__conf.register_name, 6)
 
-    if __conf.register_name == 'CTRL_BTN_REG':
+    if __conf.register_name == 'CTRL_REG':
         lt_re850_data_buffer.write_register(__conf.register_name, 1)
 
-    if __conf.register_name == 'FAULT_BTN_REG':
+    if __conf.register_name == 'FAULT_REG':
         lt_re850_data_buffer.write_register(__conf.register_name, 1)
 
     if __conf.register_name == 'FLOW':
@@ -75,9 +75,15 @@ lt_mc417_config_buffer.write_register('msg_buffer', b'\x01\x02\x03')
 lt_mc417_device_data_registers_config = [
     DeviceRegisterConfig('PR1', 0x000, 'f32'),
     DeviceRegisterConfig('INPUT_REG', 0x004, 'u16'),
-    DeviceRegisterConfig('PUMP1_SPEED', 0x006, 'f32'),
-    DeviceRegisterConfig('CTRL_BTN_REG', 0x00A, 'u16'),
-    DeviceRegisterConfig('FAULT_BTN_REG', 0x00C, 'u16'),
+    DeviceRegisterConfig('PR1_SETPOINT', 0x006, 'f32'),
+    DeviceRegisterConfig('KP', 0x00A, 'f32'),
+    DeviceRegisterConfig('KI', 0x00E, 'f32'),
+    DeviceRegisterConfig('KD', 0x012, 'f32'),
+    DeviceRegisterConfig('MIN_DUTY', 0x016, 'f32'),
+    DeviceRegisterConfig('MAX_DUTY', 0x01A, 'f32'),
+    DeviceRegisterConfig('PUMP1_SPEED', 0x01E, 'f32'),
+    DeviceRegisterConfig('CTRL_REG', 0x022, 'u16'),
+    DeviceRegisterConfig('FAULT_REG', 0x024, 'u16'),
 ]
 lt_mc417_data_buffer = DeviceBuffer(0xD000, lt_mc417_device_data_registers_config)
 for lt_mc417_register_config in lt_mc417_device_data_registers_config:
@@ -85,10 +91,10 @@ for lt_mc417_register_config in lt_mc417_device_data_registers_config:
     if __conf.register_name == 'INPUT_REG':
         lt_mc417_data_buffer.write_register(__conf.register_name, 0)
 
-    if __conf.register_name == 'CTRL_BTN_REG':
-        lt_mc417_data_buffer.write_register(__conf.register_name, 1)
+    if __conf.register_name == 'CTRL_REG':
+        lt_mc417_data_buffer.write_register(__conf.register_name, 3)
 
-    if __conf.register_name == 'FAULT_BTN_REG':
+    if __conf.register_name == 'FAULT_REG':
         lt_mc417_data_buffer.write_register(__conf.register_name, 0)
 
     if __conf.register_name == 'PR1':

@@ -14,8 +14,18 @@ const device_model = inject('device_model');
 const toast_service = useToast();
 
 const pump1_control = ref(false);
+const pump1_mode = ref(false);
+const valve1_control = ref(false);
+
 const pump1_speed = ref(0);
 const pump1_speed_slider = ref(0);
+
+const kp = ref(0);
+const ki = ref(0);
+const kd = ref(0);
+const pressure_setpoint = ref(0);
+const min_duty = ref(0);
+const max_duty = ref(0);
 
 const slider_pt: any = {
     root: { style: 'background-color: var(--empty-gauge-color);' },
@@ -33,13 +43,65 @@ function send_pump_speed() {
     const _pump1_speed = threshold_value(pump1_speed.value, 100);
     pump1_speed.value = _pump1_speed;
     pump1_speed_slider.value = _pump1_speed;
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD006 F32 ${_pump1_speed}` }); // OFFSET_CALC_LT-MC417
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD01E F32 ${_pump1_speed}` }); // OFFSET_CALC_LT-MC417
 }
 
+enum PIDGain {
+    KP = 0,
+    KI = 1,
+    KD = 2,
+};
+const gains_reg_addr_map: Record<PIDGain, string> = {
+    [PIDGain.KP]: '0xD00A',
+    [PIDGain.KI]: '0xD00E',
+    [PIDGain.KD]: '0xD012',
+};
+function validate_pid_gain(g: any): number {
+    if (isNaN(g) || g < 0)
+        return 0;
+    return g;
+}
+function send_pid_gain(pid_gain: PIDGain, gain_value: number) {
+    let _gain_value = validate_pid_gain(gain_value);
+    const reg_addr = gains_reg_addr_map[pid_gain];
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR ${reg_addr} F32 ${_gain_value}` }); // OFFSET_CALC_LT-MC417
+}
+
+enum AutomaticControlOption {
+    PRESSURE_SETPOINT = 0,
+    MIN_DUTY = 1,
+    MAX_DUTY = 2,
+};
+const autoc_opts_addr_map: Record<AutomaticControlOption, string> = {
+    [AutomaticControlOption.PRESSURE_SETPOINT]: '0xD006',
+    [AutomaticControlOption.MIN_DUTY]: '0xD016',
+    [AutomaticControlOption.MAX_DUTY]: '0xD01A',
+};
+function validate_autoc_opt(o: any): number {
+    if (isNaN(o) || o < 0)
+        return 0;
+    return o;
+}
+function send_autoc_opt(autoc_opt: AutomaticControlOption, opt_value: number) {
+    let _opt_value = validate_autoc_opt(opt_value);
+    const reg_addr = autoc_opts_addr_map[autoc_opt];
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR ${reg_addr} F32 ${_opt_value}` }); // OFFSET_CALC_LT-MC417
+}
+
+const PUMP1_CONTROL_CTRL_REG_BIT_OFFSET = 15;
+const PUMP1_MODE_CTRL_REG_BIT_OFFSET = 14;
+const VALVE1_CONTROL_CTRL_REG_BIT_OFFSET = 13;
 function send_ctrl_reg() {
-    const ctrl_reg_bits = (pump1_control.value ? '1' : '0').padStart(16, '0');
-    const ctrl_reg_value = parseInt(ctrl_reg_bits, 2);
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD00A U16 ${ctrl_reg_value}` }); // OFFSET_CALC_LT-MC417
+    const ctrl_reg_bits = new Array(16).fill('0');
+    if (pump1_control.value)
+        ctrl_reg_bits[PUMP1_CONTROL_CTRL_REG_BIT_OFFSET] = '1';
+    if (pump1_mode.value)
+        ctrl_reg_bits[PUMP1_MODE_CTRL_REG_BIT_OFFSET] = '1';
+    if (valve1_control.value)
+        ctrl_reg_bits[VALVE1_CONTROL_CTRL_REG_BIT_OFFSET] = '1';
+
+    const ctrl_reg_value = parseInt(ctrl_reg_bits.join(''), 2);
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD022 U16 ${ctrl_reg_value}` }); // OFFSET_CALC_LT-MC417
 }
 
 onMounted(() => {
@@ -48,10 +110,12 @@ onMounted(() => {
         const { msg_type } = device_msg.config;
         const { msg_value } = device_msg;
 
-        if (msg_type === 3 && msg_value === 1)
-            pump1_control.value = true;
-        else if (msg_type === 3 && msg_value === 0)
-            pump1_control.value = false;
+        if (msg_type === 9) {
+            const ctrl_bits = msg_value.toString(2).padStart(16, '0');
+            pump1_control.value = ctrl_bits[PUMP1_CONTROL_CTRL_REG_BIT_OFFSET] === '1';
+            pump1_mode.value = ctrl_bits[PUMP1_MODE_CTRL_REG_BIT_OFFSET] === '1';
+            valve1_control.value = ctrl_bits[VALVE1_CONTROL_CTRL_REG_BIT_OFFSET] === '1';
+        }
     });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_error_msg`, (_, data) => {
@@ -68,21 +132,89 @@ onMounted(() => {
         <DeviceErrorAlert />
         <h4 style="margin: 0px; margin-bottom: 8px; text-align: left; color: var(--font-color); width: 100%;">Pressure Control LT-MC417</h4>
 
-        <div class="lt_mc417_control_row">
+        <div style="width: 100%;" class="lt_mc417_control_row">
             <span class="lt_mc417_control_label">Pump1 Speed (%)</span>
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="pump1_speed_slider" @slideend="pump1_speed = pump1_speed_slider" />
             <input style="width: 50px;" class="dt_tf" type="text" v-model="pump1_speed" @keyup.enter="send_pump_speed()">
         </div>
 
         <div style="height: 16px;"></div>
-        <div class="lt_mc417_control_row">
-            <span style="margin-right: 4px;" class="lt_mc417_control_label">Pump 1</span>
-            <InputSwitch v-model="pump1_control" @change="send_ctrl_reg()" />
+
+        <div style="display: flex; width: 100%; justify-content: center;">
+            <div class="lt_mc417_control_row">
+                <span style="margin-right: 24px;" class="lt_mc417_control_label">Enable Pump</span>
+                <InputSwitch v-model="pump1_control" @change="send_ctrl_reg()" />
+            </div>
+            <div style="width: 25%;"></div>
+            <div class="lt_mc417_control_row">
+                <span style="margin-right: 24px;" class="lt_mc417_control_label">Enable Valve</span>
+                <InputSwitch v-model="valve1_control" @change="send_ctrl_reg()" />
+            </div>
+        </div>
+
+        <div style="height: 16px;"></div>
+
+        <div id="automatic_control_opts">
+            <div class="lt_mc417_control_row">
+                <span style="margin-right: 24px;" class="lt_mc417_control_label">Automatic Control Mode</span>
+                <InputSwitch v-model="pump1_mode" @change="send_ctrl_reg()" />
+            </div>
+            <div style="display: flex; width: 100%; justify-content: space-between;">
+                <div>
+                    <div class="lt_mc417_control_row">
+                        <span class="autoc_opt_label">Set Point</span>
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="pressure_setpoint" @keyup.enter="send_autoc_opt(AutomaticControlOption.PRESSURE_SETPOINT, pressure_setpoint)">
+                    </div>
+                    <div class="lt_mc417_control_row">
+                        <span class="autoc_opt_label">Min Duty</span>
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="min_duty" @keyup.enter="send_autoc_opt(AutomaticControlOption.MIN_DUTY, min_duty)">
+                    </div>
+                    <div class="lt_mc417_control_row">
+                        <span class="autoc_opt_label">Max Duty</span>
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="max_duty" @keyup.enter="send_autoc_opt(AutomaticControlOption.MAX_DUTY, max_duty)">
+                    </div>
+                </div>
+                <div style="min-height: 100%; width: 4px; border-radius: 8px; background-color: var(--empty-gauge-color); margin-bottom: 6px;"></div>
+                <div>
+                    <div class="lt_mc417_control_row">
+                        <span class="pid_gain_label">KP</span>
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="kp" @keyup.enter="send_pid_gain(PIDGain.KP, kp)">
+                    </div>
+                    <div class="lt_mc417_control_row">
+                        <span class="pid_gain_label">KI</span>
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="ki" @keyup.enter="send_pid_gain(PIDGain.KI, ki)">
+                    </div>
+                    <div class="lt_mc417_control_row">
+                        <span class="pid_gain_label">KD</span>
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="kd" @keyup.enter="send_pid_gain(PIDGain.KD, kd)">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <style lang="css" scoped>
+#automatic_control_opts {
+    width: 100%;
+    height: fit-content;
+    border: 2px solid var(--empty-gauge-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+.autoc_opt_label {
+    color: var(--font-color);
+    font-weight: bold;
+    width: 120px;
+}
+
+.pid_gain_label {
+    color: var(--font-color);
+    font-weight: bold;
+    width: 40px;
+}
+
 .dt_tf {
     font-family: "Lucida Console", "Courier New", monospace;
     width: 60px;
@@ -105,7 +237,6 @@ onMounted(() => {
     font-weight: bold;
     font-size: 14px;
     margin-right: 16px;
-    width: 120px;
 }
 
 .lt_mc417_control_row {
@@ -114,7 +245,6 @@ onMounted(() => {
     justify-content: flex-start;
     align-items: center;
     margin-block: 4px;
-    width: 100%;
 }
 
 #lt_mc417_control_main_cont {
