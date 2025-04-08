@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, Ref, onMounted } from 'vue';
+import { ref, Ref, onMounted, inject } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import Menu from 'primevue/menu';
 
@@ -14,6 +14,7 @@ import Bolt from '@renderer/components/icons/Bolt.vue';
 import CircleXmark from '@renderer/components/icons/CircleXmark.vue';
 import { post_event, subscribe } from '@common/mediator';
 import { toggle_screenshot_mode, screenshot_mode } from '@renderer/lib/screenshot';
+import { electron_renderer_send } from '@renderer/lib/util';
 
 type PanelPosType = 'LEFT' | 'RIGHT';
 class NavMenuItem {
@@ -36,6 +37,7 @@ class NavMenuItem {
     }
 };
 
+const device_model = inject('device_model');
 const toast_service = useToast();
 const menu_items: NavMenuItem[] = [
     new NavMenuItem('Device Terminal', SquareTerminalIcon, function (this: NavMenuItem, _event: MouseEvent) { toggle_panel(this.panel_name, this.panel_pos) }, 'control_panel', 'LEFT'),
@@ -68,6 +70,14 @@ const quick_actions_menu_items = [
             const mode_str_repr = screenshot_mode() ? 'ON' : 'OFF';
             const mode_msg = screenshot_mode() ? 'Click on a UI Component to Capture Screenshot' : 'Screenshot Mode is Disabled';
             toast_service.add({ severity: 'info', summary: `Screenshot ${mode_str_repr}`, detail: mode_msg, life: 3000 });
+        },
+    },
+    {
+        label: 'Safety Alerts',
+        icon: 'pi pi-shield',
+        command: () => {
+            electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: 'SME' });
+            toast_service.add({ severity: 'info', summary: 'Safety Alerts', detail: 'Safety Alerts Enabled', life: 3000 });
         },
     },
     {

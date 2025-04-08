@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, onMounted, Ref } from 'vue';
 import Slider from 'primevue/slider';
 import InputSwitch from 'primevue/inputswitch';
 import { useToast } from 'primevue/usetoast';
@@ -26,6 +26,21 @@ const kd = ref(0);
 const pressure_setpoint = ref(0);
 const min_duty = ref(0);
 const max_duty = ref(0);
+
+const kp_feedback = ref('00.00');
+const ki_feedback = ref('00.00');
+const kd_feedback = ref('00.00');
+const min_duty_feedback = ref('00.00');
+const max_duty_feedback = ref('00.00');
+const pressure_setpoint_feedback = ref('00.00');
+const feedback_params_map: Record<number, Ref<string>> = {
+    2: pressure_setpoint_feedback,
+    3: kp_feedback,
+    4: ki_feedback,
+    5: kd_feedback,
+    6: min_duty_feedback,
+    7: max_duty_feedback,
+};
 
 const slider_pt: any = {
     root: { style: 'background-color: var(--empty-gauge-color);' },
@@ -57,7 +72,7 @@ const gains_reg_addr_map: Record<PIDGain, string> = {
     [PIDGain.KD]: '0xD012',
 };
 function validate_pid_gain(g: any): number {
-    if (isNaN(g) || g < 0)
+    if (isNaN(g))
         return 0;
     return g;
 }
@@ -80,7 +95,7 @@ const autoc_opts_addr_map: Record<AutomaticControlOption, string> = {
 function validate_autoc_opt(o: any): number {
     if (isNaN(o) || o < 0)
         return 0;
-    return o;
+    return Math.min(100, o);
 }
 function send_autoc_opt(autoc_opt: AutomaticControlOption, opt_value: number) {
     let _opt_value = validate_autoc_opt(opt_value);
@@ -116,6 +131,9 @@ onMounted(() => {
             pump1_mode.value = ctrl_bits[PUMP1_MODE_CTRL_REG_BIT_OFFSET] === '1';
             valve1_control.value = ctrl_bits[VALVE1_CONTROL_CTRL_REG_BIT_OFFSET] === '1';
         }
+
+        if (msg_type in feedback_params_map)
+            feedback_params_map[msg_type].value = msg_value.toFixed(2);
     });
 
     window.electron?.ipcRenderer.on(`${device_model}_device_error_msg`, (_, data) => {
@@ -135,7 +153,8 @@ onMounted(() => {
         <div style="width: 100%;" class="lt_mc417_control_row">
             <span class="lt_mc417_control_label">Pump1 Speed (%)</span>
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="pump1_speed_slider" @slideend="pump1_speed = pump1_speed_slider" />
-            <input style="width: 50px;" class="dt_tf" type="text" v-model="pump1_speed" @keyup.enter="send_pump_speed()">
+            <!-- @vue-ignore -->
+            <input style="width: 50px;" class="dt_tf" type="text" v-model="pump1_speed" @focus="pump1_speed = ''" @keyup.enter="send_pump_speed()">
         </div>
 
         <div style="height: 16px;"></div>
@@ -163,30 +182,42 @@ onMounted(() => {
                 <div>
                     <div class="lt_mc417_control_row">
                         <span class="autoc_opt_label">Set Point</span>
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="pressure_setpoint" @keyup.enter="send_autoc_opt(AutomaticControlOption.PRESSURE_SETPOINT, pressure_setpoint)">
+                        <span class="feedback_param_label">{{ pressure_setpoint_feedback }}</span>
+                        <!-- @vue-ignore -->
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="pressure_setpoint" @focus="pressure_setpoint = ''" @keyup.enter="send_autoc_opt(AutomaticControlOption.PRESSURE_SETPOINT, pressure_setpoint)">
                     </div>
                     <div class="lt_mc417_control_row">
                         <span class="autoc_opt_label">Min Duty</span>
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="min_duty" @keyup.enter="send_autoc_opt(AutomaticControlOption.MIN_DUTY, min_duty)">
+                        <span class="feedback_param_label">{{ min_duty_feedback }}</span>
+                        <!-- @vue-ignore -->
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="min_duty" @focus="min_duty = ''" @keyup.enter="send_autoc_opt(AutomaticControlOption.MIN_DUTY, min_duty)">
                     </div>
                     <div class="lt_mc417_control_row">
                         <span class="autoc_opt_label">Max Duty</span>
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="max_duty" @keyup.enter="send_autoc_opt(AutomaticControlOption.MAX_DUTY, max_duty)">
+                        <span class="feedback_param_label">{{ max_duty_feedback }}</span>
+                        <!-- @vue-ignore -->
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="max_duty" @focus="max_duty = ''" @keyup.enter="send_autoc_opt(AutomaticControlOption.MAX_DUTY, max_duty)">
                     </div>
                 </div>
                 <div style="min-height: 100%; width: 4px; border-radius: 8px; background-color: var(--empty-gauge-color); margin-bottom: 6px;"></div>
                 <div>
                     <div class="lt_mc417_control_row">
                         <span class="pid_gain_label">KP</span>
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="kp" @keyup.enter="send_pid_gain(PIDGain.KP, kp)">
+                        <span class="feedback_param_label">{{ kp_feedback }}</span>
+                        <!-- @vue-ignore -->
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="kp" @focus="kp = ''" @keyup.enter="send_pid_gain(PIDGain.KP, kp)">
                     </div>
                     <div class="lt_mc417_control_row">
                         <span class="pid_gain_label">KI</span>
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="ki" @keyup.enter="send_pid_gain(PIDGain.KI, ki)">
+                        <span class="feedback_param_label">{{ ki_feedback }}</span>
+                        <!-- @vue-ignore -->
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="ki" @focus="ki = ''" @keyup.enter="send_pid_gain(PIDGain.KI, ki)">
                     </div>
                     <div class="lt_mc417_control_row">
                         <span class="pid_gain_label">KD</span>
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="kd" @keyup.enter="send_pid_gain(PIDGain.KD, kd)">
+                        <span class="feedback_param_label">{{ kd_feedback }}</span>
+                        <!-- @vue-ignore -->
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="kd" @focus="kd = ''" @keyup.enter="send_pid_gain(PIDGain.KD, kd)">
                     </div>
                 </div>
             </div>
@@ -203,10 +234,17 @@ onMounted(() => {
     padding: 4px 8px;
 }
 
+.feedback_param_label {
+    font-weight: bold;
+    color: var(--font-color);
+    font-size: 14px;
+    width: 50px;
+}
+
 .autoc_opt_label {
     color: var(--font-color);
     font-weight: bold;
-    width: 120px;
+    width: 80px;
 }
 
 .pid_gain_label {
