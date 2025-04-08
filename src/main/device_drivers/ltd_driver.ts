@@ -95,9 +95,9 @@ export class LtdDriver implements ILtdDriver {
         ]);
 
         let res = 0xffff;
-        for (let b of buffer) {
+        for (let b of buffer)
             res = (res >> 8) ^ CRC16_POLYNOMIAL[(res ^ b) & 0xff];
-        }
+
         return (~res) & 0xffff;
     }
 
@@ -143,9 +143,9 @@ export class LtdDriver implements ILtdDriver {
 
     static concat_uint8_arrays(arrays: Uint8Array[]): Uint8Array {
         let total_len = 0;
-        for (const arr of arrays) {
+        for (const arr of arrays)
             total_len += arr.length;
-        }
+
         const out_arr = new Uint8Array(total_len);
         let offset = 0;
         for (const arr of arrays) {

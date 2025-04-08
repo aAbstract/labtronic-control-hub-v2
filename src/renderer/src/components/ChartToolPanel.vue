@@ -174,14 +174,12 @@ function set_chart_x_y_msg_type() {
 }
 
 function set_chart_tool_state(_state: CHXChartState) {
-    if (chart_state.value === CHXChartState.STOPPED && _state === CHXChartState.RECORDING) {
+    if (chart_state.value === CHXChartState.STOPPED && _state === CHXChartState.RECORDING)
         start_epoch = new Date().getTime();
-    }
 
     else if (_state === CHXChartState.STOPPED) {
         data_points_cache = {};
         points_changed = true;
-        return;
     }
 
     chart_state.value = _state;
@@ -220,9 +218,6 @@ function render_chart() {
         labels: x_series,
         datasets: _datasets,
     };
-
-    console.log(x_series);
-    console.log(_datasets);
 }
 
 onMounted(() => {
