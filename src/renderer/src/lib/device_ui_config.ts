@@ -278,6 +278,13 @@ export const LT_MC417_DUIC = new DeviceUIConfig(
     'LT-MC417',
 );
 
+export const LT_MC415_DUIC = new DeviceUIConfig(
+    {},
+    {},
+    {},
+    'LT-MC415',
+);
+
 export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-CH000': LT_CH000_DUIC,
 
@@ -298,4 +305,5 @@ export const DEVICE_UI_CONFIG_MAP: Record<string, DeviceUIConfig> = {
     'LT-EE759': LT_EE759_DUIC,
 
     'LT-MC417': LT_MC417_DUIC,
+    'LT-MC415': LT_MC415_DUIC,
 };
