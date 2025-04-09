@@ -26,7 +26,7 @@ class NavMenuItem {
     is_active: Ref<boolean>;
     action: (event: MouseEvent) => void;
 
-    constructor(_label: string, _icon: any, _action: (event: MouseEvent) => void, _panel_name: string = '', _panel_pos: PanelPosType = 'LEFT', _icon_size: string = '24px') {
+    constructor(_label: string, _icon: any, _action: (event: MouseEvent) => void, _panel_name: string = '', _panel_pos: PanelPosType = 'LEFT', _icon_size: string = '20px') {
         this.label = _label;
         this.icon = _icon;
         this.panel_name = _panel_name;
@@ -47,7 +47,7 @@ const menu_items: NavMenuItem[] = [
     new NavMenuItem('Obelisk AI', Obelisk, function (this: NavMenuItem, _event: MouseEvent) {
         this.is_active.value = !this.is_active.value;
         post_event('toggle_ltai_panel', {});
-    }, '', 'LEFT', '32px'),
+    }, '', 'LEFT', '24px'),
     new NavMenuItem('Quick Actions', Bolt, function (this: NavMenuItem, _event: MouseEvent) {
         quick_actions_menu.value.toggle(_event);
     }),
@@ -123,7 +123,7 @@ onMounted(() => {
 
 <template>
     <div id="nav_bar_cont">
-        <Menu style="margin-left: 70px; margin-top: -60px;" ref="quick_actions_menu" :model="quick_actions_menu_items" :pt="menu_pt" popup @focus="menu_items[__qamidx].is_active.value = true" @blur="menu_items[__qamidx].is_active.value = false" />
+        <Menu style="margin-left: 60px; margin-top: -60px;" ref="quick_actions_menu" :model="quick_actions_menu_items" :pt="menu_pt" popup @focus="menu_items[__qamidx].is_active.value = true" @blur="menu_items[__qamidx].is_active.value = false" />
         <NavBarIcon v-for="m_item in menu_items" :menu_item="m_item" />
         <div style="flex-grow: 1;"></div>
         <NavBarIcon :menu_item="exit_menu_item" />
@@ -136,9 +136,13 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 100%;
+    height: calc(100% - 16px);
     background-color: var(--light-bg-color);
+    border: 1px solid var(--empty-gauge-color);
     padding: 16px 0px;
-    width: 60px;
+    min-width: 50px;
+    margin-top: 8px;
+    margin-left: 6px;
+    border-radius: 4px;
 }
 </style>

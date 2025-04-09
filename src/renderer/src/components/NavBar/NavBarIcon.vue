@@ -38,6 +38,7 @@ const icon_fill_color = computed(() => props.menu_item.is_active.value ? accent_
 
 .nav_bar_icon_cont {
     background-color: var(--light-bg-shadow-color);
+    border: 1px solid var(--empty-gauge-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -46,24 +47,24 @@ const icon_fill_color = computed(() => props.menu_item.is_active.value ? accent_
     cursor: pointer;
     transition: 0.3s ease;
     margin-bottom: 16px;
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+    border-radius: 4px;
 }
 
 .nav_bar_icon_cont_active {
     color: var(--accent-color);
-    border-left: 4px solid var(--accent-color);
 }
 
 .nav_bar_icon_cont_inactive {
     color: var(--font-color);
-    border-left: 4px solid var(--font-color);
 }
 
-.nav_bar_icon_cont:hover {
+/* .nav_bar_icon_cont:hover {
     color: var(--accent-color);
     border-left: 4px solid var(--accent-color);
-}
+} */
 
 .nav_bar_icon_cont span {
     font-size: 16px;

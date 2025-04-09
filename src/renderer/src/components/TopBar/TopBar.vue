@@ -70,7 +70,7 @@ onMounted(() => device_model.value = inject('device_model') as string);
 
 #version_tag {
     width: 16vw;
-    height: 100%;
+    height: 8vh;
     color: white;
     font-weight: bold;
     background-color: var(--accent-color);
