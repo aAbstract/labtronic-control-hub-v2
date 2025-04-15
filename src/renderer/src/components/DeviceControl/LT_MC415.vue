@@ -23,7 +23,7 @@ const pump1_speed_slider = ref(0);
 const kp = ref(0);
 const ki = ref(0);
 const kd = ref(0);
-const pressure_setpoint = ref(0);
+const lvl_setpoint = ref(0);
 const min_duty = ref(0);
 const max_duty = ref(0);
 
@@ -32,14 +32,14 @@ const ki_feedback = ref('00.00');
 const kd_feedback = ref('00.00');
 const min_duty_feedback = ref('00.00');
 const max_duty_feedback = ref('00.00');
-const pressure_setpoint_feedback = ref('00.00');
+const lvl_setpoint_feedback = ref('00.00');
 const feedback_params_map: Record<number, Ref<string>> = {
-    2: pressure_setpoint_feedback,
-    3: kp_feedback,
-    4: ki_feedback,
-    5: kd_feedback,
-    6: min_duty_feedback,
-    7: max_duty_feedback,
+    3: lvl_setpoint_feedback,
+    4: kp_feedback,
+    5: ki_feedback,
+    6: kd_feedback,
+    7: min_duty_feedback,
+    8: max_duty_feedback,
 };
 
 const slider_pt: any = {
@@ -58,7 +58,7 @@ function send_pump_speed() {
     const _pump1_speed = threshold_value(pump1_speed.value, 100);
     pump1_speed.value = _pump1_speed;
     pump1_speed_slider.value = _pump1_speed;
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD022 F32 ${_pump1_speed}` }); // OFFSET_CALC_LT-MC415
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD026 F32 ${_pump1_speed}` }); // OFFSET_CALC_LT-MC415
 }
 
 enum PIDGain {
@@ -67,9 +67,9 @@ enum PIDGain {
     KD = 2,
 };
 const gains_reg_addr_map: Record<PIDGain, string> = {
-    [PIDGain.KP]: '0xD00A',
-    [PIDGain.KI]: '0xD00E',
-    [PIDGain.KD]: '0xD012',
+    [PIDGain.KP]: '0xD00E',
+    [PIDGain.KI]: '0xD012',
+    [PIDGain.KD]: '0xD016',
 };
 function validate_pid_gain(g: any): number {
     if (isNaN(g))
@@ -83,14 +83,14 @@ function send_pid_gain(pid_gain: PIDGain, gain_value: number) {
 }
 
 enum AutomaticControlOption {
-    PRESSURE_SETPOINT = 0,
+    LVL_SETPOINT = 0,
     MIN_DUTY = 1,
     MAX_DUTY = 2,
 };
 const autoc_opts_addr_map: Record<AutomaticControlOption, string> = {
-    [AutomaticControlOption.PRESSURE_SETPOINT]: '0xD006',
-    [AutomaticControlOption.MIN_DUTY]: '0xD016',
-    [AutomaticControlOption.MAX_DUTY]: '0xD01A',
+    [AutomaticControlOption.LVL_SETPOINT]: '0xD00A',
+    [AutomaticControlOption.MIN_DUTY]: '0xD01A',
+    [AutomaticControlOption.MAX_DUTY]: '0xD01E',
 };
 function validate_autoc_opt(o: any): number {
     if (isNaN(o) || o < 0)
@@ -116,7 +116,7 @@ function send_ctrl_reg() {
         ctrl_reg_bits[VALVE1_CONTROL_CTRL_REG_BIT_OFFSET] = '1';
 
     const ctrl_reg_value = parseInt(ctrl_reg_bits.join(''), 2);
-    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD026 U16 ${ctrl_reg_value}` }); // OFFSET_CALC_LT-MC415
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD02A U16 ${ctrl_reg_value}` }); // OFFSET_CALC_LT-MC415
 }
 
 onMounted(() => {
@@ -125,7 +125,7 @@ onMounted(() => {
         const { msg_type } = device_msg.config;
         const { msg_value } = device_msg;
 
-        if (msg_type === 10) {
+        if (msg_type === 11) {
             const ctrl_bits = msg_value.toString(2).padStart(16, '0');
             pump1_control.value = ctrl_bits[PUMP1_CONTROL_CTRL_REG_BIT_OFFSET] === '1';
             pump1_mode.value = ctrl_bits[PUMP1_MODE_CTRL_REG_BIT_OFFSET] === '1';
@@ -182,9 +182,9 @@ onMounted(() => {
                 <div>
                     <div class="lt_mc415_control_row">
                         <span class="autoc_opt_label">Set Point</span>
-                        <span class="feedback_param_label">{{ pressure_setpoint_feedback }}</span>
+                        <span class="feedback_param_label">{{ lvl_setpoint_feedback }}</span>
                         <!-- @vue-ignore -->
-                        <input style="width: 50px;" class="dt_tf" type="text" v-model="pressure_setpoint" @focus="pressure_setpoint = ''" @keyup.enter="send_autoc_opt(AutomaticControlOption.PRESSURE_SETPOINT, pressure_setpoint)">
+                        <input style="width: 50px;" class="dt_tf" type="text" v-model="lvl_setpoint" @focus="lvl_setpoint = ''" @keyup.enter="send_autoc_opt(AutomaticControlOption.LVL_SETPOINT, lvl_setpoint)">
                     </div>
                     <div class="lt_mc415_control_row">
                         <span class="autoc_opt_label">Min Duty</span>
