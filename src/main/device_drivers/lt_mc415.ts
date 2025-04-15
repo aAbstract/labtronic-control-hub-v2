@@ -8,6 +8,7 @@ const DEVICE_MODEL = 'LT-MC415';
 const SLAVE_ID = 0x01;
 
 const LT_MC415_DRIVER_CONFIG = [
+    'READ_LVL',
     'READ_PR1',
     'INPUT_REG',
     'READ_LVL_SETPOINT',
@@ -258,7 +259,7 @@ async function __pool_task() {
         const data_buffer = response_packet.slice(LtBusDriver.LT_BUS_PACKET_DATA_START, LtBusDriver.LT_BUS_PACKET_DATA_START + __pool_data_size);
 
         // parse f32 sequence
-        const f32_seq_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0x000, 0x004), data_buffer.slice(0x006, 0x026)]); // OFFSET_CALC_LT-MC415
+        const f32_seq_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0x000, 0x008), data_buffer.slice(0x00A, 0x02A)]); // OFFSET_CALC_LT-MC415
         const f32_seq_decode_result = LtBusDriver.decode_f32_seq(f32_seq_data_buffer, __f32_pool_msg_config);
         if (f32_seq_decode_result.err) {
             mw_logger({ level: 'ERROR', msg: f32_seq_decode_result.err });
@@ -271,7 +272,7 @@ async function __pool_task() {
         }
 
         // parse u16 sequence
-        const u16_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0x004, 0x006), data_buffer.slice(0x026, 0x02A)]); // OFFSET_CALC_LT-MC415
+        const u16_data_buffer = LtBusDriver.concat_uint8_arrays([data_buffer.slice(0x008, 0x00A), data_buffer.slice(0x02A, 0x02E)]); // OFFSET_CALC_LT-MC415
         const u16_decode_result = LtBusDriver.decode_u16_seq(u16_data_buffer, __u16_pool_msg_config);
         if (u16_decode_result.err) {
             mw_logger({ level: 'ERROR', msg: u16_decode_result.err });

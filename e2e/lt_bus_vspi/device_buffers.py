@@ -116,17 +116,18 @@ lt_mc415_config_buffer.write_register('device_id', 0x1003)
 lt_mc415_config_buffer.write_register('msg_counter', 0)
 
 lt_mc415_device_data_registers_config = [
-    DeviceRegisterConfig('PR1', 0x000, 'f32'),
-    DeviceRegisterConfig('INPUT_REG', 0x004, 'u16'),
-    DeviceRegisterConfig('LVL_SETPOINT', 0x006, 'f32'),
-    DeviceRegisterConfig('KP', 0x00A, 'f32'),
-    DeviceRegisterConfig('KI', 0x00E, 'f32'),
-    DeviceRegisterConfig('KD', 0x012, 'f32'),
-    DeviceRegisterConfig('MIN_DUTY', 0x016, 'f32'),
-    DeviceRegisterConfig('MAX_DUTY', 0x01A, 'f32'),
-    DeviceRegisterConfig('VALVE1_CAPACITY', 0x01E, 'f32'),
-    DeviceRegisterConfig('PUMP1_SPEED', 0x022, 'f32'),
-    DeviceRegisterConfig('CTRL_REG', 0x022, 'u16'),
-    DeviceRegisterConfig('FAULT_REG', 0x024, 'u16'),
+    DeviceRegisterConfig('LVL', 0x000, 'f32'),
+    DeviceRegisterConfig('PR1', 0x004, 'f32'),
+    DeviceRegisterConfig('INPUT_REG', 0x008, 'u16'),
+    DeviceRegisterConfig('LVL_SETPOINT', 0x00A, 'f32'),
+    DeviceRegisterConfig('KP', 0x00E, 'f32'),
+    DeviceRegisterConfig('KI', 0x012, 'f32'),
+    DeviceRegisterConfig('KD', 0x016, 'f32'),
+    DeviceRegisterConfig('MIN_DUTY', 0x01A, 'f32'),
+    DeviceRegisterConfig('MAX_DUTY', 0x01E, 'f32'),
+    DeviceRegisterConfig('VALVE1_CAPACITY', 0x022, 'f32'),
+    DeviceRegisterConfig('PUMP1_SPEED', 0x026, 'f32'),
+    DeviceRegisterConfig('CTRL_REG', 0x02A, 'u16'),
+    DeviceRegisterConfig('FAULT_REG', 0x02C, 'u16'),
 ]
 lt_mc415_data_buffer = DeviceBuffer(0xD000, lt_mc415_device_data_registers_config)
