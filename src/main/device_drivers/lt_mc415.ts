@@ -17,7 +17,7 @@ const LT_MC415_DRIVER_CONFIG = [
     'READ_KD',
     'READ_MIN_DUTY',
     'READ_MAX_DUTY',
-    'VALVE1_CAPACITY',
+    'READ_VALVE1_CAP',
     'READ_PUMP1_SPEED',
     'CTRL_REG',
     'FAULT_REG',

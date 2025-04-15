@@ -19,6 +19,8 @@ const valve1_control = ref(false);
 
 const pump1_speed = ref(0);
 const pump1_speed_slider = ref(0);
+const valve1_capacity = ref(0);
+const valve1_capacity_slider = ref(0);
 
 const kp = ref(0);
 const ki = ref(0);
@@ -59,6 +61,13 @@ function send_pump_speed() {
     pump1_speed.value = _pump1_speed;
     pump1_speed_slider.value = _pump1_speed;
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD026 F32 ${_pump1_speed}` }); // OFFSET_CALC_LT-MC415
+}
+
+function send_valve_capacity() {
+    const _valve1_capacity = threshold_value(valve1_capacity.value, 100);
+    valve1_capacity.value = _valve1_capacity;
+    valve1_capacity_slider.value = _valve1_capacity;
+    electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR 0xD022 F32 ${_valve1_capacity}` }); // OFFSET_CALC_LT-MC415
 }
 
 enum PIDGain {
@@ -103,9 +112,9 @@ function send_autoc_opt(autoc_opt: AutomaticControlOption, opt_value: number) {
     electron_renderer_send(`${device_model}_exec_device_cmd`, { cmd: `WR ${reg_addr} F32 ${_opt_value}` }); // OFFSET_CALC_LT-MC415
 }
 
-const PUMP1_CONTROL_CTRL_REG_BIT_OFFSET = 15;
+const PUMP1_CONTROL_CTRL_REG_BIT_OFFSET = 13;
 const PUMP1_MODE_CTRL_REG_BIT_OFFSET = 14;
-const VALVE1_CONTROL_CTRL_REG_BIT_OFFSET = 13;
+const VALVE1_CONTROL_CTRL_REG_BIT_OFFSET = 15;
 function send_ctrl_reg() {
     const ctrl_reg_bits = new Array(16).fill('0');
     if (pump1_control.value)
@@ -151,10 +160,16 @@ onMounted(() => {
         <h4 style="margin: 0px; margin-bottom: 8px; text-align: left; color: var(--font-color); width: 100%;">Level Control LT-MC415</h4>
 
         <div style="width: 100%;" class="lt_mc415_control_row">
-            <span class="lt_mc415_control_label">Pump1 Speed (%)</span>
+            <span style="width: 120px;" class="lt_mc415_control_label">Pump1 Speed (%)</span>
             <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="pump1_speed_slider" @slideend="pump1_speed = pump1_speed_slider" />
             <!-- @vue-ignore -->
             <input style="width: 50px;" class="dt_tf" type="text" v-model="pump1_speed" @focus="pump1_speed = ''" @keyup.enter="send_pump_speed()">
+        </div>
+        <div style="width: 100%;" class="lt_mc415_control_row">
+            <span style="width: 120px;" class="lt_mc415_control_label">Valve1 Capacity (%)</span>
+            <Slider style="flex-grow: 1; margin-right: 8px;" :pt="slider_pt" :max="100" v-model="valve1_capacity_slider" @slideend="valve1_capacity = valve1_capacity_slider" />
+            <!-- @vue-ignore -->
+            <input style="width: 50px;" class="dt_tf" type="text" v-model="valve1_capacity" @focus="valve1_capacity = ''" @keyup.enter="send_valve_capacity()">
         </div>
 
         <div style="height: 16px;"></div>
